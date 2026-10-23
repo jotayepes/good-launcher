@@ -1,137 +1,146 @@
-# Good Launcher — lanzador para GOG
+# Good Launcher — a launcher for GOG
 
-Lanzador de juegos de [GOG](https://www.gog.com) para Linux y SteamOS, centrado en que
-**las partidas en la nube se sincronicen siempre**, también en el modo juego de la Steam Deck.
+A [GOG](https://www.gog.com) game launcher for Linux and SteamOS, focused on making sure
+**cloud saves always sync**, including in Steam Deck's Game Mode.
 
-> **Aviso:** proyecto independiente y no oficial. No está afiliado, respaldado ni patrocinado
-> por GOG sp. z o.o. ni por CD PROJEKT. «GOG» y «GOG GALAXY» son marcas de sus respectivos
-> propietarios. gogl usa APIs no documentadas de GOG que pueden cambiar sin aviso.
+> **Disclaimer:** independent, unofficial project. It is not affiliated with, endorsed by or
+> sponsored by GOG sp. z o.o. or CD PROJEKT. "GOG" and "GOG GALAXY" are trademarks of their
+> respective owners. gogl uses undocumented GOG APIs that may change without notice.
 
-## Qué hace
+## Features
 
-- **Biblioteca** de GOG con carátulas, búsqueda y filtros.
-- **Instalación propia** (sin depender de otros lanzadores): descarga en paralelo,
-  verificación por MD5, reanudación tras cortes, actualizaciones que solo bajan lo que
-  cambió, verificación y reparación. Juegos de Windows (Content System v1 y v2) e
-  instaladores nativos de Linux.
-- **Dependencias de GOG**: DOSBox, ScummVM, etc. van con el juego; Visual C++, DirectX…
-  se instalan en el prefijo antes de la primera partida, junto con los scripts de
-  instalación de cada juego.
-- **Proton-GE gestionado**: descarga sus propias versiones (con verificación SHA-512) en
-  su carpeta de datos; no usa ni toca la instalación de Steam.
-- **Sincronización de partidas fiable**:
-  - compara por contenido (MD5) con un historial a tres bandas, no por fechas;
-  - nunca vacía la nube porque una carpeta local esté vacía (p. ej. un prefijo recién creado);
-  - copia de seguridad local antes de sobrescribir o borrar nada;
-  - un *vigilante* (unidad transitoria de systemd) sube las partidas aunque Steam cierre
-    el lanzador al salir del juego, y un timer reintenta las subidas pendientes.
-- **Partidas en la nube de toda la cuenta**: espacio usado por juego frente a la cuota,
-  y borrado de partidas antiguas.
-- **Ajustes por juego**: versión de Proton-GE, idioma, carpetas de partidas, argumentos,
-  variables de entorno y comando previo (MangoHud, GameMode…).
-- **Extras e instaladores offline**: manuales, bandas sonoras, fondos… y los instaladores
-  completos de cada juego (y de sus DLC) para guardarlos, con reanudación y verificación
-  por trozos. Se guardan en `~/Descargas/GOG/<juego>` (se puede cambiar en Ajustes).
-- **Logros**: en la ficha de cada juego, los conseguidos (con fecha) y los pendientes (con su
-  rareza). En los juegos que traen el kit de Galaxy, se consiguen mientras juegas, con un
-  aviso en pantalla también en el modo juego. Para eso usa
-  [Comet](https://github.com/imLinguin/comet) (Apache-2.0), que se descarga la primera vez
-  con su suma SHA-256 fijada. Sin conexión, los logros se guardan y se suben la próxima vez.
-- **Tienda de GOG** dentro del lanzador: compras en el checkout de GOG (el lanzador no toca
-  datos de pago); avisa si ya tienes un juego y, al comprar, aparece en la biblioteca sin
-  reiniciar.
-- **Perfil**: tu cuenta, logros conseguidos, juegos al 100 % y lista de deseos con precios
-  y rebajas.
-- **Integración con Steam**: añade juegos (y el propio lanzador) como «juegos no de Steam»
-  con sus carátulas.
-- **Control con mando** (cruceta/stick, A, B, LB/RB…), pensado para el modo juego de SteamOS.
-- **En español y en inglés**: sigue el idioma del sistema (cualquier otro idioma usa el
-  inglés) y se puede fijar en Ajustes → Idioma. El idioma con el que se instalan los juegos
-  también sale del sistema, salvo que elijas otro.
+- **GOG library** with cover art, search and filters.
+- **Built-in installer** (no dependency on other launchers): parallel downloads, MD5
+  verification, resume after interruptions, updates that only download what changed, plus
+  verification and repair. Supports Windows games (Content System v1 and v2) and native
+  Linux installers.
+- **GOG dependencies**: DOSBox, ScummVM, etc. ship with the game; Visual C++, DirectX…
+  are installed into the prefix before the first launch, along with each game's install
+  scripts.
+- **Managed Proton-GE**: downloads its own versions (verified with SHA-512) into its own
+  data folder; it never uses or touches your Steam installation.
+- **Reliable save sync**:
+  - compares by content (MD5) using a three-way history, not by timestamps;
+  - never empties the cloud because a local folder is empty (e.g. a freshly created prefix);
+  - makes a local backup before overwriting or deleting anything;
+  - a *watcher* (a transient systemd unit) uploads saves even if Steam closes the launcher
+    when the game exits, and a timer retries pending uploads.
+- **Account-wide cloud saves**: space used per game against your quota, and deletion of old
+  saves.
+- **Per-game settings**: Proton-GE version, language, save folders, arguments, environment
+  variables and a launch prefix command (MangoHud, GameMode…).
+- **Extras and offline installers**: manuals, soundtracks, wallpapers… and the full
+  installers of each game (and its DLC) to keep for yourself, with resume and chunk-level
+  verification. They are stored in your system's Downloads folder under `GOG/<game>`
+  (`~/Downloads/GOG/<game>` by default; configurable in Settings).
+- **Achievements**: on each game's page, the unlocked ones (with date) and the pending ones
+  (with their rarity). For games that ship the Galaxy SDK, they unlock as you play, with an
+  on-screen notification that also works in Game Mode. This uses
+  [Comet](https://github.com/imLinguin/comet) (Apache-2.0), downloaded on first use with a
+  pinned SHA-256 checksum. Offline, achievements are stored and uploaded next time.
+- **GOG store** inside the launcher: purchases go through GOG's own checkout (the launcher
+  never handles payment data); it warns you if you already own a game, and after buying, the
+  game appears in your library without restarting.
+- **Profile**: your account, unlocked achievements, 100 %-completed games and your wishlist
+  with prices and discounts.
+- **Steam integration**: adds games (and the launcher itself) as "non-Steam games" with their
+  cover art.
+- **Gamepad control** (D-pad/stick, A, B, LB/RB…), designed for SteamOS Game Mode.
+- **English and Spanish**: follows the system language (any other language falls back to
+  English) and can be set in Settings → Language. The language games are installed in also
+  comes from the system, unless you pick another one.
 
-## Instalación
+## Installation
 
-### AppImage (recomendada, también en SteamOS)
+### AppImage (recommended, also on SteamOS)
 
-Un solo archivo con todo incluido (Python y Qt): no instala nada en el sistema, así que
-funciona en SteamOS aunque su sistema sea de solo lectura.
+A single self-contained file (Python and Qt included): it installs nothing on your system,
+so it works on SteamOS even though its system is read-only.
 
 ```sh
 chmod +x gogl-*-x86_64.AppImage
-./gogl-*-x86_64.AppImage            # interfaz
-./gogl-*-x86_64.AppImage run <id>   # cualquier orden de `gogl`
+./gogl-*-x86_64.AppImage            # user interface
+./gogl-*-x86_64.AppImage run <id>   # any `gogl` command
 ```
 
-Puede estar en cualquier carpeta y moverse cuando quieras. Steam, el menú de aplicaciones y
-las subidas en segundo plano no la llaman por su ruta, sino a un pequeño lanzador
-(`~/.local/share/gogl/gogl-launch`) que la AppImage actualiza cada vez que se abre. Si la
-mueves y lanzas un juego desde Steam antes de volver a abrirla, el lanzador la busca en tu
-carpeta personal y en las tarjetas SD y discos externos (siempre que su nombre contenga «gogl»).
+It can live in any folder and be moved whenever you like. Steam, the application menu and
+background uploads don't call it by its path; they call a small launcher
+(`~/.local/share/gogl/gogl-launch`) that the AppImage updates every time it is opened. If you
+move it and start a game from Steam before opening it again, the launcher looks for it in
+your home folder and on SD cards and external drives (as long as its name contains "gogl").
 
-Para construirla: `packaging/build-appimage.sh` (descarga Python, PySide6 y appimagetool
-con versiones y sumas SHA-256 fijadas; deja el resultado en `dist/`).
+To build it yourself: `packaging/build-appimage.sh` (downloads Python, PySide6 and
+appimagetool with pinned versions and SHA-256 checksums; the result goes to `dist/`).
 
-### Desde el código
+### From source
 
-Hace falta Python 3.11 o superior y, para la interfaz, PySide6 con QtWebEngine.
+Requires Python 3.11 or later and, for the interface, PySide6 with QtWebEngine.
 
 ```sh
-git clone <url-del-repositorio>
-cd launcher
+git clone https://github.com/jotayepes/good-launcher
+cd good-launcher
 python3 -m venv .venv
 .venv/bin/pip install -e '.[ui]'
 .venv/bin/gogl-ui
 ```
 
-Desde **Ajustes** puedes añadir Good Launcher al menú de aplicaciones y a Steam (para abrirlo
-desde el modo juego).
+From **Settings** you can add Good Launcher to the application menu and to Steam (so you can
+open it from Game Mode).
 
-## Línea de comandos
+## Command line
 
-Todo lo de la interfaz está también en el comando `gogl`:
+Everything in the interface is also available through the `gogl` command:
 
 ```sh
-gogl login                 # iniciar sesión en GOG
-gogl install <id>          # instalar un juego de tu biblioteca
-gogl run <id>              # sincronizar, jugar y volver a sincronizar
-gogl sync <id>             # sincronizar partidas a mano
-gogl proton install        # descargar la última versión de Proton-GE
-gogl steam add <id>        # añadir un juego a Steam
-gogl achievements <id>     # logros conseguidos y pendientes
-gogl offline list <id>     # extras e instaladores offline
-gogl offline download <id> --extras   # descargar todos los extras
-gogl --help                # el resto de órdenes
+gogl login                 # sign in to GOG
+gogl install <id>          # install a game from your library
+gogl run <id>              # sync, play and sync again
+gogl sync <id>             # sync saves manually
+gogl update <id>           # update to the latest version (only downloads changes)
+gogl verify <id> --repair  # check file integrity and re-download damaged files
+gogl uninstall <id>        # uninstall (cloud saves are left untouched)
+gogl proton install        # download the latest Proton-GE version
+gogl steam add <id>        # add a game to Steam
+gogl achievements <id>     # unlocked and pending achievements
+gogl offline list <id>     # extras and offline installers
+gogl offline download <id> --extras   # download all extras
+gogl service install       # timer that retries pending uploads every 15 minutes
+gogl --help                # the remaining commands
 ```
 
-## Dónde guarda las cosas
+## Where things are stored
 
-| Qué | Dónde |
+| What | Where |
 | --- | --- |
-| Sesión y ajustes | `~/.config/gogl/` |
-| Base de datos, Proton-GE, Comet, prefijos, copias de seguridad, sesión de la tienda | `~/.local/share/gogl/` |
-| Extras e instaladores offline (por defecto) | `~/Descargas/GOG/` |
-| Registros de cada partida | `~/.local/state/gogl/logs/` |
-| Juegos (por defecto) | `~/Games/gogl/` |
+| Session and settings | `~/.config/gogl/` |
+| Database, Proton-GE, Comet, prefixes, backups, store session | `~/.local/share/gogl/` |
+| Extras and offline installers (default) | `~/Downloads/GOG/` (the system Downloads folder) |
+| Per-game logs | `~/.local/state/gogl/logs/` |
+| Games (default) | `~/Games/gogl/` |
 
-## Desarrollo
+The `~/.config`, `~/.local/share` and `~/.local/state` locations follow the `XDG_CONFIG_HOME`,
+`XDG_DATA_HOME` and `XDG_STATE_HOME` variables if they are set.
+
+## Development
 
 ```sh
 .venv/bin/pip install -e '.[ui,dev]'
 .venv/bin/python -m pytest
 ```
 
-## Traducciones
+## Translations
 
-Los textos están en español en el código, marcados con `_("…")`, y las traducciones son
-catálogos gettext en [`gogl/locale/`](gogl/locale/) que se leen tal cual (sin compilar).
+The source strings in the code are written in Spanish and marked with `_("…")`; translations
+are gettext catalogs in [`gogl/locale/`](gogl/locale/) that are read as-is (no compilation).
+English is provided in `en.po`.
 
-- Para **añadir un idioma**, copia `gogl/locale/gogl.pot` a `gogl/locale/<código>.po`
-  (p. ej. `fr.po`), pon su nombre en la cabecera `X-Language-Name` y traduce los `msgstr`
-  (con Poedit o cualquier editor). Aparece solo en Ajustes y se usa si el sistema está en
-  ese idioma.
-- Tras cambiar textos en el código, `packaging/update_po.py` pone al día la plantilla y los
-  catálogos; los tests fallan si alguno se queda sin traducir.
+- To **add a language**, copy `gogl/locale/gogl.pot` to `gogl/locale/<code>.po` (e.g.
+  `fr.po`), put its name in the `X-Language-Name` header and translate the `msgstr` entries
+  (with Poedit or any editor). It shows up in Settings automatically and is used when the
+  system is set to that language.
+- After changing strings in the code, `packaging/update_po.py` updates the template and the
+  catalogs; the tests fail if any entry is left untranslated.
 
-## Licencia
+## License
 
-[GNU General Public License v3.0 o posterior](LICENSE).
+[GNU General Public License v3.0 or later](LICENSE).
