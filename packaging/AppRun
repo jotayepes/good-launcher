@@ -1,0 +1,15 @@
+#!/bin/sh
+# Punto de entrada de la AppImage.
+#   gogl-x86_64.AppImage              → interfaz gráfica
+#   gogl-x86_64.AppImage --gamepad    → interfaz con el foco del mando visible
+#   gogl-x86_64.AppImage run 1207…    → comando `gogl` (lo usan Steam y el vigilante)
+HERE="$(dirname "$(readlink -f "$0")")"
+PY="$HERE/usr/python/bin/python3"
+# Que no se mezcle nada del Python del sistema.
+unset PYTHONHOME PYTHONPATH PYTHONSTARTUP
+export PYTHONNOUSERSITE=1
+
+case "${1:-}" in
+    ""|-*) exec "$PY" -s -m gogl_ui.app "$@" ;;
+    *)     exec "$PY" -s -m gogl.cli "$@" ;;
+esac

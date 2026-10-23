@@ -1,0 +1,29 @@
+# Entornos y cachés de Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Artefactos de construcción (incluida la AppImage)
+build/
+dist/
+*.AppImage
+
+# Editores y sistema
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+
+# Secretos y datos locales
+.env
+*.log
