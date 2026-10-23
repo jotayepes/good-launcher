@@ -98,6 +98,30 @@ Categories=Game;
 StartupWMClass=gogl
 EOF
 
+echo ">> quitando rutas de la máquina de construcción"
+# pip deja scripts con el shebang absoluto del AppDir (AppRun no los usa) y la
+# URL local del proyecto; el bytecode guarda la ruta de cada fuente. Se recompila
+# como si el AppDir fuera la raíz, sin escribir más .pyc al importar.
+grep -lIs "^#!$APPDIR" "$APPDIR"/usr/python/bin/* | xargs -r rm -f
+rm -f "$SITE"/*.dist-info/direct_url.json
+PYTHONDONTWRITEBYTECODE=1 "$PY" -s - "$APPDIR" <<'EOF'
+import compileall, pathlib, sys
+root = pathlib.Path(sys.argv[1])
+srcs = set()
+for pyc in root.rglob("__pycache__/*.pyc"):
+    src = pyc.parent.parent / (pyc.name.split(".")[0] + ".py")
+    pyc.unlink()
+    if src.exists():
+        srcs.add(src)
+for src in sorted(srcs):
+    compileall.compile_file(str(src), quiet=2, stripdir=str(root), prependdir="/")
+EOF
+if grep -rqa "$ROOT" "$APPDIR"; then
+    echo "!! siguen quedando rutas locales en el AppDir:" >&2
+    grep -rla "$ROOT" "$APPDIR" | head >&2
+    exit 1
+fi
+
 echo ">> empaquetando"
 rm -f "$OUT"
 ARCH=x86_64 "$CACHE/appimagetool" --appimage-extract-and-run --no-appstream \
