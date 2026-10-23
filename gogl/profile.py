@@ -10,7 +10,9 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime
 
+from . import i18n
 from .api import GogApi
+from .i18n import _
 from .state import State
 
 USERS = "https://users.gog.com/users/{id}"
@@ -19,8 +21,8 @@ WISHLIST = "https://embed.gog.com/user/wishlist.json"
 PRODUCTS = "https://api.gog.com/products"
 PRICES = "https://api.gog.com/products/prices"
 
-MONTHS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre",
-          "octubre", "noviembre", "diciembre"]
+MONTHS = [_("enero"), _("febrero"), _("marzo"), _("abril"), _("mayo"), _("junio"), _("julio"), _("agosto"),
+          _("septiembre"), _("octubre"), _("noviembre"), _("diciembre")]
 
 
 @dataclass
@@ -54,7 +56,7 @@ class Profile:
 def member_since(iso: str) -> str:
     try:
         d = datetime.fromisoformat(iso)
-        return f"{MONTHS[d.month - 1]} de {d.year}"
+        return _("{month} de {year}").format(month=MONTHS[d.month - 1], year=d.year)
     except (ValueError, TypeError):
         return ""
 
@@ -63,9 +65,13 @@ def price(cents: int | None, currency: str) -> str:
     if cents is None:
         return ""
     if cents == 0:
-        return "Gratis"
-    value = f"{cents / 100:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    return f"{value} €" if currency == "EUR" else f"{value} {currency}"
+        return _("Gratis")
+    value = f"{cents / 100:,.2f}"
+    if i18n.current == "es":
+        value = value.replace(",", "X").replace(".", ",").replace("X", ".")
+        return f"{value} €" if currency == "EUR" else f"{value} {currency}"
+    symbol = {"EUR": "€", "USD": "$", "GBP": "£"}.get(currency)
+    return f"{symbol}{value}" if symbol else f"{value} {currency}"
 
 
 def _chunks(seq: list, n: int):

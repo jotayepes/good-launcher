@@ -6,6 +6,8 @@ from __future__ import annotations
 import socket
 import time
 
+from .i18n import _
+
 PROBE_HOST = ("cloudstorage.gog.com", 443)
 
 
@@ -26,6 +28,6 @@ def wait_for_network(max_wait: float = 30, log=lambda _: None) -> bool:
         if time.monotonic() >= deadline:
             return False
         if first:
-            log("esperando conexión de red…")
+            log(_("esperando conexión de red…"))
             first = False
         time.sleep(2)

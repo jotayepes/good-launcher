@@ -5,8 +5,9 @@ import sys
 from PySide6.QtWidgets import QApplication
 
 from gogl import APP_TITLE, selfcmd, services, steam
+from gogl.i18n import _
 
-from . import navigation, theme
+from . import navigation, qt_i18n, theme
 from .desktop import desktop_entry_installed, refresh_desktop_entry
 from .main_window import MainWindow
 
@@ -20,7 +21,8 @@ def _refresh_integrations() -> None:
             services.refresh()
             steam.repoint_shortcuts()
     except Exception as e:  # noqa: BLE001 - nunca impide abrir la interfaz
-        print(f"gogl: no se han podido actualizar las integraciones: {e}", file=sys.stderr)
+        print("gogl: " + _("no se han podido actualizar las integraciones: {error}").format(error=e),
+              file=sys.stderr)
 
 
 def main() -> int:
@@ -32,6 +34,7 @@ def main() -> int:
     app.setWindowIcon(app_icon())
     if desktop_entry_installed():
         app.setDesktopFileName("gogl")
+    qt_i18n.install(app)
     theme.apply(app)
     navigation.install(app)
     w = MainWindow()

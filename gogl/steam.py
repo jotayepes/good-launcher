@@ -20,6 +20,7 @@ from pathlib import Path
 import httpx
 
 from . import APP_NAME
+from .i18n import _
 from .library import cover_path, product_details
 from .selfcmd import cli_command, ui_command
 from .state import Game
@@ -148,11 +149,11 @@ class ShortcutResult:
 def add_shortcut(game: Game, user_dir: Path | None = None, force: bool = False,
                  http: httpx.Client | None = None) -> ShortcutResult:
     if steam_running() and not force:
-        raise SteamError("Steam está abierto: ciérralo antes, o perderá el acceso directo al salir")
+        raise SteamError(_("Steam está abierto: ciérralo antes, o perderá el acceso directo al salir"))
     if user_dir is None:
         dirs = user_dirs()
         if not dirs:
-            raise SteamError("No se ha encontrado ninguna instalación de Steam con usuario")
+            raise SteamError(_("No se ha encontrado ninguna instalación de Steam con usuario"))
         user_dir = dirs[0]
     cfg = user_dir / "config"
     vdf_path = cfg / "shortcuts.vdf"
@@ -248,11 +249,11 @@ def add_launcher_shortcut(user_dir: Path | None = None, force: bool = False) -> 
     """gogl como «juego no de Steam»: así se abre desde el modo juego y Steam le
     pasa el mando (como un mando de Xbox virtual, que gogl lee)."""
     if steam_running() and not force:
-        raise SteamError("Steam está abierto: ciérralo antes, o perderá el acceso directo al salir")
+        raise SteamError(_("Steam está abierto: ciérralo antes, o perderá el acceso directo al salir"))
     if user_dir is None:
         dirs = user_dirs()
         if not dirs:
-            raise SteamError("No se ha encontrado ninguna instalación de Steam con usuario")
+            raise SteamError(_("No se ha encontrado ninguna instalación de Steam con usuario"))
         user_dir = dirs[0]
     vdf_path = user_dir / "config" / "shortcuts.vdf"
     data = vdf_load(vdf_path.read_bytes()) if vdf_path.exists() else {}

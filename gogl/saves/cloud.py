@@ -21,6 +21,7 @@ from urllib.parse import quote
 import httpx
 
 from ..auth import Credentials
+from ..i18n import _
 
 CLOUD_URL = "https://cloudstorage.gog.com/v1"
 USER_AGENT = ("GOGGalaxyCommunicationService/2.0.13.27 (Windows_32bit) "
@@ -116,7 +117,7 @@ class CloudStorage:
                     r.close()
             except httpx.TransportError as e:
                 if attempt >= self.retries:
-                    raise CloudError(f"{method} {key or '/'}: error de red: {e}") from e
+                    raise CloudError(f"{method} {key or '/'}: " + _("error de red: {error}").format(error=e)) from e
                 attempt += 1
                 time.sleep(self.backoff * 2 ** (attempt - 1))
                 continue
@@ -152,7 +153,8 @@ class CloudStorage:
         """Devuelve (contenido descomprimido, mtime original) verificando el hash."""
         r = self._request("GET", cf.key, headers={"Accept-Encoding": "gzip"}, ok=(200,), raw=True)
         if md5(r.body) != cf.hash:
-            raise CloudError(f"Descarga corrupta de {cf.key}: md5 {md5(r.body)} ≠ {cf.hash}")
+            raise CloudError(_("Descarga corrupta de {file}: md5 {got} ≠ {expected}")
+                             .format(file=cf.key, got=md5(r.body), expected=cf.hash))
         data = r.body
         declared_gzip = r.headers.get("content-encoding", "").lower() == "gzip"
         if declared_gzip or data[:2] == b"\x1f\x8b":
@@ -160,7 +162,7 @@ class CloudStorage:
                 data = gzip.decompress(data)
             except (OSError, EOFError):
                 if declared_gzip:
-                    raise CloudError(f"{cf.key}: el gzip descargado no es válido")
+                    raise CloudError(_("{file}: el gzip descargado no es válido").format(file=cf.key))
         mtime = parse_ts(r.headers.get("x-object-meta-locallastmodified")) or parse_ts(cf.last_modified)
         return data, mtime
 

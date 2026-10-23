@@ -13,6 +13,7 @@ import httpx
 
 from .. import languages
 from ..api import GogApi
+from ..i18n import _
 from .common import (DEPS_META, DEPS_PRODUCT, DEPS_REPO, META_V2, REDIST_PREFIX, V1_LANGUAGES, Chunk,
                      ContentError, FileEntry, InstallPlan, fetch_json, galaxy_path, win_to_posix)
 
@@ -55,7 +56,8 @@ class BuildInfo:
             return language
         return "en-US" if "en-US" in self.languages else self.languages[0]
 
-    def default_language(self, preferred: str = "es-ES") -> str:
+    def default_language(self, preferred: str | None = None) -> str:
+        preferred = preferred or languages.preferred()
         for cand in (preferred, "en-US"):
             if cand in self.all_languages:
                 return cand
@@ -105,7 +107,7 @@ def latest_build(api: GogApi, game_id: str, platform: str = "windows") -> dict:
     builds = api.builds(game_id, platform, generation=2)
     builds = [b for b in builds if b.get("public", True) and not b.get("branch")] or builds
     if not builds:
-        raise ContentError(f"No hay builds de {platform} para el juego {game_id}")
+        raise ContentError(_("No hay builds de {platform} para el juego {id}").format(platform=platform, id=game_id))
     return builds[0]
 
 
@@ -159,7 +161,7 @@ def make_plan(info: BuildInfo, language: str, dlcs: list[str],
                        depot_language=info.depot_language(language))
     depots = info.selected_depots(language, dlcs)
     if not depots:
-        raise ContentError(f"No hay archivos para el idioma {language}")
+        raise ContentError(_("No hay archivos para el idioma {language}").format(language=language))
     files: dict[str, FileEntry] = {}
     if info.generation == 2:
         plan.client_id = info.meta.get("clientId")

@@ -90,7 +90,9 @@ cat > "$APPDIR/gogl.desktop" <<EOF
 Type=Application
 Name=Good Launcher
 GenericName=Lanzador de juegos de GOG
+GenericName[en]=GOG game launcher
 Comment=Tus juegos de GOG con las partidas sincronizadas
+Comment[en]=Your GOG games with synced saves
 Exec=gogl
 Icon=gogl
 Terminal=false

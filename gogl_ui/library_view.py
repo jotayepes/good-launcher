@@ -10,6 +10,7 @@ from PySide6.QtGui import QBrush, QColor, QFont, QLinearGradient, QPainter, QPai
 from PySide6.QtWidgets import (QButtonGroup, QHBoxLayout, QLabel, QLineEdit, QListView,
                                QPushButton, QStyle, QStyledItemDelegate, QVBoxLayout, QWidget)
 
+from gogl.i18n import _, n_
 from gogl.state import Game
 
 from . import navigation, theme
@@ -180,20 +181,21 @@ class CoverDelegate(QStyledItemDelegate):
         f.setPointSizeF(f.pointSizeF() * 0.85)
         p.setFont(f)
         p.setPen(QColor(theme.MUTED))
-        sub = "Instalado" if e.installed else " · ".join(x.capitalize() for x in e.platforms if x != "mac")
+        sub = _("Instalado") if e.installed else " · ".join(x.capitalize() for x in e.platforms if x != "mac")
         p.drawText(tr.translated(0, 18), Qt.AlignLeft | Qt.AlignVCenter, sub)
         p.restore()
 
     def _badges(self, p: QPainter, cover: QRectF, e: Entry):
         job = self.downloads.active(e.game_id) if self.downloads else None
         if job:
-            label, color = ("En cola" if job.status == "queued" else
-                            f"Descargando {job.progress.fraction * 100:.0f}%", theme.ACCENT)
+            label, color = (_("En cola") if job.status == "queued" else
+                            _("Descargando {pct}").format(pct=f"{job.progress.fraction * 100:.0f}%"),
+                            theme.ACCENT)
         elif not e.installed:
             return
         else:
-            label, color = {"pending": ("Sync pendiente", theme.WARN),
-                            "conflict": ("Conflicto", theme.DANGER)}.get(e.sync, ("Instalado", theme.OK))
+            label, color = {"pending": (_("Sync pendiente"), theme.WARN),
+                            "conflict": (_("Conflicto"), theme.DANGER)}.get(e.sync, (_("Instalado"), theme.OK))
         f = p.font()
         f.setBold(True)
         f.setPointSizeF(8)
@@ -225,7 +227,7 @@ class LibraryPage(QWidget):
         root.setSpacing(14)
 
         head = QHBoxLayout()
-        self.title = QLabel("Biblioteca")
+        self.title = QLabel(_("Biblioteca"))
         self.title.setStyleSheet("font-size: 20pt; font-weight: 800;")
         self.count = QLabel()
         self.count.setObjectName("Muted")
@@ -233,14 +235,14 @@ class LibraryPage(QWidget):
         head.addWidget(self.count, 0, Qt.AlignBottom)
         head.addStretch()
         self.search = QLineEdit()
-        self.search.setPlaceholderText("Buscar en tu biblioteca…")
+        self.search.setPlaceholderText(_("Buscar en tu biblioteca…"))
         self.search.setClearButtonEnabled(True)
         self.search.setFixedWidth(300)
         self.search.textChanged.connect(self._on_search)
         head.addWidget(self.search)
         refresh = QPushButton("⟳")
         refresh.setObjectName("Ghost")
-        refresh.setToolTip("Actualizar biblioteca desde GOG")
+        refresh.setToolTip(_("Actualizar biblioteca desde GOG"))
         refresh.clicked.connect(self.refresh_requested)
         head.addWidget(refresh)
         root.addLayout(head)
@@ -249,8 +251,8 @@ class LibraryPage(QWidget):
         chips.setSpacing(6)
         self.chip_group = QButtonGroup(self)
         self.chips: dict[str, QPushButton] = {}
-        for key, label in (("all", "Todos"), ("installed", "Instalados"), ("windows", "Windows"),
-                           ("linux", "Linux"), ("pending", "Sincronización pendiente")):
+        for key, label in (("all", _("Todos")), ("installed", _("Instalados")), ("windows", "Windows"),
+                           ("linux", "Linux"), ("pending", _("Sincronización pendiente"))):
             b = QPushButton(label)
             b.setObjectName("Chip")
             b.setCheckable(True)
@@ -312,15 +314,16 @@ class LibraryPage(QWidget):
         self.proxy.set_text(t)
         self._update_count()
 
-    def _update_count(self, *_):
+    def _update_count(self, *_args):
         n, total = self.proxy.rowCount(), self.model.rowCount()
-        self.count.setText(f"  {n} de {total} juegos" if n != total else f"  {total} juegos")
+        self.count.setText("  " + (n_("{n} de {total} juego", "{n} de {total} juegos", total) if n != total else
+                                   n_("{total} juego", "{total} juegos", total)).format(n=n, total=total))
         empty = n == 0
         self.view.setVisible(not empty)
         self.empty.setVisible(empty)
         if empty:
-            self.empty.setText("Aún no hay juegos. Pulsa ⟳ para cargar tu biblioteca de GOG."
-                               if total == 0 else "Ningún juego coincide con el filtro.")
+            self.empty.setText(_("Aún no hay juegos. Pulsa ⟳ para cargar tu biblioteca de GOG.")
+                               if total == 0 else _("Ningún juego coincide con el filtro."))
 
     def _activate(self, idx):
         self.open_game.emit(idx.data(LibraryModel.EntryRole))

@@ -1,0 +1,2781 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: gogl\n"
+"Language: en\n"
+"X-Language-Name: English\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: gogl/__init__.py
+msgid "Good Launcher — lanzador para GOG"
+msgstr "Good Launcher — a launcher for GOG"
+
+#: gogl/achievements.py
+msgid "logros: gameplay.gog.com respondió {code}"
+msgstr "achievements: gameplay.gog.com replied {code}"
+
+#: gogl/api.py
+msgid "El producto {id} no tiene builds v2 para {platform}"
+msgstr "Product {id} has no v2 builds for {platform}"
+
+#: gogl/api.py
+msgid "El manifiesto de {id} no trae clientId/clientSecret"
+msgstr "The manifest for {id} has no clientId/clientSecret"
+
+#: gogl/api.py
+msgid "remote-config de {id} → {code}"
+msgstr "remote-config for {id} → {code}"
+
+#: gogl/auth.py
+msgid "La URL no contiene ningún parámetro 'code'"
+msgstr "The URL has no 'code' parameter"
+
+#: gogl/auth.py
+msgid "No has iniciado sesión. Ejecuta: gogl login"
+msgstr "You are not logged in. Run: gogl login"
+
+#: gogl/auth.py
+msgid "auth.gog.com respondió {code}: {text}"
+msgstr "auth.gog.com replied {code}: {text}"
+
+#: gogl/auth.py
+msgid "Respuesta de token inesperada: {response}"
+msgstr "Unexpected token response: {response}"
+
+#: gogl/auth.py
+msgid "Falta el clientSecret del juego {id}"
+msgstr "Missing clientSecret for game {id}"
+
+#: gogl/cli.py
+msgid "Sesión cerrada"
+msgstr "Logged out"
+
+#: gogl/cli.py
+msgid "Eliminado del registro (no se ha borrado ningún archivo)"
+msgstr "Removed from the registry (no files were deleted)"
+
+#: gogl/cli.py
+msgid "Guardado"
+msgstr "Saved"
+
+#: gogl/cli.py
+msgid "Eliminado"
+msgstr "Removed"
+
+#: gogl/cli.py
+msgid "Desinstalado"
+msgstr "Uninstalled"
+
+#: gogl/cli.py
+msgid "Descarga completada"
+msgstr "Download complete"
+
+#: gogl/cli.py
+msgid "2. Al terminar acabarás en una página en blanco de embed.gog.com/on_login_success."
+msgstr "2. When you finish you will land on a blank page at embed.gog.com/on_login_success."
+
+#: gogl/cli.py
+msgid "PENDIENTE"
+msgstr "PENDING"
+
+#: gogl/cli.py
+msgid "existe"
+msgstr "exists"
+
+#: gogl/cli.py
+msgid "NO existe aún"
+msgstr "does NOT exist yet"
+
+#: gogl/cli.py
+msgid "nunca"
+msgstr "never"
+
+#: gogl/cli.py
+msgid "Indica un juego o --pending"
+msgstr "Give a game or --pending"
+
+#: gogl/cli.py
+msgid "No hay ninguna versión instalada. Usa: gogl proton install"
+msgstr "No version installed. Use: gogl proton install"
+
+#: gogl/cli.py
+msgid "Timer eliminado"
+msgstr "Timer removed"
+
+#: gogl/cli.py gogl_ui/session_window.py
+msgid "Preparando…"
+msgstr "Preparing…"
+
+#: gogl/cli.py
+msgid "Ya está actualizado"
+msgstr "Already up to date"
+
+#: gogl/cli.py
+msgid "Actualizado"
+msgstr "Updated"
+
+#: gogl/cli.py
+msgid "Todos los archivos están correctos"
+msgstr "All files are correct"
+
+#: gogl/cli.py
+msgid "Instaladores offline:"
+msgstr "Offline installers:"
+
+#: gogl/cli.py
+msgid "Sin instaladores offline"
+msgstr "No offline installers"
+
+#: gogl/cli.py
+msgid "Extras:"
+msgstr "Extras:"
+
+#: gogl/cli.py
+msgid "Sin extras"
+msgstr "No extras"
+
+#: gogl/cli.py
+msgid "No hay nada que coincida (mira `gogl offline list`)"
+msgstr "Nothing matches (see `gogl offline list`)"
+
+#: gogl/cli.py
+msgid "Este juego no tiene logros"
+msgstr "This game has no achievements"
+
+#: gogl/cli.py
+msgid "(oculto)"
+msgstr "(hidden)"
+
+#: gogl/cli.py
+msgid "Lanzador de GOG para Linux"
+msgstr "GOG launcher for Linux"
+
+#: gogl/cli.py
+msgid "iniciar sesión en GOG"
+msgstr "log in to GOG"
+
+#: gogl/cli.py
+msgid "código o URL de on_login_success"
+msgstr "code or on_login_success URL"
+
+#: gogl/cli.py
+msgid "registrar un juego ya instalado"
+msgstr "register an already installed game"
+
+#: gogl/cli.py
+msgid "carpeta de instalación (la que contiene goggame-*.info)"
+msgstr "install folder (the one containing goggame-*.info)"
+
+#: gogl/cli.py
+msgid "prefijo de Proton/Wine (compatdata o pfx)"
+msgstr "Proton/Wine prefix (compatdata or pfx)"
+
+#: gogl/cli.py
+msgid "quitar del registro"
+msgstr "remove from the registry"
+
+#: gogl/cli.py
+msgid "forzar la ruta local de una ubicación de partidas"
+msgstr "force the local path of a save location"
+
+#: gogl/cli.py
+msgid "nombre de la ubicación (ver `gogl saves`)"
+msgstr "location name (see `gogl saves`)"
+
+#: gogl/cli.py
+msgid "ruta; omitir para volver a la automática"
+msgstr "path; leave out to go back to the automatic one"
+
+#: gogl/cli.py
+msgid "mostrar dónde están las partidas de un juego"
+msgstr "show where a game's saves are"
+
+#: gogl/cli.py
+msgid "sincronizar partidas con la nube de GOG"
+msgstr "sync saves with the GOG cloud"
+
+#: gogl/cli.py
+msgid "sincronizar todos los juegos pendientes"
+msgstr "sync every pending game"
+
+#: gogl/cli.py
+msgid "mostrar qué se haría sin tocar nada"
+msgstr "show what would be done without touching anything"
+
+#: gogl/cli.py
+msgid "cómo resolver conflictos"
+msgstr "how to resolve conflicts"
+
+#: gogl/cli.py
+msgid "no esperar a que haya red"
+msgstr "don't wait for the network"
+
+#: gogl/cli.py
+msgid "descargar e instalar un juego de tu biblioteca"
+msgstr "download and install a game from your library"
+
+#: gogl/cli.py
+msgid "idioma, p. ej. es-ES (por defecto el del sistema si existe)"
+msgstr "language, e.g. en-US (defaults to the system language if available)"
+
+#: gogl/cli.py
+msgid "all, none o lista de ids separados por comas"
+msgstr "all, none or a comma-separated list of ids"
+
+#: gogl/cli.py
+msgid "carpeta de instalación (por defecto ~/Games/gogl/<juego>)"
+msgstr "install folder (defaults to ~/Games/gogl/<game>)"
+
+#: gogl/cli.py
+msgid "actualizar a la última versión (solo descarga lo cambiado)"
+msgstr "update to the latest version (only downloads what changed)"
+
+#: gogl/cli.py
+msgid "comprobar la integridad de los archivos"
+msgstr "check file integrity"
+
+#: gogl/cli.py
+msgid "volver a descargar lo dañado"
+msgstr "download damaged files again"
+
+#: gogl/cli.py
+msgid "desinstalar (las partidas en la nube no se tocan)"
+msgstr "uninstall (cloud saves are not touched)"
+
+#: gogl/cli.py
+msgid "borrar también el prefijo de Proton"
+msgstr "also delete the Proton prefix"
+
+#: gogl/cli.py
+msgid "qué hay para descargar"
+msgstr "what is available to download"
+
+#: gogl/cli.py
+msgid "descargar (por defecto, el instalador de Windows)"
+msgstr "download (by default, the Windows installer)"
+
+#: gogl/cli.py
+msgid "idioma del instalador, p. ej. es"
+msgstr "installer language, e.g. en"
+
+#: gogl/cli.py
+msgid "todos los extras en vez del instalador"
+msgstr "every extra instead of the installer"
+
+#: gogl/cli.py
+msgid "ids concretos separados por comas (ver `list`)"
+msgstr "specific comma-separated ids (see `list`)"
+
+#: gogl/cli.py
+msgid "logros del juego (conseguidos y pendientes)"
+msgstr "game achievements (unlocked and locked)"
+
+#: gogl/cli.py
+msgid "jugar: sincroniza, lanza el juego y vuelve a sincronizar"
+msgstr "play: syncs, launches the game and syncs again"
+
+#: gogl/cli.py
+msgid "sin ventana (preguntas por terminal)"
+msgstr "no window (questions in the terminal)"
+
+#: gogl/cli.py
+msgid "descargar e instalar (por defecto la última)"
+msgstr "download and install (the latest by default)"
+
+#: gogl/cli.py
+msgid "usarla por defecto"
+msgstr "make it the default"
+
+#: gogl/cli.py
+msgid "elegir la versión por defecto"
+msgstr "choose the default version"
+
+#: gogl/cli.py
+msgid "borrar una versión"
+msgstr "delete a version"
+
+#: gogl/cli.py
+msgid "añadir el juego a Steam como acceso directo"
+msgstr "add the game to Steam as a shortcut"
+
+#: gogl/cli.py
+msgid "aunque Steam esté abierto"
+msgstr "even if Steam is running"
+
+#: gogl/cli.py
+msgid "timer que reintenta las subidas pendientes cada 15 min"
+msgstr "timer that retries pending uploads every 15 min"
+
+#: gogl/cli.py
+msgid "1. Abre esta URL en el navegador e inicia sesión en GOG:"
+msgstr "1. Open this URL in your browser and log in to GOG:"
+
+#: gogl/cli.py
+msgid "Pega aquí la URL completa (o solo el valor de code=): "
+msgstr "Paste the full URL here (or just the code= value): "
+
+#: gogl/cli.py
+msgid "Sesión iniciada (user_id {id})"
+msgstr "Logged in (user_id {id})"
+
+#: gogl/cli.py
+msgid "Registrado {title} ({id}) · {platform} · clientId {client}"
+msgstr "Registered {title} ({id}) · {platform} · clientId {client}"
+
+#: gogl/cli.py
+msgid "No hay juegos pendientes"
+msgstr "No pending games"
+
+#: gogl/cli.py
+msgid "Hay conflictos: las partidas cambiaron aquí y en la nube desde el último sync."
+msgstr "There are conflicts: the saves changed here and in the cloud since the last sync."
+
+#: gogl/cli.py
+msgid "Repite con --prefer local o --prefer cloud (se hará copia de seguridad antes)."
+msgstr "Run again with --prefer local or --prefer cloud (a backup is made first)."
+
+#: gogl/cli.py
+msgid "{name} es ahora la versión por defecto"
+msgstr "{name} is now the default version"
+
+#: gogl/cli.py
+msgid "Actualizando {old} → {new}"
+msgstr "Updating {old} → {new}"
+
+#: gogl/cli.py
+msgid "{got} de {total} logros"
+msgstr "{got} of {total} achievements"
+
+#: gogl/cli.py gogl/session.py gogl/sync.py
+msgid "Juego {id} no registrado"
+msgstr "Game {id} is not registered"
+
+#: gogl/cli.py gogl_ui/dialogs.py
+msgid "borrado"
+msgstr "deleted"
+
+#: gogl/cli.py gogl/saves/engine.py gogl_ui/game_page.py
+msgid "aviso: {warning}"
+msgstr "warning: {warning}"
+
+#: gogl/cli.py
+msgid "({n} archivo(s) en la nube fuera de las ubicaciones conocidas, ignorados)"
+msgstr "({n} file(s) in the cloud outside the known locations, ignored)"
+
+#: gogl/cli.py gogl_ui/dialogs.py
+msgid "No se encuentra {name}"
+msgstr "{name} not found"
+
+#: gogl/cli.py
+msgid "Instalado en {path}"
+msgstr "Installed in {path}"
+
+#: gogl/cli.py
+msgid "Actualizado «{title}» en Steam (appid {appid}, usuario {user})"
+msgstr "Updated «{title}» in Steam (appid {appid}, user {user})"
+
+#: gogl/cli.py
+msgid "Añadido «{title}» en Steam (appid {appid}, usuario {user})"
+msgstr "Added «{title}» to Steam (appid {appid}, user {user})"
+
+#: gogl/cli.py
+msgid "Timer instalado en {path}"
+msgstr "Timer installed in {path}"
+
+#: gogl/cli.py gogl_ui/downloads.py
+msgid "Terminando…"
+msgstr "Finishing…"
+
+#: gogl/cli.py
+msgid "Instalado {title} en {path}"
+msgstr "Installed {title} in {path}"
+
+#: gogl/cli.py
+msgid "{n} archivo(s) reparados:"
+msgstr "{n} file(s) repaired:"
+
+#: gogl/cli.py
+msgid "{n} archivo(s) dañados o ausentes:"
+msgstr "{n} file(s) damaged or missing:"
+
+#: gogl/cli.py
+msgid "¿Desinstalar {title} y borrar {path}? [s/N] "
+msgstr "Uninstall {title} and delete {path}? [y/N] "
+
+#: gogl/cli.py gogl_ui/achievements_card.py gogl_ui/profile_page.py
+msgid "%d/%m/%Y"
+msgstr "%Y-%m-%d"
+
+#: gogl/cli.py
+msgid "cerrar sesión"
+msgstr "log out"
+
+#: gogl/cli.py
+msgid "juegos registrados"
+msgstr "registered games"
+
+#: gogl/cli.py
+msgid "listar juegos"
+msgstr "list games"
+
+#: gogl/cli.py
+msgid "extras e instaladores offline de tu cuenta"
+msgstr "extras and offline installers from your account"
+
+#: gogl/cli.py
+msgid "versiones de Proton-GE gestionadas por gogl"
+msgstr "Proton-GE versions managed by gogl"
+
+#: gogl/cli.py
+msgid "versiones instaladas"
+msgstr "installed versions"
+
+#: gogl/cli.py
+msgid "versiones publicadas"
+msgstr "published versions"
+
+#: gogl/cli.py
+msgid "integración con Steam"
+msgstr "Steam integration"
+
+#: gogl/cli.py
+msgid "(instalado)"
+msgstr "(installed)"
+
+#: gogl/cli.py
+msgid "Verificando {done}/{total} archivos"
+msgstr "Verifying {done}/{total} files"
+
+#: gogl/cli.py gogl/session.py gogl_ui/downloads.py
+msgid "Error: {error}"
+msgstr "Error: {error}"
+
+#: gogl/cli.py
+msgid "último sync correcto: {when}"
+msgstr "last successful sync: {when}"
+
+#: gogl/cli.py
+msgid "Descargando {name}: {pct}%"
+msgstr "Downloading {name}: {pct}%"
+
+#: gogl/cli.py gogl_ui/cloud_page.py gogl_ui/offline_card.py
+msgid "{n} archivo"
+msgid_plural "{n} archivos"
+msgstr[0] "{n} file"
+msgstr[1] "{n} files"
+
+#: gogl/cli.py
+msgid "PENDIENTE: {reason}"
+msgstr "PENDING: {reason}"
+
+#: gogl/cli.py
+msgid "ERROR {error}"
+msgstr "ERROR {error}"
+
+#: gogl/cli.py
+msgid "local: {local}   nube: {cloud}"
+msgstr "local: {local}   cloud: {cloud}"
+
+#: gogl/cli.py
+msgid "{done}/{total} archivos"
+msgstr "{done}/{total} files"
+
+#: gogl/content/__init__.py
+msgid "Este juego no se instaló con gogl"
+msgstr "This game was not installed with gogl"
+
+#: gogl/content/builds.py
+msgid "No hay builds de {platform} para el juego {id}"
+msgstr "No {platform} builds for game {id}"
+
+#: gogl/content/builds.py
+msgid "No hay archivos para el idioma {language}"
+msgstr "No files for language {language}"
+
+#: gogl/content/common.py
+msgid "Ruta sospechosa en el manifiesto: {path}"
+msgstr "Suspicious path in the manifest: {path}"
+
+#: gogl/content/common.py
+msgid "Enlace sospechoso en el manifiesto: {path} → {target}"
+msgstr "Suspicious link in the manifest: {path} → {target}"
+
+#: gogl/content/common.py
+msgid "GOG no devolvió enlaces de descarga para {id}"
+msgstr "GOG returned no download links for {id}"
+
+#: gogl/content/common.py
+msgid "Enlaces de dependencias → HTTP {code}"
+msgstr "Dependency links → HTTP {code}"
+
+#: gogl/content/installer.py
+msgid "Este juego no se instaló con gogl; no hay manifiesto para verificar"
+msgstr "This game was not installed with gogl; there is no manifest to verify"
+
+#: gogl/content/installer.py
+msgid "No se pudo descargar {file}: {error}"
+msgstr "Could not download {file}: {error}"
+
+#: gogl/content/installer.py
+msgid "No hay espacio suficiente: hacen falta {need} y hay {free} libres en {path}"
+msgstr "Not enough space: {need} needed and {free} free in {path}"
+
+#: gogl/content/installer.py
+msgid "MD5 comprimido incorrecto"
+msgstr "Wrong compressed MD5"
+
+#: gogl/content/installer.py
+msgid "trozo descomprimido incorrecto"
+msgstr "Wrong decompressed chunk"
+
+#: gogl/content/installer.py
+msgid "{file}: el MD5 del archivo descargado no coincide"
+msgstr "{file}: the MD5 of the downloaded file does not match"
+
+#: gogl/content/installer.py
+msgid "{file}: contenido incorrecto en el contenedor de archivos pequeños"
+msgstr "{file}: wrong content in the small files container"
+
+#: gogl/content/installer.py
+msgid "Me niego a borrar {path}: parece una carpeta del sistema"
+msgstr "Refusing to delete {path}: it looks like a system folder"
+
+#: gogl/content/installer.py
+msgid "el servidor no respeta el rango pedido"
+msgstr "the server does not honor the requested range"
+
+#: gogl/content/installer.py
+msgid "{got} bytes de {size}"
+msgstr "{got} bytes of {size}"
+
+#: gogl/content/linux.py
+msgid "Este juego no tiene versión nativa de Linux"
+msgstr "This game has no native Linux version"
+
+#: gogl/content/linux.py
+msgid "El instalador descargado está corrupto (MD5 distinto); vuelve a intentarlo"
+msgstr "The downloaded installer is corrupt (MD5 mismatch); try again"
+
+#: gogl/content/linux.py
+msgid "GOG no lista ningún archivo para este instalador"
+msgstr "GOG lists no files for this installer"
+
+#: gogl/content/linux.py
+msgid "Este instalador de Linux viene partido en varios archivos que no son .sh; gogl no sabe unirlos. Instala la versión de Windows."
+msgstr "This Linux installer is split into several files that are not .sh; gogl cannot join them. Install the Windows version."
+
+#: gogl/content/linux.py
+msgid "GOG no devolvió enlace de descarga"
+msgstr "GOG returned no download link"
+
+#: gogl/content/linux.py
+msgid "El instalador no contiene un zip válido"
+msgstr "The installer does not contain a valid zip"
+
+#: gogl/content/linux.py
+msgid "Ruta sospechosa en el instalador: {path}"
+msgstr "Suspicious path in the installer: {path}"
+
+#: gogl/content/linux.py
+msgid "No se pudo descargar el instalador: {error}"
+msgstr "Could not download the installer: {error}"
+
+#: gogl/content/offline.py
+msgid "Manual"
+msgstr "Manual"
+
+#: gogl/content/offline.py
+msgid "Arte"
+msgstr "Artwork"
+
+#: gogl/content/offline.py
+msgid "Fondos de pantalla"
+msgstr "Wallpapers"
+
+#: gogl/content/offline.py
+msgid "Banda sonora"
+msgstr "Soundtrack"
+
+#: gogl/content/offline.py
+msgid "Vídeo"
+msgstr "Video"
+
+#: gogl/content/offline.py
+msgid "Avatares"
+msgstr "Avatars"
+
+#: gogl/content/offline.py
+msgid "Guía"
+msgstr "Guide"
+
+#: gogl/content/offline.py gogl_ui/dialogs.py
+msgid "Contenido adicional"
+msgstr "Additional content"
+
+#: gogl/content/offline.py
+msgid "Libro"
+msgstr "Book"
+
+#: gogl/content/offline.py
+msgid "Imágenes"
+msgstr "Images"
+
+#: gogl/content/offline.py
+msgid "Mapas"
+msgstr "Maps"
+
+#: gogl/content/offline.py
+msgid "Otros"
+msgstr "Other"
+
+#: gogl/content/offline.py
+msgid "Ese archivo ya no está disponible en tu cuenta de GOG"
+msgstr "That file is no longer available in your GOG account"
+
+#: gogl/content/offline.py
+msgid "Extra"
+msgstr "Extra"
+
+#: gogl/content/offline.py
+msgid "GOG no ha dado el enlace de descarga"
+msgstr "GOG did not provide the download link"
+
+#: gogl/content/offline.py
+msgid "No hay espacio suficiente en {path}: hacen falta {need} y quedan {free}"
+msgstr "Not enough space in {path}: {need} needed and {free} left"
+
+#: gogl/content/offline.py
+msgid "{file}: los datos descargados no coinciden con los de GOG"
+msgstr "{file}: the downloaded data does not match GOG's"
+
+#: gogl/content/offline.py
+msgid "{file}: tamaño incorrecto tras la descarga"
+msgstr "{file}: wrong size after downloading"
+
+#: gogl/content/offline.py
+msgid "el servidor no permite reanudar la descarga"
+msgstr "the server does not allow resuming the download"
+
+#: gogl/content/offline.py gogl/saves/cloud.py
+msgid "error de red: {error}"
+msgstr "network error: {error}"
+
+#: gogl/content/offline.py
+msgid "GOG rechaza la descarga ({code})"
+msgstr "GOG refuses the download ({code})"
+
+#: gogl/games.py
+msgid "No hay ningún goggame-*.info en {path}"
+msgstr "There is no goggame-*.info in {path}"
+
+#: gogl/i18n.py
+msgid "%d/%m/%Y %H:%M"
+msgstr "%Y-%m-%d %H:%M"
+
+#: gogl/languages.py
+msgid "Inglés"
+msgstr "English"
+
+#: gogl/languages.py
+msgid "Español"
+msgstr "Spanish"
+
+#: gogl/languages.py
+msgid "Español (Latinoamérica)"
+msgstr "Spanish (Latin America)"
+
+#: gogl/languages.py
+msgid "Francés"
+msgstr "French"
+
+#: gogl/languages.py
+msgid "Alemán"
+msgstr "German"
+
+#: gogl/languages.py
+msgid "Italiano"
+msgstr "Italian"
+
+#: gogl/languages.py
+msgid "Portugués (Brasil)"
+msgstr "Portuguese (Brazil)"
+
+#: gogl/languages.py
+msgid "Portugués"
+msgstr "Portuguese"
+
+#: gogl/languages.py
+msgid "Ruso"
+msgstr "Russian"
+
+#: gogl/languages.py
+msgid "Polaco"
+msgstr "Polish"
+
+#: gogl/languages.py
+msgid "Chino simplificado"
+msgstr "Simplified Chinese"
+
+#: gogl/languages.py
+msgid "Chino tradicional"
+msgstr "Traditional Chinese"
+
+#: gogl/languages.py
+msgid "Japonés"
+msgstr "Japanese"
+
+#: gogl/languages.py
+msgid "Coreano"
+msgstr "Korean"
+
+#: gogl/languages.py
+msgid "Checo"
+msgstr "Czech"
+
+#: gogl/languages.py
+msgid "Húngaro"
+msgstr "Hungarian"
+
+#: gogl/languages.py
+msgid "Turco"
+msgstr "Turkish"
+
+#: gogl/languages.py
+msgid "Neerlandés"
+msgstr "Dutch"
+
+#: gogl/languages.py
+msgid "Ucraniano"
+msgstr "Ukrainian"
+
+#: gogl/languages.py
+msgid "Sueco"
+msgstr "Swedish"
+
+#: gogl/languages.py
+msgid "Danés"
+msgstr "Danish"
+
+#: gogl/languages.py
+msgid "Finés"
+msgstr "Finnish"
+
+#: gogl/languages.py
+msgid "Noruego"
+msgstr "Norwegian"
+
+#: gogl/languages.py
+msgid "Árabe"
+msgstr "Arabic"
+
+#: gogl/languages.py
+msgid "Tailandés"
+msgstr "Thai"
+
+#: gogl/languages.py
+msgid "Rumano"
+msgstr "Romanian"
+
+#: gogl/languages.py
+msgid "Griego"
+msgstr "Greek"
+
+#: gogl/library.py
+msgid "GOG devolvió una respuesta no válida (¿sesión caducada?)"
+msgstr "GOG returned an invalid response (session expired?)"
+
+#: gogl/locking.py
+msgid "El juego {id} está sincronizándose en otro proceso"
+msgstr "Game {id} is being synced by another process"
+
+#: gogl/net.py
+msgid "esperando conexión de red…"
+msgstr "waiting for a network connection…"
+
+#: gogl/profile.py
+msgid "enero"
+msgstr "January"
+
+#: gogl/profile.py
+msgid "febrero"
+msgstr "February"
+
+#: gogl/profile.py
+msgid "marzo"
+msgstr "March"
+
+#: gogl/profile.py
+msgid "abril"
+msgstr "April"
+
+#: gogl/profile.py
+msgid "mayo"
+msgstr "May"
+
+#: gogl/profile.py
+msgid "junio"
+msgstr "June"
+
+#: gogl/profile.py
+msgid "julio"
+msgstr "July"
+
+#: gogl/profile.py
+msgid "agosto"
+msgstr "August"
+
+#: gogl/profile.py
+msgid "septiembre"
+msgstr "September"
+
+#: gogl/profile.py
+msgid "octubre"
+msgstr "October"
+
+#: gogl/profile.py
+msgid "noviembre"
+msgstr "November"
+
+#: gogl/profile.py
+msgid "diciembre"
+msgstr "December"
+
+#: gogl/profile.py
+msgid "Gratis"
+msgstr "Free"
+
+#: gogl/profile.py
+msgid "{month} de {year}"
+msgstr "{month} {year}"
+
+#: gogl/runner/comet.py
+msgid "la descarga de Comet no coincide con la suma publicada"
+msgstr "the Comet download does not match the published checksum"
+
+#: gogl/runner/comet.py
+msgid "no se pudo descargar Comet ({code})"
+msgstr "could not download Comet ({code})"
+
+#: gogl/runner/game.py
+msgid "goggame-*.info no tiene ninguna tarea de juego"
+msgstr "goggame-*.info has no game task"
+
+#: gogl/runner/game.py
+msgid "No hay ninguna versión de Proton-GE instalada en {app}"
+msgstr "No Proton-GE version is installed in {app}"
+
+#: gogl/runner/game.py
+msgid "No se encuentra el ejecutable {exe}"
+msgstr "Executable {exe} not found"
+
+#: gogl/runner/game.py
+msgid "Variable de entorno no válida: «{line}» (formato CLAVE=valor)"
+msgstr "Invalid environment variable: «{line}» (format KEY=value)"
+
+#: gogl/runner/proton.py
+msgid "El SHA-512 del archivo descargado no coincide; descarga corrupta"
+msgstr "The SHA-512 of the downloaded file does not match; corrupt download"
+
+#: gogl/runner/proton.py
+msgid "El archivo no tiene la estructura esperada de Proton"
+msgstr "The file does not have the expected Proton layout"
+
+#: gogl/runner/proton.py
+msgid "{name} no está instalado"
+msgstr "{name} is not installed"
+
+#: gogl/runner/proton.py
+msgid "GitHub respondió {code}"
+msgstr "GitHub replied {code}"
+
+#: gogl/runner/proton.py
+msgid "{name} no publica su SHA-512: no se puede verificar la descarga"
+msgstr "{name} does not publish its SHA-512: the download cannot be verified"
+
+#: gogl/runner/proton.py
+msgid "Descarga fallida: HTTP {code}"
+msgstr "Download failed: HTTP {code}"
+
+#: gogl/runner/setup.py
+msgid "Preparando los logros (solo la primera vez)…"
+msgstr "Preparing achievements (first time only)…"
+
+#: gogl/runner/setup.py
+msgid "Script de instalación"
+msgstr "Install script"
+
+#: gogl/runner/setup.py
+msgid "Instalador de soporte de GOG"
+msgstr "GOG support installer"
+
+#: gogl/runner/setup.py
+msgid "Instalando {name}…"
+msgstr "Installing {name}…"
+
+#: gogl/saves/account.py
+msgid "La nube de GOG rechazó la sesión"
+msgstr "The GOG cloud rejected the session"
+
+#: gogl/saves/account.py
+msgid "Nube de GOG → HTTP {code}: {text}"
+msgstr "GOG cloud → HTTP {code}: {text}"
+
+#: gogl/saves/account.py
+msgid "Sin conexión con la nube de GOG: {error}"
+msgstr "No connection to the GOG cloud: {error}"
+
+#: gogl/saves/cloud.py
+msgid "Descarga corrupta de {file}: md5 {got} ≠ {expected}"
+msgstr "Corrupt download of {file}: md5 {got} ≠ {expected}"
+
+#: gogl/saves/cloud.py
+msgid "{file}: el gzip descargado no es válido"
+msgstr "{file}: the downloaded gzip is not valid"
+
+#: gogl/saves/engine.py
+msgid "existe en ambos lados sin historial"
+msgstr "exists on both sides with no history"
+
+#: gogl/saves/engine.py
+msgid "modificado en ambos lados"
+msgstr "changed on both sides"
+
+#: gogl/saves/engine.py
+msgid "solo en la nube"
+msgstr "only in the cloud"
+
+#: gogl/saves/engine.py
+msgid "borrado en ambos lados"
+msgstr "deleted on both sides"
+
+#: gogl/saves/engine.py
+msgid "mismo cambio en ambos lados"
+msgstr "same change on both sides"
+
+#: gogl/saves/engine.py
+msgid "solo local"
+msgstr "only local"
+
+#: gogl/saves/engine.py
+msgid "modificado en local"
+msgstr "changed locally"
+
+#: gogl/saves/engine.py
+msgid "borrado en local"
+msgstr "deleted locally"
+
+#: gogl/saves/engine.py
+msgid "modificado en la nube"
+msgstr "changed in the cloud"
+
+#: gogl/saves/engine.py
+msgid "borrado en la nube"
+msgstr "deleted in the cloud"
+
+#: gogl/saves/engine.py
+msgid "se mantiene local"
+msgstr "keeping local"
+
+#: gogl/saves/engine.py
+msgid "se mantiene nube"
+msgstr "keeping cloud"
+
+#: gogl/saves/engine.py
+msgid "{n} archivo(s) en conflicto"
+msgstr "{n} file(s) in conflict"
+
+#: gogl/saves/engine.py
+msgid "mismo contenido"
+msgstr "same content"
+
+#: gogl/saves/engine.py
+msgid "descargando {file}"
+msgstr "downloading {file}"
+
+#: gogl/saves/engine.py
+msgid "subiendo {file}"
+msgstr "uploading {file}"
+
+#: gogl/saves/engine.py
+msgid "verificado: la nube coincide con lo subido"
+msgstr "verified: the cloud matches what was uploaded"
+
+#: gogl/saves/engine.py
+msgid "La nube no confirmó estos cambios: {files}"
+msgstr "The cloud did not confirm these changes: {files}"
+
+#: gogl/saves/engine.py
+msgid "«{name}»: no hay archivos locales ({path}); no se borrará nada en la nube, se restaurará desde ella"
+msgstr "«{name}»: there are no local files ({path}); nothing will be deleted in the cloud, it will be restored from there"
+
+#: gogl/saves/engine.py
+msgid "mismo contenido (otra compresión)"
+msgstr "same content (different compression)"
+
+#: gogl/saves/engine.py
+msgid "borrando en la nube {file}"
+msgstr "deleting in the cloud {file}"
+
+#: gogl/saves/engine.py
+msgid "la nube aún no refleja {n} cambio(s); reintentando"
+msgstr "the cloud does not reflect {n} change(s) yet; retrying"
+
+#: gogl/saves/engine.py
+msgid "«{name}»: la nube está vacía; no se borrará nada local, se volverá a subir"
+msgstr "«{name}»: the cloud is empty; nothing local will be deleted, it will be uploaded again"
+
+#: gogl/saves/engine.py
+msgid "copia de seguridad: {path}"
+msgstr "backup: {path}"
+
+#: gogl/saves/engine.py
+msgid "Ruta sospechosa en la nube: {file}"
+msgstr "Suspicious path in the cloud: {file}"
+
+#: gogl/saves/engine.py
+msgid "{file} saldría de la carpeta de partidas"
+msgstr "{file} would end up outside the saves folder"
+
+#: gogl/saves/engine.py
+msgid "borrando local {file}"
+msgstr "deleting local {file}"
+
+#: gogl/saves/locations.py
+msgid "La ruta «{template}» no es absoluta tras resolver variables"
+msgstr "The path «{template}» is not absolute after resolving variables"
+
+#: gogl/saves/locations.py
+msgid "Variable desconocida {var} en «{template}»"
+msgstr "Unknown variable {var} in «{template}»"
+
+#: gogl/saves/locations.py
+msgid "{var} requiere un prefijo de Wine/Proton"
+msgstr "{var} needs a Wine/Proton prefix"
+
+#: gogl/selfcmd.py
+msgid "No se encuentra la AppImage de gogl. Ábrela una vez desde donde esté y todo volverá a funcionar."
+msgstr "The gogl AppImage cannot be found. Open it once from wherever it is and everything will work again."
+
+#: gogl/session.py
+msgid "Instalando componentes de Windows que necesita el juego (solo la primera vez)…"
+msgstr "Installing Windows components the game needs (first time only)…"
+
+#: gogl/session.py
+msgid "Esperando a que el juego se cierre del todo…"
+msgstr "Waiting for the game to close completely…"
+
+#: gogl/session.py
+msgid "el lanzador terminó sin subir las partidas; me encargo yo"
+msgstr "the launcher exited without uploading the saves; taking care of it"
+
+#: gogl/session.py
+msgid "¿Conservar (l)ocal, (n)ube o (s)altar?"
+msgstr "Keep local (l), cloud (n) or skip (s)?"
+
+#: gogl/session.py
+msgid "Sin conexión. ¿(r)eintentar, (c)ontinuar sin sincronizar o (s)alir?"
+msgstr "Offline. (r)etry, (c)ontinue without syncing or (s)top?"
+
+#: gogl/session.py
+msgid "¿(r)eintentar, (c)ontinuar o (s)alir?"
+msgstr "(r)etry, (c)ontinue or (s)top?"
+
+#: gogl/session.py
+msgid "Descargando partidas de la nube…"
+msgstr "Downloading saves from the cloud…"
+
+#: gogl/session.py
+msgid "Subiendo partidas a la nube…"
+msgstr "Uploading saves to the cloud…"
+
+#: gogl/session.py
+msgid "Preparando el prefijo de Proton (solo la primera vez)…"
+msgstr "Preparing the Proton prefix (first time only)…"
+
+#: gogl/session.py
+msgid "aviso: sin systemd-run; si Steam cierra el lanzador, la subida quedará pendiente"
+msgstr "warning: no systemd-run; if Steam closes the launcher, the upload will stay pending"
+
+#: gogl/session.py
+msgid "Jugando a {title}"
+msgstr "Playing {title}"
+
+#: gogl/session.py
+msgid "Guardando los logros…"
+msgstr "Saving achievements…"
+
+#: gogl/session.py
+msgid "Partidas subidas"
+msgstr "Saves uploaded"
+
+#: gogl/session.py
+msgid "Partidas pendientes de subir"
+msgstr "Saves waiting to be uploaded"
+
+#: gogl/session.py gogl_ui/dialogs.py
+msgid "Conflicto de partidas"
+msgstr "Save conflict"
+
+#: gogl/session.py
+msgid "aviso: no terminó: {steps} (detalles en el registro del juego)"
+msgstr "warning: did not finish: {steps} (details in the game log)"
+
+#: gogl/session.py
+msgid "Logro conseguido"
+msgstr "Achievement unlocked"
+
+#: gogl/session.py
+msgid "error: {error}"
+msgstr "error: {error}"
+
+#: gogl/session.py
+msgid "Logro conseguido: {name}"
+msgstr "Achievement unlocked: {name}"
+
+#: gogl/session.py
+msgid "conflicto sin resolver: queda pendiente"
+msgstr "conflict not resolved: left pending"
+
+#: gogl/session.py
+msgid "aviso: no se pudo comprobar la preparación del juego: {error}"
+msgstr "warning: could not check the game setup: {error}"
+
+#: gogl/session.py
+msgid "aviso: falló la preparación del juego: {error}"
+msgstr "warning: the game setup failed: {error}"
+
+#: gogl/session.py
+msgid "No se pudo arrancar el juego: {error}"
+msgstr "Could not start the game: {error}"
+
+#: gogl/session.py
+msgid "Has conseguido {n} logro: {names}"
+msgid_plural "Has conseguido {n} logros: {names}"
+msgstr[0] "You unlocked {n} achievement: {names}"
+msgstr[1] "You unlocked {n} achievements: {names}"
+
+#: gogl/session.py
+msgid "aviso: los logros no se registrarán en esta partida: {error}"
+msgstr "warning: achievements will not be recorded in this session: {error}"
+
+#: gogl/session.py
+msgid "aviso: no se pudo arrancar Comet: {error}"
+msgstr "warning: could not start Comet: {error}"
+
+#: gogl/session.py
+msgid "{title}: se subirán cuando haya conexión"
+msgstr "{title}: they will be uploaded when there is a connection"
+
+#: gogl/session.py
+msgid "{title}: ábrelo en {app} para elegir qué versión conservar"
+msgstr "{title}: open it in {app} to choose which version to keep"
+
+#: gogl/session.py
+msgid "{title}: se reintentará más tarde"
+msgstr "{title}: will retry later"
+
+#: gogl/session.py
+msgid "conflicto: {file}"
+msgstr "conflict: {file}"
+
+#: gogl/session.py
+msgid "aviso: no se pudo preparar el prefijo: {error}"
+msgstr "warning: could not prepare the prefix: {error}"
+
+#: gogl/steam.py
+msgid "Steam está abierto: ciérralo antes, o perderá el acceso directo al salir"
+msgstr "Steam is running: close it first, or it will lose the shortcut when it exits"
+
+#: gogl/steam.py
+msgid "No se ha encontrado ninguna instalación de Steam con usuario"
+msgstr "No Steam installation with a user was found"
+
+#: gogl/sync.py
+msgid "igualar"
+msgstr "match"
+
+#: gogl/sync.py
+msgid "subir"
+msgstr "upload"
+
+#: gogl/sync.py
+msgid "descargar"
+msgstr "download"
+
+#: gogl/sync.py
+msgid "borrar nube"
+msgstr "delete cloud"
+
+#: gogl/sync.py
+msgid "borrar local"
+msgstr "delete local"
+
+#: gogl/sync.py
+msgid "olvidar"
+msgstr "forget"
+
+#: gogl/sync.py
+msgid "conflicto"
+msgstr "conflict"
+
+#: gogl/sync.py
+msgid "ya estaba sincronizado"
+msgstr "already in sync"
+
+#: gogl/sync.py
+msgid "{n} subidos"
+msgstr "{n} uploaded"
+
+#: gogl/sync.py
+msgid "{n} descargados"
+msgstr "{n} downloaded"
+
+#: gogl/sync.py
+msgid "{n} borrados en la nube"
+msgstr "{n} deleted in the cloud"
+
+#: gogl/sync.py
+msgid "{n} borrados en local"
+msgstr "{n} deleted locally"
+
+#: gogl/sync.py
+msgid "(nada que hacer)"
+msgstr "(nothing to do)"
+
+#: gogl/sync.py
+msgid "No hay conexión con GOG; la sincronización queda pendiente"
+msgstr "No connection to GOG; the sync stays pending"
+
+#: gogl/sync.py
+msgid "partida sin subir"
+msgstr "save not uploaded"
+
+#: gogl/sync.py
+msgid "{title}: sin clientId, no admite partidas en la nube"
+msgstr "{title}: no clientId, cloud saves not supported"
+
+#: gogl/sync.py
+msgid "{title}: los juegos nativos de Linux no tienen partidas en la nube"
+msgstr "{title}: native Linux games have no cloud saves"
+
+#: gogl/sync.py
+msgid "{title}: no tiene prefijo de Proton asignado"
+msgstr "{title}: no Proton prefix assigned"
+
+#: gogl/sync.py
+msgid "{title}: GOG no tiene partidas en la nube para este juego"
+msgstr "{title}: GOG has no cloud saves for this game"
+
+#: gogl/sync.py
+msgid "sin conexión"
+msgstr "offline"
+
+#: gogl/sync.py
+msgid "aviso: no se pudo refrescar remote-config ({error}); uso la copia guardada"
+msgstr "warning: could not refresh remote-config ({error}); using the saved copy"
+
+#: gogl/sync.py
+msgid "ubicación «{name}»: {path}"
+msgstr "location «{name}»: {path}"
+
+#: gogl_ui/achievements_card.py
+msgid "Todavía no has conseguido ninguno."
+msgstr "You haven't unlocked any yet."
+
+#: gogl_ui/achievements_card.py
+msgid "¡Los tienes todos!"
+msgstr "You have them all!"
+
+#: gogl_ui/achievements_card.py
+msgid "Logro oculto"
+msgstr "Hidden achievement"
+
+#: gogl_ui/achievements_card.py
+msgid "Sigue jugando para descubrirlo."
+msgstr "Keep playing to discover it."
+
+#: gogl_ui/achievements_card.py
+msgid "Cargando logros…"
+msgstr "Loading achievements…"
+
+#: gogl_ui/achievements_card.py
+msgid "Este juego no tiene logros de GOG."
+msgstr "This game has no GOG achievements."
+
+#: gogl_ui/achievements_card.py
+msgid "{got} de {total}"
+msgstr "{got} of {total}"
+
+#: gogl_ui/achievements_card.py
+msgid "{pct} de jugadores"
+msgstr "{pct} of players"
+
+#: gogl_ui/achievements_card.py
+msgid "No se pudieron cargar los logros: {error}"
+msgstr "Could not load the achievements: {error}"
+
+#: gogl_ui/achievements_card.py
+msgid "Conseguidos ({n})"
+msgstr "Unlocked ({n})"
+
+#: gogl_ui/achievements_card.py
+msgid "Pendientes ({n})"
+msgstr "Locked ({n})"
+
+#: gogl_ui/achievements_card.py
+msgid "Mostrar ocultos ({n})"
+msgstr "Show hidden ({n})"
+
+#: gogl_ui/achievements_card.py gogl_ui/offline_card.py
+msgid "Ver todos ({n})"
+msgstr "See all ({n})"
+
+#: gogl_ui/app.py
+msgid "no se han podido actualizar las integraciones: {error}"
+msgstr "could not update the integrations: {error}"
+
+#: gogl_ui/cloud_page.py gogl_ui/game_page.py gogl_ui/main_window.py
+msgid "Partidas en la nube"
+msgstr "Cloud saves"
+
+#: gogl_ui/cloud_page.py
+msgid "Consultando la nube de GOG…"
+msgstr "Checking the GOG cloud…"
+
+#: gogl_ui/cloud_page.py
+msgid "Ver partidas"
+msgstr "View saves"
+
+#: gogl_ui/cloud_page.py
+msgid "Cargando partidas…"
+msgstr "Loading saves…"
+
+#: gogl_ui/cloud_page.py
+msgid "Borrar seleccionadas"
+msgstr "Delete selected"
+
+#: gogl_ui/cloud_page.py
+msgid "Seleccionar todo"
+msgstr "Select all"
+
+#: gogl_ui/cloud_page.py
+msgid "Limpieza de GOG…"
+msgstr "GOG cleanup…"
+
+#: gogl_ui/cloud_page.py
+msgid "Lo que GOG borraría por su cuenta: archivos que no reconoce como partidas y, si se supera la cuota, las partidas más antiguas"
+msgstr "What GOG would delete on its own: files it does not recognize as saves and, if the quota is exceeded, the oldest saves"
+
+#: gogl_ui/cloud_page.py
+msgid "Borrar todo…"
+msgstr "Delete all…"
+
+#: gogl_ui/cloud_page.py
+msgid "Archivos que GOG no reconoce como partidas"
+msgstr "Files GOG does not recognize as saves"
+
+#: gogl_ui/cloud_page.py gogl_ui/session_window.py
+msgid "Reintentar"
+msgstr "Retry"
+
+#: gogl_ui/cloud_page.py
+msgid "Este juego está en este equipo: lo que borres aquí también se quitará de tu equipo en la próxima sincronización (antes se guarda una copia de seguridad). Si borras todo, en cambio, se volverán a subir las partidas de este equipo."
+msgstr "This game is on this device: whatever you delete here will also be removed from this device on the next sync (a backup is made first). If you delete everything, however, this device's saves will be uploaded again."
+
+#: gogl_ui/cloud_page.py
+msgid "No hay partidas en la nube para este juego."
+msgstr "There are no cloud saves for this game."
+
+#: gogl_ui/cloud_page.py
+msgid "Borrar partidas en la nube"
+msgstr "Delete cloud saves"
+
+#: gogl_ui/cloud_page.py
+msgid "No se pudo borrar"
+msgstr "Could not delete"
+
+#: gogl_ui/cloud_page.py
+msgid "{used} de {quota}"
+msgstr "{used} of {quota}"
+
+#: gogl_ui/cloud_page.py
+msgid "Todas las partidas"
+msgstr "All saves"
+
+#: gogl_ui/cloud_page.py gogl_ui/dialogs.py
+msgid "En este equipo"
+msgstr "On this device"
+
+#: gogl_ui/cloud_page.py
+msgid "No reconocido"
+msgstr "Not recognized"
+
+#: gogl_ui/cloud_page.py
+msgid "{n} archivo borrado de la nube"
+msgid_plural "{n} archivos borrados de la nube"
+msgstr[0] "{n} file deleted from the cloud"
+msgstr[1] "{n} files deleted from the cloud"
+
+#: gogl_ui/cloud_page.py
+msgid "Limpieza de GOG"
+msgstr "GOG cleanup"
+
+#: gogl_ui/cloud_page.py
+msgid "GOG no propone borrar nada en este juego."
+msgstr "GOG does not suggest deleting anything for this game."
+
+#: gogl_ui/cloud_page.py
+msgid "Ojo: «no reconocido» solo significa que GOG no lo identifica como partida; algunos juegos sí lo necesitan. ¿Borrarlo?"
+msgstr "Note: «not recognized» only means GOG does not identify it as a save; some games do need it. Delete it?"
+
+#: gogl_ui/cloud_page.py
+msgid "Limpieza de GOG hecha"
+msgstr "GOG cleanup done"
+
+#: gogl_ui/cloud_page.py
+msgid "No se puede deshacer en la nube."
+msgstr "This cannot be undone in the cloud."
+
+#: gogl_ui/cloud_page.py
+msgid "{title}: nube vaciada"
+msgstr "{title}: cloud emptied"
+
+#: gogl_ui/cloud_page.py
+msgid "Este juego no tiene partidas en la nube"
+msgstr "This game has no cloud saves"
+
+#: gogl_ui/cloud_page.py
+msgid "Cuota casi llena"
+msgstr "Quota almost full"
+
+#: gogl_ui/cloud_page.py
+msgid "Cuota llena"
+msgstr "Quota full"
+
+#: gogl_ui/cloud_page.py
+msgid "No se pudo consultar la nube: {error}"
+msgstr "Could not check the cloud: {error}"
+
+#: gogl_ui/cloud_page.py
+msgid "Cada juego tiene su propia cuota{quota}: si se llena, GOG borra primero los archivos que no reconoce como partidas y luego las partidas más antiguas."
+msgstr "Each game has its own quota{quota}: when it fills up, GOG first deletes the files it does not recognize as saves and then the oldest saves."
+
+#: gogl_ui/cloud_page.py
+msgid "No se pudieron cargar las partidas: {error}"
+msgstr "Could not load the saves: {error}"
+
+#: gogl_ui/cloud_page.py
+msgid "Archivos no reconocidos"
+msgstr "Unrecognized files"
+
+#: gogl_ui/cloud_page.py
+msgid "…y {n} más"
+msgstr "…and {n} more"
+
+#: gogl_ui/cloud_page.py
+msgid "{n} juego usa {size} en la nube de GOG."
+msgid_plural "{n} juegos usan {size} en la nube de GOG."
+msgstr[0] "{n} game uses {size} in the GOG cloud."
+msgstr[1] "{n} games use {size} in the GOG cloud."
+
+#: gogl_ui/cloud_page.py
+msgid "{n} cerca del límite."
+msgid_plural "{n} cerca del límite."
+msgstr[0] "{n} close to the limit."
+msgstr[1] "{n} close to the limit."
+
+#: gogl_ui/cloud_page.py
+msgid "GOG borraría esto:"
+msgstr "GOG would delete this:"
+
+#: gogl_ui/cloud_page.py
+msgid "¿Borrar TODAS las partidas de «{title}» de la nube ({files} archivos, {size})?"
+msgstr "Delete ALL saves of «{title}» from the cloud ({files} files, {size})?"
+
+#: gogl_ui/cloud_page.py
+msgid "¿Borrar {n} partida ({files} archivos, {size}) de la nube de «{title}»?"
+msgid_plural "¿Borrar {n} partidas ({files} archivos, {size}) de la nube de «{title}»?"
+msgstr[0] "Delete {n} save ({files} files, {size}) from the cloud of «{title}»?"
+msgstr[1] "Delete {n} saves ({files} files, {size}) from the cloud of «{title}»?"
+
+#: gogl_ui/desktop.py
+msgid "Lanzador de juegos de GOG"
+msgstr "GOG game launcher"
+
+#: gogl_ui/desktop.py
+msgid "Tus juegos de GOG con las partidas sincronizadas"
+msgstr "Your GOG games with synced saves"
+
+#: gogl_ui/dialogs.py
+msgid "Iniciar sesión en GOG"
+msgstr "Log in to GOG"
+
+#: gogl_ui/dialogs.py
+msgid "Inicia sesión en el navegador (incluido el código de verificación en dos pasos si lo tienes activado). Al terminar llegarás a una página en blanco de embed.gog.com/on_login_success: copia su URL completa y pégala aquí."
+msgstr "Log in in your browser (including the two-step verification code if you have it enabled). When you finish you will land on a blank page at embed.gog.com/on_login_success: copy its full URL and paste it here."
+
+#: gogl_ui/dialogs.py
+msgid "Pega aquí la URL final o el código"
+msgstr "Paste the final URL or the code here"
+
+#: gogl_ui/dialogs.py
+msgid "Continuar"
+msgstr "Continue"
+
+#: gogl_ui/dialogs.py
+msgid "Examinar…"
+msgstr "Browse…"
+
+#: gogl_ui/dialogs.py
+msgid "Vincular instalación existente"
+msgstr "Link existing installation"
+
+#: gogl_ui/dialogs.py
+msgid "Indica la carpeta donde ya está instalado el juego (la que contiene <code>goggame-*.info</code>). No se mueve ni se modifica nada."
+msgstr "Choose the folder where the game is already installed (the one containing <code>goggame-*.info</code>). Nothing is moved or changed."
+
+#: gogl_ui/dialogs.py
+msgid "/home/…/Games/MiJuego"
+msgstr "/home/…/Games/MyGame"
+
+#: gogl_ui/dialogs.py
+msgid "Carpeta del juego"
+msgstr "Game folder"
+
+#: gogl_ui/dialogs.py
+msgid "…/compatdata/<id>  o  …/Prefixes/MiJuego"
+msgstr "…/compatdata/<id>  or  …/Prefixes/MyGame"
+
+#: gogl_ui/dialogs.py
+msgid "Prefijo de Proton/Wine"
+msgstr "Proton/Wine prefix"
+
+#: gogl_ui/dialogs.py gogl_ui/downloads.py
+msgid "Cancelar"
+msgstr "Cancel"
+
+#: gogl_ui/dialogs.py
+msgid "Vincular"
+msgstr "Link"
+
+#: gogl_ui/dialogs.py
+msgid "Las partidas han cambiado en este equipo y en la nube"
+msgstr "The saves changed on this device and in the cloud"
+
+#: gogl_ui/dialogs.py
+msgid "Decidir más tarde"
+msgstr "Decide later"
+
+#: gogl_ui/dialogs.py
+msgid "Conservar la de este equipo"
+msgstr "Keep this device's"
+
+#: gogl_ui/dialogs.py
+msgid "Conservar la de la nube"
+msgstr "Keep the cloud's"
+
+#: gogl_ui/dialogs.py
+msgid "Descargar Proton-GE"
+msgstr "Download Proton-GE"
+
+#: gogl_ui/dialogs.py
+msgid "Buscando la última versión de Proton-GE…"
+msgstr "Looking for the latest Proton-GE version…"
+
+#: gogl_ui/dialogs.py
+msgid "Cerrar"
+msgstr "Close"
+
+#: gogl_ui/dialogs.py
+msgid "Windows con Proton-GE  ·  partidas en la nube de GOG"
+msgstr "Windows with Proton-GE  ·  GOG cloud saves"
+
+#: gogl_ui/dialogs.py
+msgid "Linux nativo  ·  sin partidas en la nube (GOG no las ofrece)"
+msgstr "Native Linux  ·  no cloud saves (GOG doesn't offer them)"
+
+#: gogl_ui/dialogs.py gogl_ui/main_window.py
+msgid "Carpeta de instalación"
+msgstr "Install folder"
+
+#: gogl_ui/dialogs.py
+msgid "Consultando a GOG…"
+msgstr "Asking GOG…"
+
+#: gogl_ui/dialogs.py gogl_ui/game_page.py
+msgid "Instalar"
+msgstr "Install"
+
+#: gogl_ui/dialogs.py
+msgid "Argumentos"
+msgstr "Arguments"
+
+#: gogl_ui/dialogs.py
+msgid "Se añaden a los que GOG ya pasa al juego."
+msgstr "Added to the ones GOG already passes to the game."
+
+#: gogl_ui/dialogs.py
+msgid "Variables de entorno"
+msgstr "Environment variables"
+
+#: gogl_ui/dialogs.py
+msgid "Comando previo"
+msgstr "Wrapper command"
+
+#: gogl_ui/dialogs.py
+msgid "Programa que envuelve al juego, p. ej. MangoHud o GameMode (tienen que estar instalados en el sistema)."
+msgstr "Program that wraps the game, e.g. MangoHud or GameMode (they must be installed on the system)."
+
+#: gogl_ui/dialogs.py
+msgid "Guardar"
+msgstr "Save"
+
+#: gogl_ui/dialogs.py
+msgid "¿Problemas? Iniciar sesión en tu navegador"
+msgstr "Trouble? Log in with your browser"
+
+#: gogl_ui/dialogs.py
+msgid "Selecciona una carpeta de instalación válida"
+msgstr "Choose a valid install folder"
+
+#: gogl_ui/dialogs.py
+msgid "Archivo"
+msgstr "File"
+
+#: gogl_ui/dialogs.py gogl_ui/game_page.py
+msgid "En la nube"
+msgstr "In the cloud"
+
+#: gogl_ui/dialogs.py
+msgid "Se descargará el instalador oficial de Linux de GOG."
+msgstr "GOG's official Linux installer will be downloaded."
+
+#: gogl_ui/dialogs.py
+msgid "no hay espacio suficiente"
+msgstr "not enough space"
+
+#: gogl_ui/dialogs.py
+msgid "Opciones de lanzamiento"
+msgstr "Launch options"
+
+#: gogl_ui/dialogs.py
+msgid "Una por línea, CLAVE=valor."
+msgstr "One per line, KEY=value."
+
+#: gogl_ui/dialogs.py
+msgid "{title} se ha jugado en otro equipo desde la última sincronización y también aquí. Elige qué versión conservar. Antes de sobrescribir nada se guarda una copia de seguridad de tus partidas locales."
+msgstr "{title} was played on another device since the last sync and also here. Choose which version to keep. A backup of your local saves is made before anything is overwritten."
+
+#: gogl_ui/dialogs.py
+msgid "Se guarda en la carpeta de datos de {app}; no se toca la instalación de Steam."
+msgstr "It is saved in the {app} data folder; the Steam installation is not touched."
+
+#: gogl_ui/dialogs.py
+msgid "No se pudo descargar: {error}"
+msgstr "Could not download: {error}"
+
+#: gogl_ui/dialogs.py
+msgid "Instalar {title}"
+msgstr "Install {title}"
+
+#: gogl_ui/dialogs.py
+msgid "No se pudo consultar el juego en GOG: {error}"
+msgstr "Could not look up the game on GOG: {error}"
+
+#: gogl_ui/dialogs.py
+msgid "Hay comillas sin cerrar en los argumentos o en el comando previo"
+msgstr "There are unclosed quotes in the arguments or in the wrapper command"
+
+#: gogl_ui/dialogs.py
+msgid "Descargando {name} ({size})…"
+msgstr "Downloading {name} ({size})…"
+
+#: gogl_ui/dialogs.py
+msgid "Verificando y descomprimiendo…"
+msgstr "Verifying and extracting…"
+
+#: gogl_ui/dialogs.py gogl_ui/game_page.py gogl_ui/main_window.py
+msgid "Idioma"
+msgstr "Language"
+
+#: gogl_ui/dialogs.py
+msgid "Este juego trae todos sus idiomas en el mismo paquete: {app} hará que Windows (Wine) le indique el idioma elegido ({language}) al arrancar. Si sale en otro idioma, cámbialo en sus opciones."
+msgstr "This game ships all its languages in the same package: {app} will make Windows (Wine) report the chosen language ({language}) when it starts. If it shows up in another language, change it in the game's options."
+
+#: gogl_ui/dialogs.py
+msgid "Útiles con Proton: PROTON_USE_WINED3D=1 (sin Vulkan), PROTON_NO_ESYNC=1, DXVK_HUD=fps."
+msgstr "Useful with Proton: PROTON_USE_WINED3D=1 (no Vulkan), PROTON_NO_ESYNC=1, DXVK_HUD=fps."
+
+#: gogl_ui/dialogs.py
+msgid "Prefijo de Proton/Wine existente (opcional: vacío = prefijo nuevo de {app})"
+msgstr "Existing Proton/Wine prefix (optional: empty = new {app} prefix)"
+
+#: gogl_ui/dialogs.py
+msgid "{size} (comprimido)"
+msgstr "{size} (compressed)"
+
+#: gogl_ui/dialogs.py
+msgid "Versión"
+msgstr "Version"
+
+#: gogl_ui/dialogs.py
+msgid "versión {version}"
+msgstr "version {version}"
+
+#: gogl_ui/dialogs.py
+msgid "Descarga: {download}  ·  En disco: {disk}  ·  Libre: {free}"
+msgstr "Download: {download}  ·  On disk: {disk}  ·  Free: {free}"
+
+#: gogl_ui/downloads.py gogl_ui/game_page.py
+msgid "Instalación"
+msgstr "Installation"
+
+#: gogl_ui/downloads.py
+msgid "Actualización"
+msgstr "Update"
+
+#: gogl_ui/downloads.py
+msgid "Reparación"
+msgstr "Repair"
+
+#: gogl_ui/downloads.py
+msgid "Descarga"
+msgstr "Download"
+
+#: gogl_ui/downloads.py
+msgid "menos de 1 s"
+msgstr "less than 1 s"
+
+#: gogl_ui/downloads.py gogl_ui/library_view.py gogl_ui/offline_card.py
+msgid "En cola"
+msgstr "Queued"
+
+#: gogl_ui/downloads.py
+msgid "Cancelada · puedes reanudarla: lo descargado no se pierde"
+msgstr "Cancelled · you can resume it: what was downloaded is kept"
+
+#: gogl_ui/downloads.py
+msgid "Preparando: leyendo la lista de archivos de GOG…"
+msgstr "Preparing: reading GOG's file list…"
+
+#: gogl_ui/downloads.py gogl_ui/main_window.py
+msgid "Descargas"
+msgstr "Downloads"
+
+#: gogl_ui/downloads.py
+msgid "Limpiar terminadas"
+msgstr "Clear finished"
+
+#: gogl_ui/downloads.py
+msgid "{label}: completada"
+msgstr "{label}: done"
+
+#: gogl_ui/downloads.py
+msgid "Verificando archivos · {done}/{total}"
+msgstr "Verifying files · {done}/{total}"
+
+#: gogl_ui/downloads.py
+msgid "{done} de {total}"
+msgstr "{done} of {total}"
+
+#: gogl_ui/downloads.py
+msgid "No hay descargas. Instala un juego desde su ficha en la biblioteca."
+msgstr "No downloads. Install a game from its page in the library."
+
+#: gogl_ui/downloads.py
+msgid "quedan {time}"
+msgstr "{time} left"
+
+#: gogl_ui/downloads.py
+msgid "Reanudar"
+msgstr "Resume"
+
+#: gogl_ui/downloads.py
+msgid "{label}: cancelada"
+msgstr "{label}: cancelled"
+
+#: gogl_ui/game_page.py
+msgid "Acerca del juego"
+msgstr "About the game"
+
+#: gogl_ui/game_page.py gogl_ui/main_window.py
+msgid "Logros"
+msgstr "Achievements"
+
+#: gogl_ui/game_page.py gogl_ui/main_window.py
+msgid "Extras e instaladores"
+msgstr "Extras and installers"
+
+#: gogl_ui/game_page.py
+msgid "La versión de Linux de los juegos de GOG no registra logros."
+msgstr "The Linux version of GOG games does not record achievements."
+
+#: gogl_ui/game_page.py
+msgid "Este juego no trae el kit de Galaxy, así que no puede registrar logros nuevos fuera de GOG Galaxy."
+msgstr "This game does not include the Galaxy SDK, so it cannot record new achievements outside GOG Galaxy."
+
+#: gogl_ui/game_page.py
+msgid "Registrar logros mientras juegas está desactivado para este juego."
+msgstr "Recording achievements while playing is turned off for this game."
+
+#: gogl_ui/game_page.py
+msgid "Ver en GOG.com"
+msgstr "View on GOG.com"
+
+#: gogl_ui/game_page.py
+msgid "Carpeta"
+msgstr "Folder"
+
+#: gogl_ui/game_page.py
+msgid "Opciones de lanzamiento…"
+msgstr "Launch options…"
+
+#: gogl_ui/game_page.py
+msgid "Argumentos, variables de entorno y comando previo (MangoHud, GameMode…)"
+msgstr "Arguments, environment variables and wrapper command (MangoHud, GameMode…)"
+
+#: gogl_ui/game_page.py gogl_ui/main_window.py
+msgid "Desvincular"
+msgstr "Unlink"
+
+#: gogl_ui/game_page.py
+msgid "Quita el juego del lanzador sin borrar ningún archivo"
+msgstr "Removes the game from the launcher without deleting any file"
+
+#: gogl_ui/game_page.py gogl_ui/main_window.py gogl_ui/offline_card.py
+msgid "Abrir"
+msgstr "Open"
+
+#: gogl_ui/game_page.py
+msgid "Preparación de Windows"
+msgstr "Windows setup"
+
+#: gogl_ui/game_page.py
+msgid "En la próxima partida se volverán a instalar los componentes que pide el juego (Visual C++, DirectX…) y a ejecutar sus scripts de instalación de GOG."
+msgstr "On the next launch the components the game asks for (Visual C++, DirectX…) will be installed again and its GOG install scripts will run again."
+
+#: gogl_ui/game_page.py
+msgid "Buscando ubicaciones de partidas…"
+msgstr "Looking for save locations…"
+
+#: gogl_ui/game_page.py
+msgid "Sincronizar ahora"
+msgstr "Sync now"
+
+#: gogl_ui/game_page.py
+msgid "Ver cambios"
+msgstr "Preview changes"
+
+#: gogl_ui/game_page.py
+msgid "Muestra qué se subiría o descargaría sin tocar nada"
+msgstr "Shows what would be uploaded or downloaded without touching anything"
+
+#: gogl_ui/game_page.py
+msgid "Ver y borrar las partidas guardadas en la nube de GOG y su espacio usado"
+msgstr "View and delete the saves stored in the GOG cloud and the space they use"
+
+#: gogl_ui/game_page.py
+msgid "Copias"
+msgstr "Backups"
+
+#: gogl_ui/game_page.py
+msgid "Abrir la carpeta de copias de seguridad de este juego"
+msgstr "Open this game's backups folder"
+
+#: gogl_ui/game_page.py gogl_ui/library_view.py gogl_ui/main_window.py
+msgid "Biblioteca"
+msgstr "Library"
+
+#: gogl_ui/game_page.py
+msgid "Se registran mientras juegas desde {app}, con aviso al conseguirlos."
+msgstr "They are recorded while you play from {app}, with a notification when you unlock them."
+
+#: gogl_ui/game_page.py
+msgid "Sin descripción."
+msgstr "No description."
+
+#: gogl_ui/game_page.py
+msgid "Añadir a Steam"
+msgstr "Add to Steam"
+
+#: gogl_ui/game_page.py
+msgid "Crea un acceso directo en Steam (con carátulas) para jugar desde el modo juego con sincronización de partidas"
+msgstr "Creates a Steam shortcut (with artwork) to play from Game Mode with save syncing"
+
+#: gogl_ui/game_page.py
+msgid "Ver registro de la última partida"
+msgstr "View the log of the last session"
+
+#: gogl_ui/game_page.py
+msgid "Vincular instalación existente…"
+msgstr "Link existing installation…"
+
+#: gogl_ui/game_page.py
+msgid "No instalado."
+msgstr "Not installed."
+
+#: gogl_ui/game_page.py
+msgid "Prefijo"
+msgstr "Prefix"
+
+#: gogl_ui/game_page.py
+msgid "El del sistema"
+msgstr "System language"
+
+#: gogl_ui/game_page.py
+msgid "Registro"
+msgstr "Log"
+
+#: gogl_ui/game_page.py gogl_ui/main_window.py
+msgid "No se pudo añadir a Steam"
+msgstr "Could not add to Steam"
+
+#: gogl_ui/game_page.py
+msgid "«{title}» se ha actualizado en tu biblioteca de Steam, con sus carátulas."
+msgstr "«{title}» has been updated in your Steam library, with its artwork."
+
+#: gogl_ui/game_page.py
+msgid "«{title}» ya está en tu biblioteca de Steam, con sus carátulas."
+msgstr "«{title}» is now in your Steam library, with its artwork."
+
+#: gogl_ui/game_page.py gogl_ui/main_window.py
+msgid "Añadido a Steam"
+msgstr "Added to Steam"
+
+#: gogl_ui/game_page.py
+msgid "Vincula la instalación para gestionar sus partidas guardadas."
+msgstr "Link the installation to manage its saves."
+
+#: gogl_ui/game_page.py
+msgid "GOG no ofrece partidas en la nube para juegos nativos de Linux."
+msgstr "GOG does not offer cloud saves for native Linux games."
+
+#: gogl_ui/game_page.py
+msgid "Juego nativo de Linux: GOG no ofrece partidas en la nube para esta versión. Si las necesitas, usa la versión de Windows con Proton."
+msgstr "Native Linux game: GOG does not offer cloud saves for this version. If you need them, use the Windows version with Proton."
+
+#: gogl_ui/game_page.py
+msgid "Cambiar"
+msgstr "Change"
+
+#: gogl_ui/game_page.py gogl_ui/main_window.py
+msgid "Sincronizando…"
+msgstr "Syncing…"
+
+#: gogl_ui/game_page.py
+msgid "Analizando…"
+msgstr "Analyzing…"
+
+#: gogl_ui/game_page.py
+msgid "En ejecución…"
+msgstr "Running…"
+
+#: gogl_ui/game_page.py gogl_ui/main_window.py
+msgid "Gestionar"
+msgstr "Manage"
+
+#: gogl_ui/game_page.py
+msgid "Buscar actualizaciones"
+msgstr "Check for updates"
+
+#: gogl_ui/game_page.py
+msgid "Verificar y reparar archivos"
+msgstr "Verify and repair files"
+
+#: gogl_ui/game_page.py
+msgid "Repetir la preparación de Windows"
+msgstr "Redo the Windows setup"
+
+#: gogl_ui/game_page.py
+msgid "Desinstalar…"
+msgstr "Uninstall…"
+
+#: gogl_ui/game_page.py
+msgid "Predeterminado (ninguno instalado)"
+msgstr "Default (none installed)"
+
+#: gogl_ui/game_page.py
+msgid "Idioma que {app} indica al juego al arrancar (vía Wine/Proton). Si el juego tiene paquetes de idioma propios, se ofrece descargarlos."
+msgstr "Language {app} reports to the game when it starts (through Wine/Proton). If the game has its own language packs, you will be offered to download them."
+
+#: gogl_ui/game_page.py
+msgid "Personalizado"
+msgstr "Custom"
+
+#: gogl_ui/game_page.py
+msgid "Actualizaciones"
+msgstr "Updates"
+
+#: gogl_ui/game_page.py
+msgid "Tienes la última versión."
+msgstr "You have the latest version."
+
+#: gogl_ui/game_page.py
+msgid "Archivos de idioma"
+msgstr "Language files"
+
+#: gogl_ui/game_page.py
+msgid "Falta Proton-GE"
+msgstr "Proton-GE missing"
+
+#: gogl_ui/game_page.py
+msgid "Último sync correcto: {when}"
+msgstr "Last successful sync: {when}"
+
+#: gogl_ui/game_page.py
+msgid "Carpeta para «{name}»"
+msgstr "Folder for «{name}»"
+
+#: gogl_ui/game_page.py
+msgid "Jugar"
+msgstr "Play"
+
+#: gogl_ui/game_page.py
+msgid "No registrar logros en este juego"
+msgstr "Don't record achievements in this game"
+
+#: gogl_ui/game_page.py
+msgid "Registrar logros en este juego"
+msgstr "Record achievements in this game"
+
+#: gogl_ui/game_page.py
+msgid "En cola…"
+msgstr "Queued…"
+
+#: gogl_ui/game_page.py
+msgid "Este juego todavía no se ha lanzado desde {app}."
+msgstr "This game has not been launched from {app} yet."
+
+#: gogl_ui/game_page.py gogl_ui/main_window.py
+msgid "Steam está abierto"
+msgstr "Steam is running"
+
+#: gogl_ui/game_page.py
+msgid ""
+"Steam reescribe sus accesos directos al cerrarse, así que hay que cerrarlo antes de añadir el juego.\n"
+"\n"
+"¿Cerrar Steam ahora y continuar?"
+msgstr ""
+"Steam rewrites its shortcuts when it closes, so it has to be closed before adding the game.\n"
+"\n"
+"Close Steam now and continue?"
+
+#: gogl_ui/game_page.py gogl_ui/library_view.py
+msgid "Conflicto"
+msgstr "Conflict"
+
+#: gogl_ui/game_page.py
+msgid "Pendiente"
+msgstr "Pending"
+
+#: gogl_ui/game_page.py
+msgid "Sincronizado"
+msgstr "Synced"
+
+#: gogl_ui/game_page.py
+msgid "Nunca sincronizado"
+msgstr "Never synced"
+
+#: gogl_ui/game_page.py
+msgid "aún no existe"
+msgstr "does not exist yet"
+
+#: gogl_ui/game_page.py
+msgid "Actualizar"
+msgstr "Update"
+
+#: gogl_ui/game_page.py
+msgid "Predeterminado ({name})"
+msgstr "Default ({name})"
+
+#: gogl_ui/game_page.py
+msgid "{language} tiene archivos propios (voces o textos) que no están instalados. ¿Descargarlos ahora? (unos {size}; solo se baja lo que cambia)"
+msgstr "{language} has its own files (voices or text) that are not installed. Download them now? (about {size}; only what changes is downloaded)"
+
+#: gogl_ui/game_page.py
+msgid ""
+"Para jugar a juegos de Windows hace falta Proton-GE.\n"
+"\n"
+"¿Descargar ahora la última versión (unos 550 MB) a la carpeta de {app}?"
+msgstr ""
+"Playing Windows games requires Proton-GE.\n"
+"\n"
+"Download the latest version now (about 550 MB) to the {app} folder?"
+
+#: gogl_ui/game_page.py
+msgid "No hace falta forzar ninguna herramienta de compatibilidad: {app} usa su propio Proton-GE y sincroniza las partidas antes y después de jugar."
+msgstr "No need to force any compatibility tool: {app} uses its own Proton-GE and syncs the saves before and after playing."
+
+#: gogl_ui/game_page.py
+msgid "Actualizando {pct}"
+msgstr "Updating {pct}"
+
+#: gogl_ui/game_page.py
+msgid "Reparando {pct}"
+msgstr "Repairing {pct}"
+
+#: gogl_ui/game_page.py
+msgid "Versión instalada: {version}. Solo se descarga lo que ha cambiado."
+msgstr "Installed version: {version}. Only what changed is downloaded."
+
+#: gogl_ui/game_page.py
+msgid "Instalando {pct}"
+msgstr "Installing {pct}"
+
+#: gogl_ui/game_page.py
+msgid "Cambios que se aplicarían:"
+msgstr "Changes that would be applied:"
+
+#: gogl_ui/game_page.py
+msgid "Actualizar a {version}"
+msgstr "Update to {version}"
+
+#: gogl_ui/library_view.py
+msgid "Instalado"
+msgstr "Installed"
+
+#: gogl_ui/library_view.py
+msgid "Buscar en tu biblioteca…"
+msgstr "Search your library…"
+
+#: gogl_ui/library_view.py
+msgid "Actualizar biblioteca desde GOG"
+msgstr "Refresh the library from GOG"
+
+#: gogl_ui/library_view.py
+msgid "Todos"
+msgstr "All"
+
+#: gogl_ui/library_view.py gogl_ui/main_window.py
+msgid "Instalados"
+msgstr "Installed"
+
+#: gogl_ui/library_view.py gogl_ui/main_window.py
+msgid "Sincronización pendiente"
+msgstr "Sync pending"
+
+#: gogl_ui/library_view.py
+msgid "Aún no hay juegos. Pulsa ⟳ para cargar tu biblioteca de GOG."
+msgstr "No games yet. Press ⟳ to load your GOG library."
+
+#: gogl_ui/library_view.py
+msgid "Ningún juego coincide con el filtro."
+msgstr "No game matches the filter."
+
+#: gogl_ui/library_view.py
+msgid "Descargando {pct}"
+msgstr "Downloading {pct}"
+
+#: gogl_ui/library_view.py
+msgid "{n} de {total} juego"
+msgid_plural "{n} de {total} juegos"
+msgstr[0] "{n} of {total} game"
+msgstr[1] "{n} of {total} games"
+
+#: gogl_ui/library_view.py
+msgid "{total} juego"
+msgid_plural "{total} juegos"
+msgstr[0] "{total} game"
+msgstr[1] "{total} games"
+
+#: gogl_ui/library_view.py
+msgid "Sync pendiente"
+msgstr "Sync pending"
+
+#: gogl_ui/main_window.py
+msgid "Sin sesión"
+msgstr "Not logged in"
+
+#: gogl_ui/main_window.py
+msgid "JUEGOS"
+msgstr "GAMES"
+
+#: gogl_ui/main_window.py
+msgid "Tienda"
+msgstr "Store"
+
+#: gogl_ui/main_window.py
+msgid "Perfil"
+msgstr "Profile"
+
+#: gogl_ui/main_window.py
+msgid "LANZADOR"
+msgstr "LAUNCHER"
+
+#: gogl_ui/main_window.py
+msgid "Ajustes"
+msgstr "Settings"
+
+#: gogl_ui/main_window.py
+msgid "Tus juegos de GOG en Linux, con las partidas siempre sincronizadas."
+msgstr "Your GOG games on Linux, with your saves always in sync."
+
+#: gogl_ui/main_window.py
+msgid "Iniciar sesión con GOG"
+msgstr "Log in with GOG"
+
+#: gogl_ui/main_window.py
+msgid "Cuenta"
+msgstr "Account"
+
+#: gogl_ui/main_window.py
+msgid "Cerrar sesión"
+msgstr "Log out"
+
+#: gogl_ui/main_window.py
+msgid "Sincronización de partidas"
+msgstr "Save sync"
+
+#: gogl_ui/main_window.py
+msgid "Las partidas se comparan por contenido, no por fecha. Nunca se borra nada en la nube por tener una carpeta local vacía, y antes de sobrescribir partidas locales se guarda una copia de seguridad (se conservan las 10 últimas por juego)."
+msgstr "Saves are compared by content, not by date. Nothing is ever deleted in the cloud because a local folder is empty, and a backup is made before overwriting local saves (the last 10 per game are kept)."
+
+#: gogl_ui/main_window.py
+msgid "Sincronizar todos los pendientes"
+msgstr "Sync all pending"
+
+#: gogl_ui/main_window.py
+msgid "Instalación de juegos"
+msgstr "Game installation"
+
+#: gogl_ui/main_window.py
+msgid "Carpeta por defecto"
+msgstr "Default folder"
+
+#: gogl_ui/main_window.py
+msgid "Cambiar…"
+msgstr "Change…"
+
+#: gogl_ui/main_window.py
+msgid "Idioma de los juegos"
+msgstr "Game language"
+
+#: gogl_ui/main_window.py
+msgid "Idioma que se descarga al instalar, si el juego lo tiene"
+msgstr "Language downloaded when installing, if the game has it"
+
+#: gogl_ui/main_window.py
+msgid "Dónde se guardan los extras y los instaladores offline (una carpeta por juego)"
+msgstr "Where extras and offline installers are saved (one folder per game)"
+
+#: gogl_ui/main_window.py
+msgid "En los juegos que traen el kit de Galaxy, los logros se registran mientras juegas (con Comet, una implementación libre del servicio de Galaxy que se descarga la primera vez) y aparece un aviso al conseguirlos, también en el modo juego. Sin conexión se guardan y se suben la próxima vez que juegues con red."
+msgstr "In games that include the Galaxy SDK, achievements are recorded while you play (with Comet, a free implementation of the Galaxy service that is downloaded the first time) and a notification appears when you unlock them, also in Game Mode. Offline, they are kept and uploaded the next time you play online."
+
+#: gogl_ui/main_window.py
+msgid "Registrar logros mientras juegas"
+msgstr "Record achievements while playing"
+
+#: gogl_ui/main_window.py
+msgid "Descargar la última versión"
+msgstr "Download the latest version"
+
+#: gogl_ui/main_window.py
+msgid "Subidas pendientes en segundo plano"
+msgstr "Pending uploads in the background"
+
+#: gogl_ui/main_window.py
+msgid "Un timer de systemd de tu usuario reintenta cada 15 minutos las partidas que no se pudieron subir (por ejemplo, si apagaste la consola sin conexión)."
+msgstr "A systemd timer for your user retries every 15 minutes the saves that could not be uploaded (for example, if you turned the console off while offline)."
+
+#: gogl_ui/main_window.py
+msgid "Modo juego de SteamOS"
+msgstr "SteamOS Game Mode"
+
+#: gogl_ui/main_window.py
+msgid "Menú de aplicaciones"
+msgstr "Applications menu"
+
+#: gogl_ui/main_window.py
+msgid "Carpetas del lanzador"
+msgstr "Launcher folders"
+
+#: gogl_ui/main_window.py
+msgid "Interfaz"
+msgstr "Interface"
+
+#: gogl_ui/main_window.py
+msgid "Carpeta para extras e instaladores"
+msgstr "Folder for extras and installers"
+
+#: gogl_ui/main_window.py
+msgid "Iniciando sesión…"
+msgstr "Logging in…"
+
+#: gogl_ui/main_window.py
+msgid "Actualizando biblioteca…"
+msgstr "Refreshing the library…"
+
+#: gogl_ui/main_window.py
+msgid "Desinstalar"
+msgstr "Uninstall"
+
+#: gogl_ui/main_window.py
+msgid "Borrar también el prefijo de Proton (configuración del juego en Wine)"
+msgstr "Also delete the Proton prefix (the game's Wine settings)"
+
+#: gogl_ui/main_window.py
+msgid "Conectado a GOG"
+msgstr "Connected to GOG"
+
+#: gogl_ui/main_window.py
+msgid "Inicia sesión"
+msgstr "Log in"
+
+#: gogl_ui/main_window.py
+msgid "No hay ninguna versión instalada todavía."
+msgstr "No version installed yet."
+
+#: gogl_ui/main_window.py
+msgid "Borrar"
+msgstr "Delete"
+
+#: gogl_ui/main_window.py
+msgid "Activado"
+msgstr "On"
+
+#: gogl_ui/main_window.py
+msgid "Desactivado"
+msgstr "Off"
+
+#: gogl_ui/main_window.py
+msgid "Desactivar"
+msgstr "Turn off"
+
+#: gogl_ui/main_window.py
+msgid "Activar"
+msgstr "Turn on"
+
+#: gogl_ui/main_window.py
+msgid "Quitar del menú"
+msgstr "Remove from menu"
+
+#: gogl_ui/main_window.py
+msgid "Añadir al menú"
+msgstr "Add to menu"
+
+#: gogl_ui/main_window.py
+msgid "Datos"
+msgstr "Data"
+
+#: gogl_ui/main_window.py
+msgid "Configuración"
+msgstr "Settings"
+
+#: gogl_ui/main_window.py
+msgid "Copias de seguridad"
+msgstr "Backups"
+
+#: gogl_ui/main_window.py
+msgid "Caché"
+msgstr "Cache"
+
+#: gogl_ui/main_window.py
+msgid "Borrar Proton"
+msgstr "Delete Proton"
+
+#: gogl_ui/main_window.py gogl_ui/store_page.py
+msgid "Abrir su ficha"
+msgstr "Open its page"
+
+#: gogl_ui/main_window.py
+msgid "¿Cerrar sesión? Los juegos vinculados y sus partidas no se tocan."
+msgstr "Log out? Linked games and their saves are not touched."
+
+#: gogl_ui/main_window.py
+msgid "{app} descarga y usa sus propias versiones de Proton-GE (en su carpeta de datos), independientes de Steam."
+msgstr "{app} downloads and uses its own Proton-GE versions (in its data folder), independent of Steam."
+
+#: gogl_ui/main_window.py
+msgid "Predeterminada"
+msgstr "Default"
+
+#: gogl_ui/main_window.py
+msgid "Usar por defecto"
+msgstr "Make default"
+
+#: gogl_ui/main_window.py
+msgid "Añade {app} a Steam como «juego no de Steam» para abrirlo desde el modo juego y manejarlo con el mando (cruceta o stick para moverte, A para aceptar, B para volver, LB/RB para cambiar de sección)."
+msgstr "Add {app} to Steam as a «non-Steam game» to open it from Game Mode and control it with the gamepad (D-pad or stick to move, A to accept, B to go back, LB/RB to change section)."
+
+#: gogl_ui/main_window.py
+msgid "Añadir {app} a Steam"
+msgstr "Add {app} to Steam"
+
+#: gogl_ui/main_window.py
+msgid "Automático ({lang})"
+msgstr "Automatic ({lang})"
+
+#: gogl_ui/main_window.py
+msgid "No hay juegos pendientes."
+msgstr "No pending games."
+
+#: gogl_ui/main_window.py
+msgid "No se pudo iniciar sesión"
+msgstr "Could not log in"
+
+#: gogl_ui/main_window.py
+msgid "Vinculando {title}…"
+msgstr "Linking {title}…"
+
+#: gogl_ui/main_window.py
+msgid "Juego distinto"
+msgstr "Different game"
+
+#: gogl_ui/main_window.py
+msgid "No se pudo vincular la instalación"
+msgstr "Could not link the installation"
+
+#: gogl_ui/main_window.py
+msgid "¿Desinstalar «{title}»?"
+msgstr "Uninstall «{title}»?"
+
+#: gogl_ui/main_window.py
+msgid ""
+"Se borrará {path}.\n"
+"\n"
+"Antes se guarda una copia de seguridad de las partidas locales, y las de la nube de GOG no se tocan."
+msgstr ""
+"{path} will be deleted.\n"
+"\n"
+"A backup of the local saves is made first, and the ones in the GOG cloud are not touched."
+
+#: gogl_ui/main_window.py
+msgid "Desinstalando {title}…"
+msgstr "Uninstalling {title}…"
+
+#: gogl_ui/main_window.py
+msgid "No se pudo desinstalar"
+msgstr "Could not uninstall"
+
+#: gogl_ui/main_window.py gogl_ui/store_page.py
+msgid "Atrás"
+msgstr "Back"
+
+#: gogl_ui/main_window.py
+msgid "Buscar"
+msgstr "Search"
+
+#: gogl_ui/main_window.py
+msgid "Sección"
+msgstr "Section"
+
+#: gogl_ui/main_window.py
+msgid "Página"
+msgstr "Page"
+
+#: gogl_ui/main_window.py
+msgid "Seleccionar"
+msgstr "Select"
+
+#: gogl_ui/main_window.py
+msgid "Jugar / Instalar"
+msgstr "Play / Install"
+
+#: gogl_ui/main_window.py
+msgid "Desplazar"
+msgstr "Scroll"
+
+#: gogl_ui/main_window.py
+msgid "{app} aparece en el menú de aplicaciones de tu escritorio."
+msgstr "{app} is in your desktop's applications menu."
+
+#: gogl_ui/main_window.py
+msgid "Añade {app} al menú de aplicaciones para abrirlo sin terminal."
+msgstr "Add {app} to the applications menu to open it without a terminal."
+
+#: gogl_ui/main_window.py
+msgid "{app} ya estaba en tu biblioteca de Steam, en «Juegos no de Steam». Ábrelo desde el modo juego y manéjalo con el mando."
+msgstr "{app} was already in your Steam library, under «Non-Steam games». Open it from Game Mode and control it with the gamepad."
+
+#: gogl_ui/main_window.py
+msgid "{app} está en tu biblioteca de Steam, en «Juegos no de Steam». Ábrelo desde el modo juego y manéjalo con el mando."
+msgstr "{app} is in your Steam library, under «Non-Steam games». Open it from Game Mode and control it with the gamepad."
+
+#: gogl_ui/main_window.py
+msgid "¿Borrar {name}?"
+msgstr "Delete {name}?"
+
+#: gogl_ui/main_window.py
+msgid "Nuevo en tu biblioteca: {names}"
+msgstr "New in your library: {names}"
+
+#: gogl_ui/main_window.py
+msgid "Biblioteca actualizada · {time}"
+msgstr "Library updated · {time}"
+
+#: gogl_ui/main_window.py
+msgid "{title} vinculado"
+msgstr "{title} linked"
+
+#: gogl_ui/main_window.py
+msgid ""
+"¿Quitar «{title}» del lanzador?\n"
+"No se borra ningún archivo del juego ni de sus partidas."
+msgstr ""
+"Remove «{title}» from the launcher?\n"
+"No game or save files are deleted."
+
+#: gogl_ui/main_window.py
+msgid "{title} desinstalado"
+msgstr "{title} uninstalled"
+
+#: gogl_ui/main_window.py
+msgid "Se aplicará la próxima vez que abras {app}."
+msgstr "It will apply the next time you open {app}."
+
+#: gogl_ui/main_window.py
+msgid ""
+"Steam reescribe sus accesos directos al cerrarse, así que hay que cerrarlo antes.\n"
+"\n"
+"¿Cerrar Steam ahora y continuar?"
+msgstr ""
+"Steam rewrites its shortcuts when it closes, so it has to be closed first.\n"
+"\n"
+"Close Steam now and continue?"
+
+#: gogl_ui/main_window.py
+msgid "Ya está en tu biblioteca: {names}"
+msgstr "It's in your library now: {names}"
+
+#: gogl_ui/main_window.py
+msgid "No se pudo actualizar: {error}"
+msgstr "Could not refresh: {error}"
+
+#: gogl_ui/main_window.py
+msgid "Esa carpeta corresponde a «{found}» ({id}), no a «{expected}». Se ha vinculado igualmente a su juego."
+msgstr "That folder belongs to «{found}» ({id}), not to «{expected}». It has been linked to its game anyway."
+
+#: gogl_ui/main_window.py
+msgid "Stick dcho."
+msgstr "Right stick"
+
+#: gogl_ui/offline_card.py
+msgid "Buscando extras e instaladores…"
+msgstr "Looking for extras and installers…"
+
+#: gogl_ui/offline_card.py
+msgid "Abrir carpeta"
+msgstr "Open folder"
+
+#: gogl_ui/offline_card.py
+msgid "INSTALADORES OFFLINE"
+msgstr "OFFLINE INSTALLERS"
+
+#: gogl_ui/offline_card.py
+msgid "Este juego no tiene extras ni instaladores offline."
+msgstr "This game has no extras or offline installers."
+
+#: gogl_ui/offline_card.py
+msgid "EXTRAS"
+msgstr "EXTRAS"
+
+#: gogl_ui/offline_card.py
+msgid "Ver en Descargas"
+msgstr "View in Downloads"
+
+#: gogl_ui/offline_card.py
+msgid "Se guardan en {path}"
+msgstr "Saved in {path}"
+
+#: gogl_ui/offline_card.py
+msgid "Descargar"
+msgstr "Download"
+
+#: gogl_ui/offline_card.py
+msgid "Extra · {name}"
+msgstr "Extra · {name}"
+
+#: gogl_ui/offline_card.py
+msgid "Instalador {os} ({language})"
+msgstr "{os} installer ({language})"
+
+#: gogl_ui/offline_card.py
+msgid "No se pudo consultar GOG: {error}"
+msgstr "Could not check GOG: {error}"
+
+#: gogl_ui/offline_card.py
+msgid "Descargar todos ({size})"
+msgstr "Download all ({size})"
+
+#: gogl_ui/offline_card.py
+msgid "sin versión"
+msgstr "no version"
+
+#: gogl_ui/profile_page.py
+msgid "Ver perfil completo en GOG"
+msgstr "View full profile on GOG"
+
+#: gogl_ui/profile_page.py
+msgid "Tu perfil público de gog.com con horas jugadas y estadísticas"
+msgstr "Your public gog.com profile with hours played and stats"
+
+#: gogl_ui/profile_page.py
+msgid "Últimos logros"
+msgstr "Latest achievements"
+
+#: gogl_ui/profile_page.py
+msgid "Consultar logros de toda la biblioteca"
+msgstr "Check achievements for the whole library"
+
+#: gogl_ui/profile_page.py
+msgid "Pide a GOG los logros de cada juego (la primera vez tarda unos minutos)"
+msgstr "Asks GOG for each game's achievements (the first time takes a few minutes)"
+
+#: gogl_ui/profile_page.py
+msgid "Consultando…"
+msgstr "Checking…"
+
+#: gogl_ui/profile_page.py
+msgid "juegos en tu biblioteca"
+msgstr "games in your library"
+
+#: gogl_ui/profile_page.py
+msgid "instalados"
+msgstr "installed"
+
+#: gogl_ui/profile_page.py
+msgid "juegos al 100 %"
+msgstr "games at 100 %"
+
+#: gogl_ui/profile_page.py
+msgid "Aún no hay logros consultados. Se cargan al abrir la ficha de cada juego, o todos de una vez con el botón de abajo."
+msgstr "No achievements checked yet. They load when you open each game's page, or all at once with the button below."
+
+#: gogl_ui/profile_page.py gogl_ui/store_page.py
+msgid "Lista de deseos"
+msgstr "Wishlist"
+
+#: gogl_ui/profile_page.py
+msgid "Tu lista de deseos está vacía."
+msgstr "Your wishlist is empty."
+
+#: gogl_ui/profile_page.py
+msgid "Ver"
+msgstr "View"
+
+#: gogl_ui/profile_page.py
+msgid "Cargando perfil…"
+msgstr "Loading profile…"
+
+#: gogl_ui/profile_page.py
+msgid "Ficha"
+msgstr "Page"
+
+#: gogl_ui/profile_page.py
+msgid "En GOG desde {date}"
+msgstr "On GOG since {date}"
+
+#: gogl_ui/profile_page.py
+msgid "logros en {n} juego"
+msgid_plural "logros en {n} juegos"
+msgstr[0] "achievements in {n} game"
+msgstr[1] "achievements in {n} games"
+
+#: gogl_ui/profile_page.py
+msgid "{unlocked} de {total} logros en el juego consultado"
+msgid_plural "{unlocked} de {total} logros en los {n} juegos consultados"
+msgstr[0] "{unlocked} of {total} achievements in the game checked"
+msgstr[1] "{unlocked} of {total} achievements in the {n} games checked"
+
+#: gogl_ui/profile_page.py
+msgid "Ver la lista completa ({n})"
+msgstr "View the full list ({n})"
+
+#: gogl_ui/profile_page.py
+msgid "No se pudo cargar el perfil: {error}"
+msgstr "Could not load the profile: {error}"
+
+#: gogl_ui/session_window.py
+msgid ""
+"No hay conexión con GOG.\n"
+"\n"
+"Tu partida queda guardada aquí y se subirá automáticamente cuando vuelva la conexión."
+msgstr ""
+"No connection to GOG.\n"
+"\n"
+"Your save stays here and will be uploaded automatically when the connection is back."
+
+#: gogl_ui/session_window.py
+msgid ""
+"No hay conexión con GOG.\n"
+"\n"
+"Si juegas ahora, al terminar se comparará con la nube y, si alguien cambió las partidas allí, se te preguntará."
+msgstr ""
+"No connection to GOG.\n"
+"\n"
+"If you play now, it will be compared with the cloud when you finish and, if someone changed the saves there, you will be asked."
+
+#: gogl_ui/session_window.py
+msgid "No se pudieron sincronizar las partidas:"
+msgstr "Could not sync the saves:"
+
+#: gogl_ui/session_window.py
+msgid "Subir más tarde"
+msgstr "Upload later"
+
+#: gogl_ui/session_window.py
+msgid "Jugar igualmente"
+msgstr "Play anyway"
+
+#: gogl_ui/session_window.py
+msgid "Salir"
+msgstr "Quit"
+
+#: gogl_ui/session_window.py
+msgid "Jugar sin sincronizar"
+msgstr "Play without syncing"
+
+#: gogl_ui/store_page.py
+msgid "Adelante"
+msgstr "Forward"
+
+#: gogl_ui/store_page.py
+msgid "Recargar"
+msgstr "Reload"
+
+#: gogl_ui/store_page.py
+msgid "Inicio"
+msgstr "Home"
+
+#: gogl_ui/store_page.py
+msgid "Portada de la tienda"
+msgstr "Store front page"
+
+#: gogl_ui/store_page.py
+msgid "Buscar en la tienda de GOG…"
+msgstr "Search the GOG store…"
+
+#: gogl_ui/store_page.py
+msgid "Ofertas"
+msgstr "Deals"
+
+#: gogl_ui/store_page.py
+msgid "Juegos rebajados"
+msgstr "Discounted games"
+
+#: gogl_ui/store_page.py
+msgid "Tu lista de deseos en GOG"
+msgstr "Your GOG wishlist"
+
+#: gogl_ui/store_page.py
+msgid "Abrir en el navegador"
+msgstr "Open in browser"
+
+#: gogl_ui/store_page.py
+msgid "Abrir esta página en tu navegador"
+msgstr "Open this page in your browser"
+
+#: gogl_ui/store_page.py
+msgid "Para ver la tienda hace falta Qt WebEngine. Ábrela en tu navegador:"
+msgstr "Viewing the store requires Qt WebEngine. Open it in your browser:"
+
+#: gogl_ui/store_page.py
+msgid "Ya tienes {title} en tu biblioteca."
+msgstr "You already own {title}."
+
+#: gogl_ui/toast.py
+msgid "LOGRO CONSEGUIDO"
+msgstr "ACHIEVEMENT UNLOCKED"

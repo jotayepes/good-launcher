@@ -3,7 +3,6 @@
 Inspirado en la sobriedad de GOG Galaxy (fondo oscuro, carátulas protagonistas,
 barra lateral de navegación) pero con paleta y componentes propios."""
 
-from PySide6.QtCore import QLibraryInfo, QLocale, QTranslator
 from PySide6.QtGui import QColor, QFont, QPalette
 from PySide6.QtWidgets import QApplication
 
@@ -111,7 +110,3 @@ def apply(app: QApplication) -> None:
     f.setFamilies(["Inter", "Cantarell", "Noto Sans", "sans-serif"])
     app.setFont(f)
     app.setStyleSheet(QSS)
-    # Botones estándar de Qt («Sí», «No», «Cancelar»…) en el idioma del sistema.
-    tr = QTranslator(app)
-    if tr.load(QLocale.system(), "qtbase", "_", QLibraryInfo.path(QLibraryInfo.TranslationsPath)):
-        app.installTranslator(tr)

@@ -15,10 +15,11 @@ from PySide6.QtWidgets import (QApplication, QHBoxLayout, QLabel, QMessageBox, Q
                                QVBoxLayout, QWidget)
 
 from gogl import APP_NAME, session
+from gogl.i18n import _
 from gogl.library import cover_path
 from gogl.state import State
 
-from . import navigation, theme
+from . import navigation, qt_i18n, theme
 from .desktop import desktop_entry_installed
 from .dialogs import ConflictDialog
 
@@ -77,7 +78,7 @@ class SessionWindow(QWidget):
         t = QLabel(title)
         t.setWordWrap(True)
         t.setStyleSheet(f"font-size: {30 if self.big else 18}pt; font-weight: 800;")
-        self.status_lbl = QLabel("Preparando…")
+        self.status_lbl = QLabel(_("Preparando…"))
         self.status_lbl.setStyleSheet(f"font-size: {16 if self.big else 11}pt;")
         self.bar = QProgressBar()
         self.bar.setRange(0, 0)
@@ -134,20 +135,20 @@ class SessionWindow(QWidget):
 
     def ask_offline(self, phase):
         if phase == session.PRE:
-            return self._choice("No hay conexión con GOG.\n\nSi juegas ahora, al terminar se comparará "
-                                "con la nube y, si alguien cambió las partidas allí, se te preguntará.",
-                                [("retry", "Reintentar"), ("continue", "Jugar sin sincronizar"),
-                                 ("cancel", "Salir")])
-        return self._choice("No hay conexión con GOG.\n\nTu partida queda guardada aquí y se subirá "
-                            "automáticamente cuando vuelva la conexión.",
-                            [("retry", "Reintentar"), ("continue", "Subir más tarde")])
+            return self._choice(_("No hay conexión con GOG.\n\nSi juegas ahora, al terminar se comparará "
+                                  "con la nube y, si alguien cambió las partidas allí, se te preguntará."),
+                                [("retry", _("Reintentar")), ("continue", _("Jugar sin sincronizar")),
+                                 ("cancel", _("Salir"))])
+        return self._choice(_("No hay conexión con GOG.\n\nTu partida queda guardada aquí y se subirá "
+                              "automáticamente cuando vuelva la conexión."),
+                            [("retry", _("Reintentar")), ("continue", _("Subir más tarde"))])
 
     def ask_error(self, message, phase):
-        opts = [("retry", "Reintentar"), ("continue", "Jugar igualmente" if phase == session.PRE
-                                                     else "Subir más tarde")]
+        opts = [("retry", _("Reintentar")), ("continue", _("Jugar igualmente") if phase == session.PRE
+                                                        else _("Subir más tarde"))]
         if phase == session.PRE:
-            opts.append(("cancel", "Salir"))
-        return self._choice(f"No se pudieron sincronizar las partidas:\n\n{message}", opts)
+            opts.append(("cancel", _("Salir")))
+        return self._choice(_("No se pudieron sincronizar las partidas:") + f"\n\n{message}", opts)
 
     def error(self, message):
         QMessageBox.critical(self, APP_NAME, message)
@@ -212,6 +213,7 @@ def run_with_window(game_id: str) -> int:
     app.setQuitOnLastWindowClosed(False)  # la ventana se oculta mientras se juega
     from .icon import app_icon
     app.setWindowIcon(app_icon())
+    qt_i18n.install(app)
     theme.apply(app)
     nav = navigation.install(app)
     g = State().game(game_id)

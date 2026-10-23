@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .. import APP_NAME, languages, paths
+from ..i18n import _
 from ..games import read_game_info
 from ..saves.locations import resolve_case_insensitive
 from ..state import Game
@@ -36,7 +37,7 @@ def primary_task(install_path: Path) -> dict:
             return t
     if tasks:
         return tasks[0]
-    raise LaunchError("goggame-*.info no tiene ninguna tarea de juego")
+    raise LaunchError(_("goggame-*.info no tiene ninguna tarea de juego"))
 
 
 def split_windows_args(cmdline: str) -> list[str]:
@@ -137,7 +138,7 @@ def parse_env(text: str) -> dict[str, str]:
             continue
         key, sep, value = line.partition("=")
         if not sep or not key.strip().replace("_", "").isalnum():
-            raise LaunchError(f"Variable de entorno no válida: «{line}» (formato CLAVE=valor)")
+            raise LaunchError(_("Variable de entorno no válida: «{line}» (formato CLAVE=valor)").format(line=line))
         out[key.strip()] = value.strip()
     return out
 
@@ -177,10 +178,10 @@ def _build_launch(game: Game, proton_name: str | None = None) -> LaunchSpec:
 
     pv = proton_mgr.get(proton_name or game.extra.get("proton"))
     if pv is None:
-        raise LaunchError(f"No hay ninguna versión de Proton-GE instalada en {APP_NAME}")
+        raise LaunchError(_("No hay ninguna versión de Proton-GE instalada en {app}").format(app=APP_NAME))
     exe = _win_path(game.install_path, task["path"])
     if not exe.exists():
-        raise LaunchError(f"No se encuentra el ejecutable {exe}")
+        raise LaunchError(_("No se encuentra el ejecutable {exe}").format(exe=exe))
     cwd = _win_path(game.install_path, task["workingDir"]) if task.get("workingDir") else exe.parent
     compat = compat_data_path(game)
     argv = [str(pv.script), "waitforexitandrun", str(exe), *extra]

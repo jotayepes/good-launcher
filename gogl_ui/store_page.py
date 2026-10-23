@@ -14,11 +14,13 @@ from PySide6.QtCore import Qt, QUrl, Signal
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget
 
+from gogl.i18n import _
+
 from . import theme
 from .web import HAS_WEBENGINE, make_view, store_url
 
 GAME_PATH = re.compile(r"^(?:/[a-z]{2})?/game/([^/?#]+)")
-HOME = "/es"
+HOME = "/"
 
 
 class StorePage(QWidget):
@@ -41,17 +43,17 @@ class StorePage(QWidget):
         row = QHBoxLayout(bar)
         row.setContentsMargins(16, 8, 16, 8)
         row.setSpacing(6)
-        self.back_btn = self._tool(row, "←", "Atrás", lambda: self.view.back())
-        self.fwd_btn = self._tool(row, "→", "Adelante", lambda: self.view.forward())
-        self._tool(row, "⟳", "Recargar", lambda: self.view.reload())
-        self._tool(row, "Inicio", "Portada de la tienda", lambda: self.go(HOME))
+        self.back_btn = self._tool(row, "←", _("Atrás"), lambda: self.view.back())
+        self.fwd_btn = self._tool(row, "→", _("Adelante"), lambda: self.view.forward())
+        self._tool(row, "⟳", _("Recargar"), lambda: self.view.reload())
+        self._tool(row, _("Inicio"), _("Portada de la tienda"), lambda: self.go(HOME))
         self.search = QLineEdit()
-        self.search.setPlaceholderText("Buscar en la tienda de GOG…")
+        self.search.setPlaceholderText(_("Buscar en la tienda de GOG…"))
         self.search.returnPressed.connect(self._search)
         row.addWidget(self.search, 1)
-        self._tool(row, "Ofertas", "Juegos rebajados", lambda: self.go("/es/games?discounted=true"))
-        self._tool(row, "Lista de deseos", "Tu lista de deseos en GOG", lambda: self.go("/es/account/wishlist"))
-        self._tool(row, "Abrir en el navegador", "Abrir esta página en tu navegador",
+        self._tool(row, _("Ofertas"), _("Juegos rebajados"), lambda: self.go("/games?discounted=true"))
+        self._tool(row, _("Lista de deseos"), _("Tu lista de deseos en GOG"), lambda: self.go("/account/wishlist"))
+        self._tool(row, _("Abrir en el navegador"), _("Abrir esta página en tu navegador"),
                    lambda: QDesktopServices.openUrl(self.view.url()))
         lay.addWidget(bar)
 
@@ -76,7 +78,7 @@ class StorePage(QWidget):
         self.body = QVBoxLayout()
         lay.addLayout(self.body, 1)
         if not HAS_WEBENGINE:
-            msg = QLabel("Para ver la tienda hace falta Qt WebEngine. Ábrela en tu navegador:")
+            msg = QLabel(_("Para ver la tienda hace falta Qt WebEngine. Ábrela en tu navegador:"))
             msg.setAlignment(Qt.AlignCenter)
             self.body.addWidget(msg)
 
@@ -107,7 +109,7 @@ class StorePage(QWidget):
     def _search(self):
         q = self.search.text().strip()
         if q:
-            self.go("/es/games?query=" + QUrl.toPercentEncoding(q).data().decode())
+            self.go("/games?query=" + QUrl.toPercentEncoding(q).data().decode())
 
     def _on_url(self, url: QUrl):
         self.back_btn.setEnabled(self.view.history().canGoBack())
@@ -121,7 +123,8 @@ class StorePage(QWidget):
         owned = self.owned_slug(m.group(1)) if m else None
         if owned:
             game_id, title = owned
-            self.show_banner(f"✓ Ya tienes <b>{title}</b> en tu biblioteca.", "Abrir su ficha",
+            self.show_banner("✓ " + _("Ya tienes {title} en tu biblioteca.").format(title=f"<b>{title}</b>"),
+                             _("Abrir su ficha"),
                              lambda: self.open_game.emit(game_id))
         elif self.banner.property("kind") == "owned":
             self.banner.hide()

@@ -10,7 +10,8 @@ from pathlib import Path
 
 import httpx
 
-from . import languages, paths
+from . import i18n, languages, paths
+from .i18n import _
 from .api import ApiError, GogApi
 
 FILTERED_PRODUCTS = "https://embed.gog.com/account/getFilteredProducts"
@@ -30,7 +31,7 @@ def fetch_owned(api: GogApi) -> list[dict]:
         try:
             data = r.json()
         except ValueError:
-            raise ApiError("GOG devolvió una respuesta no válida (¿sesión caducada?)") from None
+            raise ApiError(_("GOG devolvió una respuesta no válida (¿sesión caducada?)")) from None
         total = int(data.get("totalPages", 1))
         products += [p for p in data.get("products", []) if not p.get("isMovie")]
         page += 1
@@ -73,13 +74,13 @@ def _strip_html(s: str) -> str:
 
 def _localized(v) -> str:
     if isinstance(v, dict):
-        return v.get("es-ES") or v.get("*") or next(iter(v.values()), "")
+        return v.get("es-ES" if i18n.current == "es" else "en-US") or v.get("*") or next(iter(v.values()), "")
     return v or ""
 
 
 def product_details(game_id: str, http: httpx.Client | None = None) -> dict:
     """Metadatos de presentación cacheados en disco una semana. No requiere sesión."""
-    cache = paths.cache_dir() / "details" / f"{game_id}.json"
+    cache = paths.cache_dir() / "details" / i18n.current / f"{game_id}.json"
     try:
         if time.time() - cache.stat().st_mtime < DETAILS_TTL:
             cached = json.loads(cache.read_text())

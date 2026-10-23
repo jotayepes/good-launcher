@@ -6,12 +6,13 @@ from __future__ import annotations
 from typing import Callable
 
 from .api import ApiError, GogApi
+from .i18n import _
 from .auth import AuthError, AuthManager
 from .locking import game_lock
 from .net import wait_for_network
 from .saves.backup import backup_locations
 from .saves.cloud import CloudError, CloudStorage
-from .saves.engine import ConflictError, SyncError, SyncResult, Syncer
+from .saves.engine import Action, ConflictError, SyncError, SyncResult, Syncer
 from .saves.locations import CloudConfig, LocationError, SaveLocation, parse_remote_config, resolve_locations
 from .state import Game, State
 
@@ -38,13 +39,13 @@ class SyncService:
     def _game(self, game_id: str) -> Game:
         g = self.state.game(game_id)
         if g is None:
-            raise SyncUnavailable(f"Juego {game_id} no registrado")
+            raise SyncUnavailable(_("Juego {id} no registrado").format(id=game_id))
         return g
 
     def cloud_config(self, game: Game, refresh: bool = True) -> CloudConfig:
         """remote-config de GOG, cacheado en el juego para poder resolver rutas sin red."""
         if not game.client_id:
-            raise SyncUnavailable(f"{game.title}: sin clientId, no admite partidas en la nube")
+            raise SyncUnavailable(_("{title}: sin clientId, no admite partidas en la nube").format(title=game.title))
         if refresh or "remote_config" not in game.extra:
             try:
                 game.extra["remote_config"] = self.api.remote_config(game.client_id)
@@ -52,22 +53,25 @@ class SyncService:
             except (ApiError, OSError) as e:
                 if "remote_config" not in game.extra:
                     raise
-                self.log(f"aviso: no se pudo refrescar remote-config ({e}); uso la copia guardada")
+                self.log(_("aviso: no se pudo refrescar remote-config ({error}); uso la copia guardada")
+                         .format(error=e))
         return parse_remote_config(game.extra["remote_config"], game.client_id)
 
     def locations(self, game: Game, refresh: bool = True) -> list[SaveLocation]:
         if game.platform != "windows":
-            raise SyncUnavailable(f"{game.title}: los juegos nativos de Linux no tienen partidas en la nube")
+            raise SyncUnavailable(_("{title}: los juegos nativos de Linux no tienen partidas en la nube")
+                                  .format(title=game.title))
         if game.prefix is None:
-            raise SyncUnavailable(f"{game.title}: no tiene prefijo de Proton asignado")
+            raise SyncUnavailable(_("{title}: no tiene prefijo de Proton asignado").format(title=game.title))
         cfg = self.cloud_config(game, refresh)
         if not cfg.enabled:
-            raise SyncUnavailable(f"{game.title}: GOG no tiene partidas en la nube para este juego")
+            raise SyncUnavailable(_("{title}: GOG no tiene partidas en la nube para este juego")
+                                  .format(title=game.title))
         return resolve_locations(cfg, game.install_path, game.prefix, game.save_overrides)
 
     def _syncer(self, game: Game, locations: list[SaveLocation]) -> Syncer:
         if not game.client_secret:
-            _, game.client_secret = self.api.client_credentials(game.game_id, "windows")
+            _cid, game.client_secret = self.api.client_credentials(game.game_id, "windows")
             self.state.save_game(game)
         cloud = CloudStorage(
             game.client_id,
@@ -81,12 +85,12 @@ class SyncService:
         with game_lock(game_id, lock_timeout):
             if wait_network and not wait_for_network(wait_network, self.log):
                 if not dry_run:
-                    self.state.set_status(game_id, pending=True, error="sin conexión")
-                raise Offline("No hay conexión con GOG; la sincronización queda pendiente")
+                    self.state.set_status(game_id, pending=True, error=_("sin conexión"))
+                raise Offline(_("No hay conexión con GOG; la sincronización queda pendiente"))
             try:
                 locations = self.locations(game)
                 for loc in locations:
-                    self.log(f"ubicación «{loc.name}»: {loc.path}")
+                    self.log(_("ubicación «{name}»: {path}").format(name=loc.name, path=loc.path))
                 res = self._syncer(game, locations).run(prefer=prefer, dry_run=dry_run)
             except ConflictError:
                 if not dry_run:
@@ -100,8 +104,8 @@ class SyncService:
                 self.state.set_status(game_id, pending=False)
             return res
 
-    def mark_pending(self, game_id: str, reason: str = "partida sin subir") -> None:
-        self.state.set_status(game_id, pending=True, error=reason)
+    def mark_pending(self, game_id: str, reason: str | None = None) -> None:
+        self.state.set_status(game_id, pending=True, error=reason or _("partida sin subir"))
 
     def sync_pending(self, **kw) -> dict[str, Exception | SyncResult]:
         out: dict[str, Exception | SyncResult] = {}
@@ -113,16 +117,25 @@ class SyncService:
         return out
 
 
+ACTION_LABELS = {
+    Action.ADOPT: _("igualar"), Action.UPLOAD: _("subir"), Action.DOWNLOAD: _("descargar"),
+    Action.DELETE_CLOUD: _("borrar nube"), Action.DELETE_LOCAL: _("borrar local"),
+    Action.DROP_BASE: _("olvidar"), Action.CONFLICT: _("conflicto"),
+}
+
+
 def describe(res: SyncResult) -> str:
     if res.dry_run:
-        lines = [f"  {it.action.value:13} {it.key}  ({it.reason})" for it in res.plan.changes]
-        return "\n".join(lines) or "  (nada que hacer)"
+        lines = [f"  {ACTION_LABELS.get(it.action, it.action.value):13} {it.key}  ({it.reason})"
+                 for it in res.plan.changes]
+        return "\n".join(lines) or "  " + _("(nada que hacer)")
     parts = []
-    for label, lst in (("subidos", res.uploaded), ("descargados", res.downloaded),
-                       ("borrados en la nube", res.deleted_cloud), ("borrados en local", res.deleted_local)):
+    for label, lst in ((_("{n} subidos"), res.uploaded), (_("{n} descargados"), res.downloaded),
+                       (_("{n} borrados en la nube"), res.deleted_cloud),
+                       (_("{n} borrados en local"), res.deleted_local)):
         if lst:
-            parts.append(f"{len(lst)} {label}")
-    return ", ".join(parts) or "ya estaba sincronizado"
+            parts.append(label.format(n=len(lst)))
+    return ", ".join(parts) or _("ya estaba sincronizado")
 
 
 __all__ = ["SyncService", "SyncUnavailable", "Offline", "ConflictError", "describe"]

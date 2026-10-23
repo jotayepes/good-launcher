@@ -11,8 +11,9 @@ from PySide6.QtWidgets import (QAbstractItemView, QDialog, QFileDialog, QHBoxLay
                                QLabel, QLineEdit, QPushButton, QTableWidget, QTableWidgetItem,
                                QVBoxLayout, QWidget)
 
-from gogl import APP_NAME
+from gogl import APP_NAME, i18n
 from gogl.auth import REDIRECT_URI, login_url
+from gogl.i18n import _
 from gogl.saves.cloud import parse_ts
 from gogl.saves.engine import SyncPlan
 
@@ -27,7 +28,7 @@ class LoginDialog(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Iniciar sesión en GOG")
+        self.setWindowTitle(_("Iniciar sesión en GOG"))
         self.code: str | None = None
         lay = QVBoxLayout(self)
         lay.setContentsMargins(0, 0, 0, 0)
@@ -44,7 +45,7 @@ class LoginDialog(QDialog):
         self._manual(QVBoxLayout(manual))
         if HAS_WEBENGINE:
             manual.hide()
-            alt = QPushButton("¿Problemas? Iniciar sesión en tu navegador")
+            alt = QPushButton(_("¿Problemas? Iniciar sesión en tu navegador"))
             alt.setObjectName("Ghost")
             alt.clicked.connect(lambda: (alt.hide(), manual.show(),
                                          QDesktopServices.openUrl(QUrl(login_url()))))
@@ -55,9 +56,9 @@ class LoginDialog(QDialog):
 
     def _manual(self, lay):
         lay.setContentsMargins(24, 16, 24, 20)
-        info = QLabel("Inicia sesión en el navegador (incluido el código de verificación en dos pasos "
-                      "si lo tienes activado). Al terminar llegarás a una página en blanco de "
-                      "embed.gog.com/on_login_success: copia su URL completa y pégala aquí.")
+        info = QLabel(_("Inicia sesión en el navegador (incluido el código de verificación en dos pasos "
+                        "si lo tienes activado). Al terminar llegarás a una página en blanco de "
+                        "embed.gog.com/on_login_success: copia su URL completa y pégala aquí."))
         info.setWordWrap(True)
         info.setObjectName("Muted")
         lay.addWidget(info)
@@ -65,9 +66,9 @@ class LoginDialog(QDialog):
         link.setReadOnly(True)
         lay.addWidget(link)
         self.paste = QLineEdit()
-        self.paste.setPlaceholderText("Pega aquí la URL final o el código")
+        self.paste.setPlaceholderText(_("Pega aquí la URL final o el código"))
         lay.addWidget(self.paste)
-        ok = QPushButton("Continuar")
+        ok = QPushButton(_("Continuar"))
         ok.setObjectName("Primary")
         ok.clicked.connect(lambda: self._finish(self.paste.text()))
         lay.addWidget(ok, 0, Qt.AlignRight)
@@ -98,7 +99,7 @@ class PathRow(QHBoxLayout):
         super().__init__()
         self.edit = QLineEdit()
         self.edit.setPlaceholderText(placeholder)
-        btn = QPushButton("Examinar…")
+        btn = QPushButton(_("Examinar…"))
         btn.clicked.connect(lambda: self._browse(title, parent))
         self.addWidget(self.edit, 1)
         self.addWidget(btn)
@@ -116,7 +117,7 @@ class PathRow(QHBoxLayout):
 class LinkInstallDialog(QDialog):
     def __init__(self, title: str, windows: bool, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Vincular instalación existente")
+        self.setWindowTitle(_("Vincular instalación existente"))
         self.resize(620, 0)
         lay = QVBoxLayout(self)
         lay.setContentsMargins(24, 22, 24, 22)
@@ -124,17 +125,18 @@ class LinkInstallDialog(QDialog):
         h = QLabel(f"<b>{title}</b>")
         h.setStyleSheet("font-size: 13pt;")
         lay.addWidget(h)
-        info = QLabel("Indica la carpeta donde ya está instalado el juego (la que contiene "
-                      "<code>goggame-*.info</code>). No se mueve ni se modifica nada.")
+        info = QLabel(_("Indica la carpeta donde ya está instalado el juego (la que contiene "
+                        "<code>goggame-*.info</code>). No se mueve ni se modifica nada."))
         info.setWordWrap(True)
         info.setObjectName("Muted")
         lay.addWidget(info)
-        lay.addWidget(QLabel("Carpeta del juego"))
-        self.install = PathRow("/home/…/Games/MiJuego", "Carpeta del juego", self)
+        lay.addWidget(QLabel(_("Carpeta del juego")))
+        self.install = PathRow(_("/home/…/Games/MiJuego"), _("Carpeta del juego"), self)
         lay.addLayout(self.install)
-        self.prefix = PathRow("…/compatdata/<id>  o  …/Prefixes/MiJuego", "Prefijo de Proton/Wine", self)
+        self.prefix = PathRow(_("…/compatdata/<id>  o  …/Prefixes/MiJuego"), _("Prefijo de Proton/Wine"), self)
         if windows:
-            lay.addWidget(QLabel(f"Prefijo de Proton/Wine existente (opcional: vacío = prefijo nuevo de {APP_NAME})"))
+            lay.addWidget(QLabel(_("Prefijo de Proton/Wine existente (opcional: vacío = prefijo nuevo de {app})")
+                                 .format(app=APP_NAME)))
             lay.addLayout(self.prefix)
         self.error = QLabel()
         self.error.setStyleSheet("color: #f06c6c;")
@@ -142,9 +144,9 @@ class LinkInstallDialog(QDialog):
         lay.addWidget(self.error)
         row = QHBoxLayout()
         row.addStretch()
-        cancel = QPushButton("Cancelar")
+        cancel = QPushButton(_("Cancelar"))
         cancel.clicked.connect(self.reject)
-        ok = QPushButton("Vincular")
+        ok = QPushButton(_("Vincular"))
         ok.setObjectName("Primary")
         ok.clicked.connect(self._ok)
         row.addWidget(cancel)
@@ -154,7 +156,7 @@ class LinkInstallDialog(QDialog):
     def _ok(self):
         p = self.install.path()
         if not p or not p.is_dir():
-            self.error.setText("Selecciona una carpeta de instalación válida")
+            self.error.setText(_("Selecciona una carpeta de instalación válida"))
             self.error.show()
             return
         self.accept()
@@ -166,32 +168,32 @@ class ConflictDialog(QDialog):
     def __init__(self, title: str, plan: SyncPlan, parent=None):
         super().__init__(parent)
         self.prefer: str | None = None
-        self.setWindowTitle("Conflicto de partidas")
+        self.setWindowTitle(_("Conflicto de partidas"))
         self.resize(720, 460)
         lay = QVBoxLayout(self)
         lay.setContentsMargins(24, 22, 24, 22)
         lay.setSpacing(12)
-        h = QLabel("Las partidas han cambiado en este equipo y en la nube")
+        h = QLabel(_("Las partidas han cambiado en este equipo y en la nube"))
         h.setStyleSheet("font-size: 14pt; font-weight: 800;")
         lay.addWidget(h)
-        info = QLabel(f"<b>{title}</b> se ha jugado en otro equipo desde la última sincronización "
-                      "y también aquí. Elige qué versión conservar. Antes de sobrescribir nada se "
-                      "guarda una copia de seguridad de tus partidas locales.")
+        info = QLabel(_("{title} se ha jugado en otro equipo desde la última sincronización y también "
+                        "aquí. Elige qué versión conservar. Antes de sobrescribir nada se guarda una "
+                        "copia de seguridad de tus partidas locales.").format(title=f"<b>{title}</b>"))
         info.setWordWrap(True)
         info.setObjectName("Muted")
         lay.addWidget(info)
 
         t = QTableWidget(len(plan.conflicts), 3)
-        t.setHorizontalHeaderLabels(["Archivo", "En este equipo", "En la nube"])
+        t.setHorizontalHeaderLabels([_("Archivo"), _("En este equipo"), _("En la nube")])
         t.verticalHeader().hide()
         t.setEditTriggers(QAbstractItemView.NoEditTriggers)
         t.setSelectionMode(QAbstractItemView.NoSelection)
         t.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         for i, it in enumerate(plan.conflicts):
-            loc = _fmt(it.local.mtime) + f"  ·  {_size(it.local.size)}" if it.local else "borrado"
-            cl = _fmt(parse_ts(it.cloud.last_modified)) if it.cloud else "borrado"
+            loc = _fmt(it.local.mtime) + f"  ·  {_size(it.local.size)}" if it.local else _("borrado")
+            cl = _fmt(parse_ts(it.cloud.last_modified)) if it.cloud else _("borrado")
             if it.cloud and it.cloud.size:
-                cl += f"  ·  {_size(it.cloud.size)} (comprimido)"
+                cl += "  ·  " + _("{size} (comprimido)").format(size=_size(it.cloud.size))
             for c, txt in enumerate((it.key, loc, cl)):
                 t.setItem(i, c, QTableWidgetItem(txt))
         t.resizeColumnsToContents()
@@ -199,14 +201,14 @@ class ConflictDialog(QDialog):
         lay.addWidget(t, 1)
 
         row = QHBoxLayout()
-        cancel = QPushButton("Decidir más tarde")
+        cancel = QPushButton(_("Decidir más tarde"))
         cancel.setObjectName("Ghost")
         cancel.clicked.connect(self.reject)
         row.addWidget(cancel)
         row.addStretch()
-        local = QPushButton("Conservar la de este equipo")
+        local = QPushButton(_("Conservar la de este equipo"))
         local.clicked.connect(lambda: self._pick("local"))
-        cloud = QPushButton("Conservar la de la nube")
+        cloud = QPushButton(_("Conservar la de la nube"))
         cloud.setObjectName("Primary")
         cloud.clicked.connect(lambda: self._pick("cloud"))
         row.addWidget(local)
@@ -219,7 +221,7 @@ class ConflictDialog(QDialog):
 
 
 def _fmt(ts: float | None) -> str:
-    return time.strftime("%d/%m/%Y %H:%M", time.localtime(ts)) if ts else "?"
+    return time.strftime(i18n.date_format(), time.localtime(ts)) if ts else "?"
 
 
 def _size(n: int | None) -> str:
@@ -240,23 +242,24 @@ class ProtonDownloadDialog(QDialog):
 
         from .workers import run_task
         super().__init__(parent)
-        self.setWindowTitle("Descargar Proton-GE")
+        self.setWindowTitle(_("Descargar Proton-GE"))
         self.resize(480, 0)
         self.installed_name: str | None = None
         lay = QVBoxLayout(self)
         lay.setContentsMargins(24, 22, 24, 22)
         lay.setSpacing(12)
-        self.label = QLabel("Buscando la última versión de Proton-GE…")
+        self.label = QLabel(_("Buscando la última versión de Proton-GE…"))
         self.label.setWordWrap(True)
         lay.addWidget(self.label)
         self.bar = QProgressBar()
         self.bar.setRange(0, 0)
         lay.addWidget(self.bar)
-        note = QLabel(f"Se guarda en la carpeta de datos de {APP_NAME}; no se toca la instalación de Steam.")
+        note = QLabel(_("Se guarda en la carpeta de datos de {app}; no se toca la instalación de Steam.")
+                      .format(app=APP_NAME))
         note.setObjectName("Muted")
         note.setWordWrap(True)
         lay.addWidget(note)
-        self.close_btn = QPushButton("Cancelar")
+        self.close_btn = QPushButton(_("Cancelar"))
         self.close_btn.clicked.connect(self.reject)
         lay.addWidget(self.close_btn, 0, Qt.AlignRight)
 
@@ -265,7 +268,7 @@ class ProtonDownloadDialog(QDialog):
             rels = proton.available()
             rel = next((r for r in rels if r.name == release_name), None) if release_name else rels[0]
             if rel is None:
-                raise proton.ProtonError(f"No se encuentra {release_name}")
+                raise proton.ProtonError(_("No se encuentra {name}").format(name=release_name))
             b.log(f"name:{rel.name}:{rel.size}")
             last = [-1]
 
@@ -284,14 +287,14 @@ class ProtonDownloadDialog(QDialog):
 
     def _progress(self, msg: str):
         if msg.startswith("name:"):
-            _, name, size = msg.split(":")
-            self.label.setText(f"Descargando {name} ({int(size) / 2**20:.0f} MB)…")
+            _tag, name, size = msg.split(":")
+            self.label.setText(_("Descargando {name} ({size})…").format(name=name, size=f"{int(size) / 2**20:.0f} MB"))
             self.bar.setRange(0, 100)
         elif msg.startswith("pct:"):
             pct = int(msg[4:])
             self.bar.setValue(pct)
             if pct >= 100:
-                self.label.setText("Verificando y descomprimiendo…")
+                self.label.setText(_("Verificando y descomprimiendo…"))
                 self.bar.setRange(0, 0)
 
     def _done(self, name: str):
@@ -301,8 +304,8 @@ class ProtonDownloadDialog(QDialog):
     def _failed(self, e: Exception):
         self.bar.setRange(0, 1)
         self.bar.setValue(0)
-        self.label.setText(f"No se pudo descargar: {e}")
-        self.close_btn.setText("Cerrar")
+        self.label.setText(_("No se pudo descargar: {error}").format(error=e))
+        self.close_btn.setText(_("Cerrar"))
 
 
 class InstallDialog(QDialog):
@@ -316,7 +319,7 @@ class InstallDialog(QDialog):
 
         from .workers import run_task
         super().__init__(parent)
-        self.setWindowTitle(f"Instalar {title}")
+        self.setWindowTitle(_("Instalar {title}").format(title=title))
         self.setMinimumWidth(600)
         self.game_id, self.title = game_id, title
         self.info = None
@@ -333,10 +336,10 @@ class InstallDialog(QDialog):
         lay.addWidget(h)
 
         self.plat_group = QButtonGroup(self)
-        self.rb_win = QRadioButton("Windows con Proton-GE  ·  partidas en la nube de GOG")
-        self.rb_lin = QRadioButton("Linux nativo  ·  sin partidas en la nube (GOG no las ofrece)")
+        self.rb_win = QRadioButton(_("Windows con Proton-GE  ·  partidas en la nube de GOG"))
+        self.rb_lin = QRadioButton(_("Linux nativo  ·  sin partidas en la nube (GOG no las ofrece)"))
         if "windows" in platforms and "linux" in platforms:
-            lay.addWidget(QLabel("<b>Versión</b>"))
+            lay.addWidget(QLabel("<b>" + _("Versión") + "</b>"))
             for rb in (self.rb_win, self.rb_lin):
                 self.plat_group.addButton(rb)
                 lay.addWidget(rb)
@@ -348,7 +351,7 @@ class InstallDialog(QDialog):
         wl = QVBoxLayout(self.win_box)
         wl.setContentsMargins(0, 6, 0, 0)
         wl.setSpacing(8)
-        wl.addWidget(QLabel("<b>Idioma</b>"))
+        wl.addWidget(QLabel("<b>" + _("Idioma") + "</b>"))
         self.lang = QComboBox()
         self.lang.currentIndexChanged.connect(self._update_sizes)
         wl.addWidget(self.lang)
@@ -356,7 +359,7 @@ class InstallDialog(QDialog):
         self.lang_note.setObjectName("Muted")
         self.lang_note.setWordWrap(True)
         wl.addWidget(self.lang_note)
-        self.dlc_title = QLabel("<b>Contenido adicional</b>")
+        self.dlc_title = QLabel("<b>" + _("Contenido adicional") + "</b>")
         wl.addWidget(self.dlc_title)
         self.dlc_box = QVBoxLayout()
         wl.addLayout(self.dlc_box)
@@ -364,19 +367,19 @@ class InstallDialog(QDialog):
         self._QCheckBox = QCheckBox
         lay.addWidget(self.win_box)
 
-        lay.addWidget(QLabel("<b>Carpeta de instalación</b>"))
-        self.path = PathRow(str(self._root / "…"), "Carpeta de instalación", self)
+        lay.addWidget(QLabel("<b>" + _("Carpeta de instalación") + "</b>"))
+        self.path = PathRow(str(self._root / "…"), _("Carpeta de instalación"), self)
         lay.addLayout(self.path)
-        self.sizes = QLabel("Consultando a GOG…")
+        self.sizes = QLabel(_("Consultando a GOG…"))
         self.sizes.setObjectName("Muted")
         self.sizes.setWordWrap(True)
         lay.addWidget(self.sizes)
 
         row = QHBoxLayout()
         row.addStretch()
-        cancel = QPushButton("Cancelar")
+        cancel = QPushButton(_("Cancelar"))
         cancel.clicked.connect(self.reject)
-        self.ok = QPushButton("Instalar")
+        self.ok = QPushButton(_("Instalar"))
         self.ok.setObjectName("Primary")
         self.ok.setEnabled(False)
         self.ok.clicked.connect(self._accept)
@@ -395,7 +398,8 @@ class InstallDialog(QDialog):
         self.lang.blockSignals(True)
         for code in info.all_languages:
             self.lang.addItem(self._names.get(code, code), code)
-        idx = self.lang.findData(info.default_language())
+        from gogl.languages import preferred
+        idx = self.lang.findData(info.default_language(preferred()))
         self.lang.setCurrentIndex(max(idx, 0))
         self.lang.blockSignals(False)
         for pid, name in info.dlcs:
@@ -414,7 +418,7 @@ class InstallDialog(QDialog):
         self.adjustSize()
 
     def _failed(self, e: Exception):
-        self.sizes.setText(f"No se pudo consultar el juego en GOG: {e}")
+        self.sizes.setText(_("No se pudo consultar el juego en GOG: {error}").format(error=e))
         self.sizes.setStyleSheet("color: #f06c6c;")
 
     def _platform_changed(self, windows: bool):
@@ -424,7 +428,7 @@ class InstallDialog(QDialog):
             self.ok.setEnabled(True)
             if not self.path.edit.text() or self.info and self.path.edit.text() == str(self._default_path(self.info)):
                 self.path.edit.setText(str(self._root / self.title))
-            self.sizes.setText("Se descargará el instalador oficial de Linux de GOG.")
+            self.sizes.setText(_("Se descargará el instalador oficial de Linux de GOG."))
         else:
             if self.info:
                 self.path.edit.setText(str(self._default_path(self.info)))
@@ -432,15 +436,16 @@ class InstallDialog(QDialog):
             self._update_sizes()
         self.adjustSize()
 
-    def _update_sizes(self, *_):
+    def _update_sizes(self, *_args):
         if not self.info or self.platform != "windows":
             return
         import shutil as _sh
         code = self.lang.currentData()
         shared = code not in self.info.languages and bool(self.info.languages)
-        self.lang_note.setText(f"Este juego trae todos sus idiomas en el mismo paquete: {APP_NAME} hará que "
-                               f"Windows (Wine) le indique {self._names.get(code, code).lower()} al "
-                               f"arrancar. Si sale en otro idioma, cámbialo en sus opciones."
+        self.lang_note.setText(_("Este juego trae todos sus idiomas en el mismo paquete: {app} hará que "
+                                 "Windows (Wine) le indique el idioma elegido ({language}) al arrancar. Si "
+                                 "sale en otro idioma, cámbialo en sus opciones.").format(
+                                     app=APP_NAME, language=self._names.get(code, code))
                                if shared else "")
         self.lang_note.setVisible(shared)
         down, disk = self.info.estimate(code, self._dlcs())
@@ -448,9 +453,10 @@ class InstallDialog(QDialog):
         while not p.exists() and p != p.parent:
             p = p.parent
         free = _sh.disk_usage(p).free
-        warn = "  ⚠ no hay espacio suficiente" if disk > free else ""
-        self.sizes.setText(f"Descarga: {_size(down)}  ·  En disco: {_size(disk)}  ·  "
-                           f"Libre: {_size(free)}{warn}   (versión {self.info.version or '?'})")
+        warn = "  ⚠ " + _("no hay espacio suficiente") if disk > free else ""
+        self.sizes.setText(_("Descarga: {download}  ·  En disco: {disk}  ·  Libre: {free}").format(
+            download=_size(down), disk=_size(disk), free=_size(free)) + warn + "   (" +
+            _("versión {version}").format(version=self.info.version or "?") + ")")
         self.sizes.setStyleSheet("color: #f5b942;" if warn else "")
 
     def _dlcs(self) -> list[str]:
@@ -470,7 +476,7 @@ class LaunchOptionsDialog(QDialog):
     def __init__(self, title: str, options: dict, windows: bool, parent=None):
         from PySide6.QtWidgets import QPlainTextEdit
         super().__init__(parent)
-        self.setWindowTitle(f"Opciones de lanzamiento · {title}")
+        self.setWindowTitle(_("Opciones de lanzamiento") + f" · {title}")
         self.setMinimumWidth(620)
         self.options = dict(options)
         lay = QVBoxLayout(self)
@@ -488,17 +494,17 @@ class LaunchOptionsDialog(QDialog):
 
         self.args = QLineEdit(options.get("args", ""))
         self.args.setPlaceholderText("-windowed -skipintro")
-        field("Argumentos", "Se añaden a los que GOG ya pasa al juego.", self.args)
+        field(_("Argumentos"), _("Se añaden a los que GOG ya pasa al juego."), self.args)
         self.env = QPlainTextEdit(options.get("env", ""))
         self.env.setPlaceholderText("DXVK_HUD=fps\nPROTON_USE_WINED3D=1" if windows else "SDL_VIDEODRIVER=x11")
         self.env.setFixedHeight(96)
-        field("Variables de entorno", "Una por línea, CLAVE=valor." + (
-            " Útiles con Proton: PROTON_USE_WINED3D=1 (sin Vulkan), PROTON_NO_ESYNC=1, "
-            "DXVK_HUD=fps." if windows else ""), self.env)
+        field(_("Variables de entorno"), _("Una por línea, CLAVE=valor.") + (
+            " " + _("Útiles con Proton: PROTON_USE_WINED3D=1 (sin Vulkan), PROTON_NO_ESYNC=1, "
+                    "DXVK_HUD=fps.") if windows else ""), self.env)
         self.wrapper = QLineEdit(options.get("wrapper", ""))
         self.wrapper.setPlaceholderText("mangohud  ·  gamemoderun")
-        field("Comando previo", "Programa que envuelve al juego, p. ej. MangoHud o GameMode "
-                                "(tienen que estar instalados en el sistema).", self.wrapper)
+        field(_("Comando previo"), _("Programa que envuelve al juego, p. ej. MangoHud o GameMode "
+                                     "(tienen que estar instalados en el sistema)."), self.wrapper)
 
         self.error = QLabel()
         self.error.setStyleSheet("color: #f06c6c;")
@@ -506,9 +512,9 @@ class LaunchOptionsDialog(QDialog):
         lay.addWidget(self.error)
         row = QHBoxLayout()
         row.addStretch()
-        cancel = QPushButton("Cancelar")
+        cancel = QPushButton(_("Cancelar"))
         cancel.clicked.connect(self.reject)
-        ok = QPushButton("Guardar")
+        ok = QPushButton(_("Guardar"))
         ok.setObjectName("Primary")
         ok.clicked.connect(self._ok)
         row.addWidget(cancel)
@@ -529,7 +535,7 @@ class LaunchOptionsDialog(QDialog):
             self.error.show()
             return
         except ValueError:
-            self.error.setText("Hay comillas sin cerrar en los argumentos o en el comando previo")
+            self.error.setText(_("Hay comillas sin cerrar en los argumentos o en el comando previo"))
             self.error.show()
             return
         self.options = {k: v for k, v in (("args", self.args.text().strip()),

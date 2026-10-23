@@ -8,6 +8,7 @@ import zlib
 import httpx
 
 from .auth import AuthManager
+from .i18n import _
 
 CONTENT_SYSTEM = "https://content-system.gog.com"
 REMOTE_CONFIG = "https://remote-config.gog.com/components/galaxy_client/clients/{client_id}?component_version=2.0.45"
@@ -53,15 +54,15 @@ class GogApi:
         """clientId y clientSecret del juego, sacados del manifiesto v2 más reciente."""
         builds = self.builds(product_id, platform)
         if not builds:
-            raise ApiError(f"El producto {product_id} no tiene builds v2 para {platform}")
+            raise ApiError(_("El producto {id} no tiene builds v2 para {platform}").format(id=product_id, platform=platform))
         meta = self.build_meta(builds[0])
         cid, secret = meta.get("clientId"), meta.get("clientSecret")
         if not cid or not secret:
-            raise ApiError(f"El manifiesto de {product_id} no trae clientId/clientSecret")
+            raise ApiError(_("El manifiesto de {id} no trae clientId/clientSecret").format(id=product_id))
         return str(cid), str(secret)
 
     def remote_config(self, client_id: str) -> dict:
         r = self.http.get(REMOTE_CONFIG.format(client_id=client_id))
         if r.status_code != 200:
-            raise ApiError(f"remote-config de {client_id} → {r.status_code}")
+            raise ApiError(_("remote-config de {id} → {code}").format(id=client_id, code=r.status_code))
         return r.json()

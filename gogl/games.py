@@ -8,6 +8,7 @@ from pathlib import Path
 import httpx
 
 from . import paths
+from .i18n import _
 from .api import ApiError, GogApi
 from .auth import AuthError
 from .state import Game
@@ -26,7 +27,7 @@ def read_game_info(install_path: Path) -> dict:
         except (OSError, ValueError):
             continue
     if not infos:
-        raise GameInfoError(f"No hay ningún goggame-*.info en {install_path}")
+        raise GameInfoError(_("No hay ningún goggame-*.info en {path}").format(path=install_path))
     for info in infos:
         if str(info.get("gameId")) == str(info.get("rootGameId", info.get("gameId"))):
             return info

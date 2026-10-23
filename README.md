@@ -45,6 +45,9 @@ Lanzador de juegos de [GOG](https://www.gog.com) para Linux y SteamOS, centrado 
 - **Integración con Steam**: añade juegos (y el propio lanzador) como «juegos no de Steam»
   con sus carátulas.
 - **Control con mando** (cruceta/stick, A, B, LB/RB…), pensado para el modo juego de SteamOS.
+- **En español y en inglés**: sigue el idioma del sistema (cualquier otro idioma usa el
+  inglés) y se puede fijar en Ajustes → Idioma. El idioma con el que se instalan los juegos
+  también sale del sistema, salvo que elijas otro.
 
 ## Instalación
 
@@ -116,6 +119,18 @@ gogl --help                # el resto de órdenes
 .venv/bin/pip install -e '.[ui,dev]'
 .venv/bin/python -m pytest
 ```
+
+## Traducciones
+
+Los textos están en español en el código, marcados con `_("…")`, y las traducciones son
+catálogos gettext en [`gogl/locale/`](gogl/locale/) que se leen tal cual (sin compilar).
+
+- Para **añadir un idioma**, copia `gogl/locale/gogl.pot` a `gogl/locale/<código>.po`
+  (p. ej. `fr.po`), pon su nombre en la cabecera `X-Language-Name` y traduce los `msgstr`
+  (con Poedit o cualquier editor). Aparece solo en Ajustes y se usa si el sistema está en
+  ese idioma.
+- Tras cambiar textos en el código, `packaging/update_po.py` pone al día la plantilla y los
+  catálogos; los tests fallan si alguno se queda sin traducir.
 
 ## Licencia
 

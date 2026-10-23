@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (QFrame, QGridLayout, QHBoxLayout, QLabel, QProgre
                                QScrollArea, QVBoxLayout, QWidget)
 
 from gogl import profile as prof
+from gogl.i18n import _, n_
 
 from . import theme
 from .game_page import card, clear
@@ -117,14 +118,15 @@ class ProfilePage(QWidget):
         n = QLabel(p.username if p else (self.window_.sidebar.user_name.text()))
         n.setStyleSheet("font-size: 24pt; font-weight: 900;")
         names.addWidget(n)
-        sub = QLabel(f"En GOG desde {p.since}" if p and p.since else
-                     ("No se pudo cargar el perfil: " + error if error else "Cargando perfil…"))
+        sub = QLabel(_("En GOG desde {date}").format(date=p.since) if p and p.since else
+                     (_("No se pudo cargar el perfil: {error}").format(error=error) if error else
+                      _("Cargando perfil…")))
         sub.setObjectName("Muted")
         names.addWidget(sub)
         names.addStretch()
         head.addLayout(names, 1)
-        full = QPushButton("Ver perfil completo en GOG")
-        full.setToolTip("Tu perfil público de gog.com con horas jugadas y estadísticas")
+        full = QPushButton(_("Ver perfil completo en GOG"))
+        full.setToolTip(_("Tu perfil público de gog.com con horas jugadas y estadísticas"))
         full.setEnabled(bool(p))
         full.clicked.connect(lambda: self.open_store.emit(f"https://www.gog.com/u/{p.username}"))
         head.addWidget(full, 0, Qt.AlignVCenter)
@@ -134,11 +136,11 @@ class ProfilePage(QWidget):
         entries = self.window_.entries
         grid = QGridLayout()
         grid.setSpacing(12)
-        grid.addWidget(tile(str(len(entries)), "juegos en tu biblioteca"), 0, 0)
-        grid.addWidget(tile(str(sum(1 for e in entries.values() if e.installed)), "instalados"), 0, 1)
-        grid.addWidget(tile(str(stats.unlocked), f"logros en {stats.games} juego{'s' if stats.games != 1 else ''}"),
-                       0, 2)
-        grid.addWidget(tile(str(stats.perfect), "juegos al 100 %"), 0, 3)
+        grid.addWidget(tile(str(len(entries)), _("juegos en tu biblioteca")), 0, 0)
+        grid.addWidget(tile(str(sum(1 for e in entries.values() if e.installed)), _("instalados")), 0, 1)
+        grid.addWidget(tile(str(stats.unlocked), n_("logros en {n} juego", "logros en {n} juegos", stats.games)
+                            .format(n=stats.games)), 0, 2)
+        grid.addWidget(tile(str(stats.perfect), _("juegos al 100 %")), 0, 3)
         self.lay.addLayout(grid)
 
         row = QHBoxLayout()
@@ -149,10 +151,10 @@ class ProfilePage(QWidget):
         self.lay.addStretch()
 
     def _achievements_card(self, stats: prof.AchievementStats, entries) -> QFrame:
-        c, l = card("Últimos logros")
+        c, l = card(_("Últimos logros"))
         if not stats.recent:
-            m = QLabel("Aún no hay logros consultados. Se cargan al abrir la ficha de cada juego, o "
-                       "todos de una vez con el botón de abajo.")
+            m = QLabel(_("Aún no hay logros consultados. Se cargan al abrir la ficha de cada juego, o "
+                         "todos de una vez con el botón de abajo."))
             m.setObjectName("Muted")
             m.setWordWrap(True)
             l.addWidget(m)
@@ -167,27 +169,29 @@ class ProfilePage(QWidget):
             name = QLabel(f"<b>{a.name}</b>")
             game = entries.get(gid)
             sub = QLabel(f"{game.title if game else gid} · "
-                         f"{time.strftime('%d/%m/%Y', time.localtime(a.unlocked_at))}")
+                         f"{time.strftime(_('%d/%m/%Y'), time.localtime(a.unlocked_at))}")
             sub.setObjectName("Muted")
             t.addWidget(name)
             t.addWidget(sub)
             r.addLayout(t, 1)
             if game:
-                go = QPushButton("Ficha")
+                go = QPushButton(_("Ficha"))
                 go.setObjectName("Ghost")
                 go.clicked.connect(lambda _=False, g=gid: self.open_game.emit(g))
                 r.addWidget(go)
             l.addLayout(r)
         if stats.total:
-            note = QLabel(f"{stats.unlocked} de {stats.total} logros en los {stats.games} juegos consultados")
+            note = QLabel(n_("{unlocked} de {total} logros en el juego consultado",
+                             "{unlocked} de {total} logros en los {n} juegos consultados", stats.games)
+                          .format(unlocked=stats.unlocked, total=stats.total, n=stats.games))
             note.setObjectName("Muted")
             l.addWidget(note)
         self.scan_bar = QProgressBar()
         self.scan_bar.setTextVisible(False)
         self.scan_bar.hide()
         l.addWidget(self.scan_bar)
-        scan = QPushButton("Consultar logros de toda la biblioteca")
-        scan.setToolTip("Pide a GOG los logros de cada juego (la primera vez tarda unos minutos)")
+        scan = QPushButton(_("Consultar logros de toda la biblioteca"))
+        scan.setToolTip(_("Pide a GOG los logros de cada juego (la primera vez tarda unos minutos)"))
         scan.clicked.connect(lambda: self._scan(scan))
         l.addWidget(scan, 0, Qt.AlignLeft)
         return c
@@ -195,7 +199,7 @@ class ProfilePage(QWidget):
     def _scan(self, btn: QPushButton):
         ids = list(self.window_.entries)
         btn.setEnabled(False)
-        btn.setText("Consultando…")
+        btn.setText(_("Consultando…"))
         self.scan_bar.show()
         self.scan_bar.setRange(0, len(ids))
 
@@ -211,9 +215,9 @@ class ProfilePage(QWidget):
         run_task(work, lambda _r: self._render(), lambda e: self._render(error=str(e)), progress)
 
     def _wishlist_card(self, p: prof.Profile | None) -> QFrame:
-        c, l = card(f"Lista de deseos ({len(p.wishlist)})" if p else "Lista de deseos")
+        c, l = card(_("Lista de deseos") + (f" ({len(p.wishlist)})" if p else ""))
         if p and not p.wishlist:
-            m = QLabel("Tu lista de deseos está vacía.")
+            m = QLabel(_("Tu lista de deseos está vacía."))
             m.setObjectName("Muted")
             l.addWidget(m)
         for w in (p.wishlist[:12] if p else []):
@@ -233,15 +237,15 @@ class ProfilePage(QWidget):
             pr = QLabel(prof.price(w.final, w.currency))
             pr.setStyleSheet("font-weight: 700;")
             r.addWidget(pr)
-            go = QPushButton("Ver")
+            go = QPushButton(_("Ver"))
             go.setObjectName("Ghost")
             go.clicked.connect(lambda _=False, u=w.url: self.open_store.emit(u))
             r.addWidget(go)
             l.addLayout(r)
         if p and len(p.wishlist) > 12:
-            more = QPushButton(f"Ver la lista completa ({len(p.wishlist)})")
+            more = QPushButton(_("Ver la lista completa ({n})").format(n=len(p.wishlist)))
             more.setObjectName("Ghost")
-            more.clicked.connect(lambda: self.open_store.emit("/es/account/wishlist"))
+            more.clicked.connect(lambda: self.open_store.emit("/account/wishlist"))
             l.addWidget(more, 0, Qt.AlignLeft)
         return c
 

@@ -8,6 +8,7 @@ import time
 from contextlib import contextmanager
 
 from . import paths
+from .i18n import _
 
 
 class LockTimeout(Exception):
@@ -25,7 +26,7 @@ def game_lock(game_id: str, timeout: float | None = None):
                 break
             except BlockingIOError:
                 if deadline is not None and time.monotonic() > deadline:
-                    raise LockTimeout(f"El juego {game_id} está sincronizándose en otro proceso")
+                    raise LockTimeout(_("El juego {id} está sincronizándose en otro proceso").format(id=game_id))
                 time.sleep(0.5)
         try:
             yield

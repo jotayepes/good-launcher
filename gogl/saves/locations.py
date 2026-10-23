@@ -14,6 +14,8 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from ..i18n import _
+
 DEFAULT_LOCATION = "__default"
 DEFAULT_TEMPLATE = "<?APPLICATION_DATA_LOCAL?>/GOG.com/Galaxy/Applications/{client_id}/Storage/Shared/Files"
 
@@ -115,13 +117,13 @@ def resolve_template(template: str, install_path: Path, prefix: Path | None) -> 
         name = (m.group(1) or m.group(2)).upper()
         if name not in vars_:
             if prefix is None and name != "INSTALL":
-                raise LocationError(f"{m.group(0)} requiere un prefijo de Wine/Proton")
-            raise LocationError(f"Variable desconocida {m.group(0)} en «{template}»")
+                raise LocationError(_("{var} requiere un prefijo de Wine/Proton").format(var=m.group(0)))
+            raise LocationError(_("Variable desconocida {var} en «{template}»").format(var=m.group(0), template=template))
         return str(vars_[name])
 
     raw = _VAR_RE.sub(sub, template).replace("\\", "/")
     if not raw.startswith("/"):
-        raise LocationError(f"La ruta «{template}» no es absoluta tras resolver variables")
+        raise LocationError(_("La ruta «{template}» no es absoluta tras resolver variables").format(template=template))
     return resolve_case_insensitive(Path(os.path.normpath(raw)))
 
 

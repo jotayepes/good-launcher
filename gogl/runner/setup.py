@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Callable
 
 from .. import languages
+from ..i18n import _
 from ..content import load_manifest, redist_dir
 from ..content.builds import SUPPORT_DIR
 from ..content.common import InstallPlan
@@ -87,13 +88,13 @@ def plan_steps(game: Game, plan: InstallPlan, done: dict) -> list[Step]:
     isi = root / ISI
     for pid in plan.script_products:
         if isi.exists() and (install / f"goggame-{pid}.script").exists():
-            steps.append(Step("scripts", "Script de instalación",
+            steps.append(Step("scripts", _("Script de instalación"),
                               [str(isi), "/VERYSILENT", f"/ProductId={pid}",
                                f"/supportDir={win_path(install / SUPPORT_DIR)}", *common], install))
     for c in plan.support_commands:
         exe = _support_exe(install, c)
         if exe:
-            steps.append(Step("scripts", "Instalador de soporte de GOG",
+            steps.append(Step("scripts", _("Instalador de soporte de GOG"),
                               [str(exe), "/VERYSILENT", f"/ProductId={c['product_id']}", *common,
                                *split_windows_args(c.get("arguments") or "")], install))
     if not any(s.key == "scripts" for s in steps):
@@ -132,7 +133,7 @@ def run_setup(game: Game, pv: proton_mgr.ProtonVersion, steps: list[Step],
     with open(log_path(game.game_id), "a") as log:
         for s in steps:
             if s.args:
-                status(f"Instalando {s.label}…")
+                status(_("Instalando {name}…").format(name=s.label))
                 log.write(f"[gogl] preparación: {s.label}: {' '.join(s.args)}\n")
                 log.flush()
                 try:
@@ -168,7 +169,7 @@ def ensure_galaxy_service(game: Game, pv: proton_mgr.ProtonVersion,
     marker = _load_marker(compat)
     if marker.get("galaxy_service") == comet.VERSION:
         return True
-    status("Preparando los logros (solo la primera vez)…")
+    status(_("Preparando los logros (solo la primera vez)…"))
     with open(log_path(game.game_id), "a") as log:
         log.write("[gogl] registrando el servicio GalaxyCommunication para los logros\n")
         log.flush()

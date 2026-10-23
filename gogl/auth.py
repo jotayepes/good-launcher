@@ -19,6 +19,7 @@ from urllib.parse import parse_qs, urlencode, urlparse
 import httpx
 
 from . import paths
+from .i18n import _
 
 GALAXY_CLIENT_ID = "46899977096215655"
 GALAXY_CLIENT_SECRET = "9d85c43b1482497dbbce61f6e4aa173a433796eeae2ca8c5f6129f2dc4de46d9"
@@ -56,7 +57,7 @@ def extract_code(code_or_url: str) -> str:
     if "://" in s:
         codes = parse_qs(urlparse(s).query).get("code")
         if not codes:
-            raise AuthError("La URL no contiene ningún parámetro 'code'")
+            raise AuthError(_("La URL no contiene ningún parámetro 'code'"))
         return codes[0]
     return s
 
@@ -107,10 +108,10 @@ class AuthManager:
     def _token_request(self, params: dict) -> dict:
         r = self.http.get(f"{AUTH_URL}/token", params=params)
         if r.status_code != 200:
-            raise AuthError(f"auth.gog.com respondió {r.status_code}: {r.text[:200]}")
+            raise AuthError(_("auth.gog.com respondió {code}: {text}").format(code=r.status_code, text=r.text[:200]))
         tok = r.json()
         if "access_token" not in tok:
-            raise AuthError(f"Respuesta de token inesperada: {tok}")
+            raise AuthError(_("Respuesta de token inesperada: {response}").format(response=tok))
         tok["expires_at"] = time.time() + int(tok.get("expires_in", 3600))
         return tok
 
@@ -130,7 +131,7 @@ class AuthManager:
         """Devuelve el token de Galaxy vigente; refresca si hace falta. Requiere lock."""
         g = data.get("galaxy")
         if not g:
-            raise AuthError("No has iniciado sesión. Ejecuta: gogl login")
+            raise AuthError(_("No has iniciado sesión. Ejecuta: gogl login"))
         if g["expires_at"] - EXPIRY_MARGIN > time.time():
             return g
         new = self._token_request({
@@ -167,7 +168,7 @@ class AuthManager:
             if c and not force_refresh and c["expires_at"] - EXPIRY_MARGIN > time.time():
                 return Credentials(c["access_token"], str(c.get("user_id", g["user_id"])), c["expires_at"])
             if not client_secret:
-                raise AuthError(f"Falta el clientSecret del juego {client_id}")
+                raise AuthError(_("Falta el clientSecret del juego {id}").format(id=client_id))
             c = self._token_request({
                 "client_id": client_id,
                 "client_secret": client_secret,

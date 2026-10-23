@@ -6,8 +6,9 @@ import threading
 from pathlib import Path
 from typing import Callable
 
-from .. import config
+from .. import config, languages
 from ..api import GogApi
+from ..i18n import _
 from ..state import Game, State
 from .builds import BuildInfo, build_info, latest_build, make_plan
 from .common import ContentError, InstallPlan, safe_name
@@ -33,11 +34,11 @@ def install_game(api: GogApi, game_id: str, *, platform: str = "windows", langua
     if platform == "linux":
         from .linux import install_linux
         return install_linux(inst, game_id, install_path,
-                             language or config.load().get("language") or "es-ES")
+                             language or languages.preferred())
     inst.p.stage = "prepare"
     progress(inst.p)
     info = build_info(api, game_id, platform)
-    lang = language or info.default_language(config.load().get("language") or "es-ES")
+    lang = language or info.default_language(languages.preferred())
     chosen = [d for d, _ in info.dlcs] if dlcs is None else dlcs
     plan = make_plan(info, lang, chosen)
     return inst.install(plan, install_path or default_install_path(info))
@@ -62,7 +63,7 @@ def update_game(api: GogApi, game_id: str, progress=lambda p: None, cancel=None,
                 state: State | None = None) -> Game:
     m = load_manifest(game_id)
     if not m:
-        raise ContentError("Este juego no se instaló con gogl")
+        raise ContentError(_("Este juego no se instaló con gogl"))
     p = m["plan"]
     return install_game(api, game_id, platform=p["platform"], language=p["language"], dlcs=p["dlcs"],
                         install_path=Path(m["install_path"]), progress=progress, cancel=cancel,

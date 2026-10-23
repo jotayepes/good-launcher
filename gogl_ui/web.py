@@ -13,12 +13,13 @@ perfil no tiene padre y, al salir, se borran primero todas las páginas."""
 
 from __future__ import annotations
 
+import re
 import weakref
 
 from PySide6.QtCore import QCoreApplication, QEvent, Qt, QUrl
 from PySide6.QtWidgets import QApplication, QDialog, QVBoxLayout
 
-from gogl import paths
+from gogl import i18n, paths
 
 try:
     from PySide6.QtWebEngineCore import QWebEnginePage, QWebEngineProfile
@@ -39,7 +40,8 @@ def profile():
         _profile.setPersistentStoragePath(str(paths.data_dir() / "web"))
         _profile.setCachePath(str(paths.cache_dir() / "web"))
         _profile.setPersistentCookiesPolicy(QWebEngineProfile.ForcePersistentCookies)
-        _profile.setHttpAcceptLanguage("es-ES,es;q=0.9,en;q=0.8")
+        _profile.setHttpAcceptLanguage("es-ES,es;q=0.9,en;q=0.8" if i18n.current == "es" else
+                                       f"{i18n.current},en;q=0.8")
         _profile.downloadRequested.connect(_on_download)
         app = QApplication.instance()
         if app is not None:
@@ -130,12 +132,10 @@ if HAS_WEBENGINE:
 
 
 def store_url(path: str = "") -> QUrl:
-    path = path or "/es/games"
-    if path.startswith("/game/"):
-        path = "/es" + path
-    elif path.startswith("/en/"):
-        path = "/es/" + path[4:]  # la biblioteca guarda las rutas en inglés
-    return QUrl("https://www.gog.com" + path)
+    """URL de gog.com en el idioma de la interfaz. La ruta puede traer ya un idioma
+    (la biblioteca las guarda en inglés: «/en/game/…»), que se sustituye."""
+    path = re.sub(r"^/[a-z]{2}(?=/|$)", "", path or "/games")
+    return QUrl(f"https://www.gog.com/{i18n.web_language()}{path}")
 
 
 __all__ = ["HAS_WEBENGINE", "clear_session", "make_view", "profile", "shutdown", "store_url"]

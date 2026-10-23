@@ -13,13 +13,14 @@ from PySide6.QtWidgets import (QFrame, QHBoxLayout, QLabel, QProgressBar, QPushB
 
 from gogl.content import Cancelled, Installer, Progress, install_game, update_game
 from gogl.content.offline import download_bundle
+from gogl.i18n import _
 
 from . import theme
 from .game_page import clear
 from .workers import Backend
 
-KIND_LABEL = {"install": "Instalación", "update": "Actualización", "repair": "Reparación",
-              "offline": "Descarga"}
+KIND_LABEL = {"install": _("Instalación"), "update": _("Actualización"), "repair": _("Reparación"),
+              "offline": _("Descarga")}
 
 
 @dataclass
@@ -134,8 +135,8 @@ class DownloadManager(QObject):
         j = next((j for j in self.jobs if j.key == key and j.status == "running"), None)
         if j:
             j.status, j.error = status, error
-            msg = {"done": f"{j.label}: completada", "cancelled": f"{j.label}: cancelada",
-                   "failed": error}[status]
+            msg = {"done": _("{label}: completada").format(label=j.label),
+                   "cancelled": _("{label}: cancelada").format(label=j.label), "failed": error}[status]
             self.finished.emit(j.game_id, status == "done", msg)
         self.changed.emit()
         self._next()
@@ -157,30 +158,30 @@ def eta(p: Progress) -> str:
         return f"{s // 3600} h {s % 3600 // 60} min"
     if s >= 60:
         return f"{s // 60} min {s % 60} s"
-    return f"{s} s" if s else "menos de 1 s"
+    return f"{s} s" if s else _("menos de 1 s")
 
 
 def status_text(j: Job) -> str:
     p = j.progress
     if j.status == "queued":
-        return "En cola"
+        return _("En cola")
     if j.status == "done":
-        return f"{j.label}: completada" if j.kind == "offline" else f"{KIND_LABEL[j.kind]} completada"
+        return _("{label}: completada").format(label=j.label if j.kind == "offline" else KIND_LABEL[j.kind])
     if j.status == "cancelled":
-        return "Cancelada · puedes reanudarla: lo descargado no se pierde"
+        return _("Cancelada · puedes reanudarla: lo descargado no se pierde")
     if j.status == "failed":
-        return f"Error: {j.error}"
+        return _("Error: {error}").format(error=j.error)
     if p.stage == "prepare":
-        return "Preparando: leyendo la lista de archivos de GOG…"
+        return _("Preparando: leyendo la lista de archivos de GOG…")
     if p.stage == "verify":
-        return f"Verificando archivos · {p.files_done}/{p.files_total}"
+        return _("Verificando archivos · {done}/{total}").format(done=p.files_done, total=p.files_total)
     if p.stage == "finalize":
-        return "Terminando…"
-    bits = [f"{human(p.downloaded)} de {human(p.download_total)}"]
+        return _("Terminando…")
+    bits = [_("{done} de {total}").format(done=human(p.downloaded), total=human(p.download_total))]
     if p.speed:
         bits.append(f"{human(p.speed)}/s")
     if eta(p):
-        bits.append(f"quedan {eta(p)}")
+        bits.append(_("quedan {time}").format(time=eta(p)))
     return " · ".join(bits)
 
 
@@ -216,7 +217,7 @@ class JobRow(QFrame):
     def refresh(self):
         j = self.job
         running = j.status in ("queued", "running")
-        self.btn.setText("Cancelar" if running else "Reanudar" if j.status in ("failed", "cancelled") else "")
+        self.btn.setText(_("Cancelar") if running else _("Reanudar") if j.status in ("failed", "cancelled") else "")
         self.btn.setVisible(bool(self.btn.text()))
         indeterminate = j.status == "running" and j.progress.stage in ("prepare", "finalize")
         self.bar.setRange(0, 0 if indeterminate else 1000)
@@ -240,11 +241,11 @@ class DownloadsPage(QWidget):
         outer = QVBoxLayout(self)
         outer.setContentsMargins(28, 22, 28, 0)
         head = QHBoxLayout()
-        t = QLabel("Descargas")
+        t = QLabel(_("Descargas"))
         t.setStyleSheet("font-size: 20pt; font-weight: 800;")
         head.addWidget(t)
         head.addStretch()
-        clr = QPushButton("Limpiar terminadas")
+        clr = QPushButton(_("Limpiar terminadas"))
         clr.setObjectName("Ghost")
         clr.clicked.connect(manager.clear_finished)
         head.addWidget(clr)
@@ -267,7 +268,7 @@ class DownloadsPage(QWidget):
         clear(self.list)
         self.rows = {}
         if not self.manager.jobs:
-            e = QLabel("No hay descargas. Instala un juego desde su ficha en la biblioteca.")
+            e = QLabel(_("No hay descargas. Instala un juego desde su ficha en la biblioteca."))
             e.setObjectName("Muted")
             e.setAlignment(Qt.AlignCenter)
             self.list.addWidget(e)

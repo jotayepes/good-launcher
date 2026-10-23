@@ -16,6 +16,7 @@ from dataclasses import dataclass, field
 import httpx
 
 from ..auth import AuthManager
+from ..i18n import _
 from .cloud import CloudError, parse_ts
 
 API = "https://cloudstorage.gog.com/v2/users/{user}/containers"
@@ -68,13 +69,13 @@ class AccountCloud:
                 r = self.http.request(method, url, headers={"Authorization": f"Bearer {creds.access_token}",
                                                             "Accept": "application/json"}, **kw)
             except httpx.HTTPError as e:
-                raise CloudError(f"Sin conexión con la nube de GOG: {e}") from e
+                raise CloudError(_("Sin conexión con la nube de GOG: {error}").format(error=e)) from e
             if r.status_code == 401 and not force:
                 continue
             if r.status_code not in ok:
-                raise CloudError(f"Nube de GOG → HTTP {r.status_code}: {r.text[:200]}")
+                raise CloudError(_("Nube de GOG → HTTP {code}: {text}").format(code=r.status_code, text=r.text[:200]))
             return r.json() if r.content and r.status_code in (200, 204) else {}
-        raise CloudError("La nube de GOG rechazó la sesión")
+        raise CloudError(_("La nube de GOG rechazó la sesión"))
 
     def _pages(self, path: str) -> list[dict]:
         items, page = [], 1

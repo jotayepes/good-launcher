@@ -35,6 +35,7 @@ from typing import Callable
 import httpx
 
 from .. import config, paths
+from ..i18n import _
 
 VERSION = "v0.3.2"
 URL = "https://github.com/imLinguin/comet/releases/download/{version}/{name}"
@@ -93,14 +94,14 @@ def _download(name: str, dest: Path, http: httpx.Client) -> None:
     h = hashlib.sha256()
     with http.stream("GET", URL.format(version=VERSION, name=name)) as r:
         if r.status_code != 200:
-            raise CometError(f"no se pudo descargar Comet ({r.status_code})")
+            raise CometError(_("no se pudo descargar Comet ({code})").format(code=r.status_code))
         with open(tmp, "wb") as fh:
             for chunk in r.iter_bytes(1 << 20):
                 h.update(chunk)
                 fh.write(chunk)
     if h.hexdigest() != SHA256[name]:
         tmp.unlink(missing_ok=True)
-        raise CometError("la descarga de Comet no coincide con la suma publicada")
+        raise CometError(_("la descarga de Comet no coincide con la suma publicada"))
     tmp.replace(dest)
 
 

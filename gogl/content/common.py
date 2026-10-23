@@ -11,6 +11,7 @@ from dataclasses import asdict, dataclass, field
 import httpx
 
 from ..api import CONTENT_SYSTEM, ApiError, GogApi
+from ..i18n import _
 
 META_V2 = "https://gog-cdn-fastly.gog.com/content-system/v2/meta/"
 DEPS_REPO = "https://content-system.gog.com/dependencies/repository?generation=2"
@@ -53,7 +54,7 @@ def safe_rel(rel: str) -> str:
     Los manifiestos no van firmados: nunca se usan sus rutas sin pasar por aquí."""
     parts = rel.split("/")
     if not rel or rel.startswith("/") or ".." in parts or "\x00" in rel:
-        raise ContentError(f"Ruta sospechosa en el manifiesto: {rel!r}")
+        raise ContentError(_("Ruta sospechosa en el manifiesto: {path}").format(path=repr(rel)))
     return rel
 
 
@@ -63,7 +64,7 @@ def safe_link(path: str, target: str) -> None:
     safe_rel(path)
     resolved = posixpath.normpath(posixpath.join(posixpath.dirname(path), target))
     if target.startswith("/") or resolved == ".." or resolved.startswith("../"):
-        raise ContentError(f"Enlace sospechoso en el manifiesto: {path} → {target}")
+        raise ContentError(_("Enlace sospechoso en el manifiesto: {path} → {target}").format(path=path, target=target))
 
 
 def safe_name(s: str) -> str:
@@ -192,7 +193,7 @@ class SecureLinks:
                 r = self.api.http.get(DEPS_LINK, params={"generation": 2, "_version": 2,
                                                          "path": "/dependencies/store/"})
                 if r.status_code != 200:
-                    raise ContentError(f"Enlaces de dependencias → HTTP {r.status_code}")
+                    raise ContentError(_("Enlaces de dependencias → HTTP {code}").format(code=r.status_code))
             else:
                 if self.generation == 2:
                     params = {"_version": 2, "generation": 2, "path": "/"}
@@ -201,7 +202,7 @@ class SecureLinks:
                 r = self.api._get(f"{CONTENT_SYSTEM}/products/{product_id}/secure_link", params=params)
             urls = r.json().get("urls") or []
             if not urls:
-                raise ContentError(f"GOG no devolvió enlaces de descarga para {product_id}")
+                raise ContentError(_("GOG no devolvió enlaces de descarga para {id}").format(id=product_id))
             self._cache[product_id] = (time.time(), urls)
             return urls
 

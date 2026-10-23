@@ -11,8 +11,9 @@ from PySide6.QtWidgets import (QApplication, QButtonGroup, QCheckBox, QComboBox,
                                QMainWindow, QMessageBox, QPushButton, QScrollArea, QStackedWidget,
                                QVBoxLayout, QWidget)
 
-from gogl import APP_NAME, APP_TITLE, config, paths, services
+from gogl import APP_NAME, APP_TITLE, config, i18n, paths, services
 from gogl.auth import AuthManager
+from gogl.i18n import _
 from gogl.games import register_installed
 from gogl.library import fetch_owned, fetch_user
 from gogl.runner import proton as proton_mgr
@@ -34,7 +35,7 @@ SECTIONS = ["all", "installed", "pending", "cloud", "downloads", "store", "profi
 
 
 def _key(letter: str, color: str) -> str:
-    return f"<span style='color:{color}; font-weight:900; font-size:12pt'>{letter}</span>&nbsp;"
+    return f"<span style='color:{color}; font-weight:900; font-size:12pt'>{letter}</span>&nbsp; "
 
 
 class GamepadHints(QLabel):
@@ -53,12 +54,12 @@ class GamepadHints(QLabel):
         x, y = _key("X", "#5aa9f0"), _key("Y", theme.WARN)
         sep = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
         items = {
-            "library": [f"{a} Abrir", f"{b} Atrás", f"{y} Buscar", "<b>LB RB</b> Sección",
-                        "<b>LT RT</b> Página"],
-            "game": [f"{a} Seleccionar", f"{b} Biblioteca", f"{x} Gestionar", "<b>☰</b> Jugar / Instalar",
-                     "<b>Stick dcho.</b> Desplazar"],
-            "other": [f"{a} Seleccionar", f"{b} Biblioteca", "<b>LB RB</b> Sección",
-                      "<b>Stick dcho.</b> Desplazar"],
+            "library": [a + _("Abrir"), b + _("Atrás"), y + _("Buscar"), "<b>LB RB</b> " + _("Sección"),
+                        "<b>LT RT</b> " + _("Página")],
+            "game": [a + _("Seleccionar"), b + _("Biblioteca"), x + _("Gestionar"),
+                     "<b>☰</b> " + _("Jugar / Instalar"), "<b>" + _("Stick dcho.") + "</b> " + _("Desplazar")],
+            "other": [a + _("Seleccionar"), b + _("Biblioteca"), "<b>LB RB</b> " + _("Sección"),
+                      "<b>" + _("Stick dcho.") + "</b> " + _("Desplazar")],
         }[ctx]
         self.setText(sep.join(items))
 
@@ -85,7 +86,7 @@ class Sidebar(QFrame):
                                   "font-weight: 800; font-size: 12pt;")
         names = QVBoxLayout()
         names.setSpacing(0)
-        self.user_name = QLabel("Sin sesión")
+        self.user_name = QLabel(_("Sin sesión"))
         self.user_name.setObjectName("UserName")
         self.user_sub = QLabel("GOG")
         self.user_sub.setObjectName("UserSub")
@@ -97,24 +98,24 @@ class Sidebar(QFrame):
         lay.addLayout(user)
         lay.addSpacing(10)
 
-        section = QLabel("JUEGOS")
+        section = QLabel(_("JUEGOS"))
         section.setObjectName("SectionLabel")
         lay.addWidget(section)
         self.group = QButtonGroup(self)
         self.buttons: dict[str, QPushButton] = {}
-        for key, label in (("all", "Biblioteca"), ("installed", "Instalados"),
-                           ("pending", "Sincronización pendiente"), ("cloud", "Partidas en la nube"),
-                           ("downloads", "Descargas")):
+        for key, label in (("all", _("Biblioteca")), ("installed", _("Instalados")),
+                           ("pending", _("Sincronización pendiente")), ("cloud", _("Partidas en la nube")),
+                           ("downloads", _("Descargas"))):
             self._nav(lay, key, label)
         section = QLabel("GOG")
         section.setObjectName("SectionLabel")
         lay.addWidget(section)
-        self._nav(lay, "store", "Tienda")
-        self._nav(lay, "profile", "Perfil")
-        section = QLabel("LANZADOR")
+        self._nav(lay, "store", _("Tienda"))
+        self._nav(lay, "profile", _("Perfil"))
+        section = QLabel(_("LANZADOR"))
         section.setObjectName("SectionLabel")
         lay.addWidget(section)
-        self._nav(lay, "settings", "Ajustes")
+        self._nav(lay, "settings", _("Ajustes"))
         lay.addStretch()
 
         self.status = QLabel()
@@ -132,16 +133,15 @@ class Sidebar(QFrame):
         lay.addWidget(b)
 
     def set_user(self, name: str | None):
-        self.user_name.setText(name or "Sin sesión")
+        self.user_name.setText(name or _("Sin sesión"))
         self.avatar.setText((name or "?")[:1].upper())
-        self.user_sub.setText("Conectado a GOG" if name else "Inicia sesión")
+        self.user_sub.setText(_("Conectado a GOG") if name else _("Inicia sesión"))
 
     def set_downloads(self, n: int):
-        self.buttons["downloads"].setText(f"Descargas  ({n})" if n else "Descargas")
+        self.buttons["downloads"].setText(_("Descargas") + (f"  ({n})" if n else ""))
 
     def set_pending(self, n: int):
-        self.buttons["pending"].setText(f"Sincronización pendiente  ({n})" if n else
-                                        "Sincronización pendiente")
+        self.buttons["pending"].setText(_("Sincronización pendiente") + (f"  ({n})" if n else ""))
 
 
 class WelcomePage(QWidget):
@@ -153,13 +153,13 @@ class WelcomePage(QWidget):
         t.setStyleSheet("font-size: 40pt; font-weight: 900;")
         t.setAlignment(Qt.AlignCenter)
         lay.addWidget(t)
-        s = QLabel("Tus juegos de GOG en Linux, con las partidas siempre sincronizadas.")
+        s = QLabel(_("Tus juegos de GOG en Linux, con las partidas siempre sincronizadas."))
         s.setObjectName("Muted")
         s.setStyleSheet("font-size: 12pt;")
         s.setAlignment(Qt.AlignCenter)
         lay.addWidget(s)
         lay.addSpacing(26)
-        b = QPushButton("Iniciar sesión con GOG")
+        b = QPushButton(_("Iniciar sesión con GOG"))
         b.setObjectName("Primary")
         b.clicked.connect(on_login)
         self.login_btn = b
@@ -185,30 +185,32 @@ class SettingsPage(QWidget):
 
     def refresh(self):
         clear(self.lay)
-        t = QLabel("Ajustes")
+        t = QLabel(_("Ajustes"))
         t.setStyleSheet("font-size: 20pt; font-weight: 800;")
         self.lay.addWidget(t)
 
-        c, l = card("Cuenta")
+        c, l = card(_("Cuenta"))
         name = self.window.sidebar.user_name.text()
         l.addWidget(QLabel(name))
         row = QHBoxLayout()
         row.addStretch()
-        out = QPushButton("Cerrar sesión")
+        out = QPushButton(_("Cerrar sesión"))
         out.clicked.connect(self.window.logout)
         row.addWidget(out)
         l.addLayout(row)
         self.lay.addWidget(c)
 
-        c, l = card("Sincronización de partidas")
-        info = QLabel("Las partidas se comparan por contenido, no por fecha. Nunca se borra nada en la "
-                      "nube por tener una carpeta local vacía, y antes de sobrescribir partidas locales "
-                      "se guarda una copia de seguridad (se conservan las 10 últimas por juego).")
+        self._language_card()
+
+        c, l = card(_("Sincronización de partidas"))
+        info = QLabel(_("Las partidas se comparan por contenido, no por fecha. Nunca se borra nada en la "
+                        "nube por tener una carpeta local vacía, y antes de sobrescribir partidas locales "
+                        "se guarda una copia de seguridad (se conservan las 10 últimas por juego)."))
         info.setWordWrap(True)
         info.setObjectName("Muted")
         l.addWidget(info)
         row = QHBoxLayout()
-        self.pending_btn = QPushButton("Sincronizar todos los pendientes")
+        self.pending_btn = QPushButton(_("Sincronizar todos los pendientes"))
         self.pending_btn.clicked.connect(self._sync_pending)
         row.addWidget(self.pending_btn)
         row.addStretch()
@@ -219,16 +221,16 @@ class SettingsPage(QWidget):
         l.addWidget(self.pending_out)
         self.lay.addWidget(c)
 
-        c, l = card("Instalación de juegos")
+        c, l = card(_("Instalación de juegos"))
         from gogl.content import install_root
-        from gogl.languages import NAMES as LANGUAGE_NAMES
+        from gogl import languages
         row = QHBoxLayout()
-        n = QLabel("Carpeta por defecto")
+        n = QLabel(_("Carpeta por defecto"))
         n.setFixedWidth(150)
         n.setObjectName("Muted")
         root_lbl = ElidedLabel(str(install_root()))
         root_lbl.setObjectName("PathLabel")
-        ch = QPushButton("Cambiar…")
+        ch = QPushButton(_("Cambiar…"))
         ch.setObjectName("Ghost")
         ch.clicked.connect(self._choose_root)
         row.addWidget(n)
@@ -236,13 +238,14 @@ class SettingsPage(QWidget):
         row.addWidget(ch)
         l.addLayout(row)
         row = QHBoxLayout()
-        n = QLabel("Idioma preferido")
+        n = QLabel(_("Idioma de los juegos"))
         n.setFixedWidth(150)
         n.setObjectName("Muted")
         lang = QComboBox()
-        for code, name in sorted(LANGUAGE_NAMES.items(), key=lambda kv: kv[1]):
+        lang.setToolTip(_("Idioma que se descarga al instalar, si el juego lo tiene"))
+        for code, name in sorted(languages.NAMES.items(), key=lambda kv: kv[1]):
             lang.addItem(name, code)
-        lang.setCurrentIndex(max(lang.findData(config.load().get("language") or "es-ES"), 0))
+        lang.setCurrentIndex(max(lang.findData(languages.preferred()), 0))
         lang.currentIndexChanged.connect(lambda _i: config.set_value("language", lang.currentData()))
         row.addWidget(n)
         row.addWidget(lang)
@@ -250,13 +253,13 @@ class SettingsPage(QWidget):
         l.addLayout(row)
         row = QHBoxLayout()
         from gogl.content.offline import downloads_root
-        n = QLabel("Extras e instaladores")
+        n = QLabel(_("Extras e instaladores"))
         n.setFixedWidth(150)
         n.setObjectName("Muted")
         off_lbl = ElidedLabel(str(downloads_root()))
         off_lbl.setObjectName("PathLabel")
-        off_lbl.setToolTip("Dónde se guardan los extras y los instaladores offline (una carpeta por juego)")
-        ch = QPushButton("Cambiar…")
+        off_lbl.setToolTip(_("Dónde se guardan los extras y los instaladores offline (una carpeta por juego)"))
+        ch = QPushButton(_("Cambiar…"))
         ch.setObjectName("Ghost")
         ch.clicked.connect(self._choose_offline_root)
         row.addWidget(n)
@@ -265,30 +268,30 @@ class SettingsPage(QWidget):
         l.addLayout(row)
         self.lay.addWidget(c)
 
-        c, l = card("Logros")
-        info = QLabel("En los juegos que traen el kit de Galaxy, los logros se registran mientras juegas "
-                      "(con Comet, una implementación libre del servicio de Galaxy que se descarga la "
-                      "primera vez) y aparece un aviso al conseguirlos, también en el modo juego. "
-                      "Sin conexión se guardan y se suben la próxima vez que juegues con red.")
+        c, l = card(_("Logros"))
+        info = QLabel(_("En los juegos que traen el kit de Galaxy, los logros se registran mientras juegas "
+                        "(con Comet, una implementación libre del servicio de Galaxy que se descarga la "
+                        "primera vez) y aparece un aviso al conseguirlos, también en el modo juego. "
+                        "Sin conexión se guardan y se suben la próxima vez que juegues con red."))
         info.setWordWrap(True)
         info.setObjectName("Muted")
         l.addWidget(info)
-        ach = QCheckBox("Registrar logros mientras juegas")
+        ach = QCheckBox(_("Registrar logros mientras juegas"))
         ach.setChecked(config.load().get("achievements", True))
         ach.toggled.connect(lambda on: config.set_value("achievements", on))
         l.addWidget(ach)
         self.lay.addWidget(c)
 
         c, l = card("Proton-GE")
-        info = QLabel(f"{APP_NAME} descarga y usa sus propias versiones de Proton-GE (en su carpeta de datos), "
-                      "independientes de Steam.")
+        info = QLabel(_("{app} descarga y usa sus propias versiones de Proton-GE (en su carpeta de datos), "
+                        "independientes de Steam.").format(app=APP_NAME))
         info.setWordWrap(True)
         info.setObjectName("Muted")
         l.addWidget(info)
         d = proton_mgr.default()
         vers = proton_mgr.installed()
         if not vers:
-            m = QLabel("No hay ninguna versión instalada todavía.")
+            m = QLabel(_("No hay ninguna versión instalada todavía."))
             l.addWidget(m)
         for v in vers:
             row = QHBoxLayout()
@@ -296,39 +299,39 @@ class SettingsPage(QWidget):
             n.setStyleSheet("font-weight: 700;")
             row.addWidget(n)
             if d and v.name == d.name:
-                tag = QLabel("Predeterminada")
+                tag = QLabel(_("Predeterminada"))
                 tag.setStyleSheet(f"color: {theme.ACCENT}; font-weight: 700;")
                 row.addWidget(tag)
             row.addStretch()
             if not d or v.name != d.name:
-                mk = QPushButton("Usar por defecto")
+                mk = QPushButton(_("Usar por defecto"))
                 mk.setObjectName("Ghost")
                 mk.clicked.connect(lambda _=False, x=v.name: (proton_mgr.set_default(x), self.refresh()))
                 row.addWidget(mk)
-            rm = QPushButton("Borrar")
+            rm = QPushButton(_("Borrar"))
             rm.setObjectName("Ghost")
             rm.clicked.connect(lambda _=False, x=v.name: self._remove_proton(x))
             row.addWidget(rm)
             l.addLayout(row)
         row = QHBoxLayout()
-        dl = QPushButton("Descargar la última versión")
+        dl = QPushButton(_("Descargar la última versión"))
         dl.clicked.connect(self._download_proton)
         row.addWidget(dl)
         row.addStretch()
         l.addLayout(row)
         self.lay.addWidget(c)
 
-        c, l = card("Subidas pendientes en segundo plano")
-        info = QLabel("Un timer de systemd de tu usuario reintenta cada 15 minutos las partidas que no "
-                      "se pudieron subir (por ejemplo, si apagaste la consola sin conexión).")
+        c, l = card(_("Subidas pendientes en segundo plano"))
+        info = QLabel(_("Un timer de systemd de tu usuario reintenta cada 15 minutos las partidas que no "
+                        "se pudieron subir (por ejemplo, si apagaste la consola sin conexión)."))
         info.setWordWrap(True)
         info.setObjectName("Muted")
         l.addWidget(info)
         row = QHBoxLayout()
         on = services.installed()
-        state_lbl = QLabel("Activado" if on else "Desactivado")
+        state_lbl = QLabel(_("Activado") if on else _("Desactivado"))
         state_lbl.setStyleSheet(f"color: {theme.OK if on else theme.MUTED}; font-weight: 700;")
-        tog = QPushButton("Desactivar" if on else "Activar")
+        tog = QPushButton(_("Desactivar") if on else _("Activar"))
         tog.clicked.connect(lambda: (services.uninstall() if on else services.install(), self.refresh()))
         row.addWidget(state_lbl)
         row.addStretch()
@@ -336,45 +339,45 @@ class SettingsPage(QWidget):
         l.addLayout(row)
         self.lay.addWidget(c)
 
-        c, l = card("Modo juego de SteamOS")
-        info = QLabel(f"Añade {APP_NAME} a Steam como «juego no de Steam» para abrirlo desde el modo juego y "
-                      "manejarlo con el mando (cruceta o stick para moverte, A para aceptar, B para "
-                      "volver, LB/RB para cambiar de sección).")
+        c, l = card(_("Modo juego de SteamOS"))
+        info = QLabel(_("Añade {app} a Steam como «juego no de Steam» para abrirlo desde el modo juego y "
+                        "manejarlo con el mando (cruceta o stick para moverte, A para aceptar, B para "
+                        "volver, LB/RB para cambiar de sección).").format(app=APP_NAME))
         info.setWordWrap(True)
         info.setObjectName("Muted")
         l.addWidget(info)
         row = QHBoxLayout()
         row.addStretch()
-        b = QPushButton(f"Añadir {APP_NAME} a Steam")
+        b = QPushButton(_("Añadir {app} a Steam").format(app=APP_NAME))
         b.clicked.connect(self._add_launcher_to_steam)
         row.addWidget(b)
         l.addLayout(row)
         self.lay.addWidget(c)
 
-        c, l = card("Menú de aplicaciones")
+        c, l = card(_("Menú de aplicaciones"))
         from .desktop import desktop_entry_installed, install_desktop_entry, remove_desktop_entry
         on = desktop_entry_installed()
         row = QHBoxLayout()
-        info = QLabel(f"{APP_NAME} aparece en el menú de aplicaciones de tu escritorio." if on else
-                      f"Añade {APP_NAME} al menú de aplicaciones para abrirlo sin terminal.")
+        info = QLabel((_("{app} aparece en el menú de aplicaciones de tu escritorio.") if on else
+                       _("Añade {app} al menú de aplicaciones para abrirlo sin terminal.")).format(app=APP_NAME))
         info.setObjectName("Muted")
         row.addWidget(info, 1)
-        b = QPushButton("Quitar del menú" if on else "Añadir al menú")
+        b = QPushButton(_("Quitar del menú") if on else _("Añadir al menú"))
         b.clicked.connect(lambda: (remove_desktop_entry() if on else install_desktop_entry(), self.refresh()))
         row.addWidget(b)
         l.addLayout(row)
         self.lay.addWidget(c)
 
-        c, l = card("Carpetas del lanzador")
-        for label, p in (("Datos", paths.data_dir()), ("Configuración", paths.config_dir()),
-                         ("Copias de seguridad", paths.backups_dir()), ("Caché", paths.cache_dir())):
+        c, l = card(_("Carpetas del lanzador"))
+        for label, p in ((_("Datos"), paths.data_dir()), (_("Configuración"), paths.config_dir()),
+                         (_("Copias de seguridad"), paths.backups_dir()), (_("Caché"), paths.cache_dir())):
             row = QHBoxLayout()
             n = QLabel(label)
             n.setFixedWidth(150)
             n.setObjectName("Muted")
             v = ElidedLabel(str(p))
             v.setObjectName("PathLabel")
-            o = QPushButton("Abrir")
+            o = QPushButton(_("Abrir"))
             o.setObjectName("Ghost")
             o.clicked.connect(lambda _=False, x=p: QDesktopServices.openUrl(QUrl.fromLocalFile(str(x))))
             row.addWidget(n)
@@ -384,35 +387,68 @@ class SettingsPage(QWidget):
         self.lay.addWidget(c)
         self.lay.addStretch()
 
+    def _language_card(self):
+        c, l = card(_("Idioma"))
+        row = QHBoxLayout()
+        n = QLabel(_("Interfaz"))
+        n.setFixedWidth(150)
+        n.setObjectName("Muted")
+        combo = QComboBox()
+        combo.addItem(_("Automático ({lang})").format(lang=i18n.native_name(i18n.system_language())), None)
+        for code in i18n.available():
+            combo.addItem(i18n.native_name(code), code)
+        combo.setCurrentIndex(max(combo.findData(config.load().get("ui_language")), 0))
+        note = QLabel()
+        note.setObjectName("Muted")
+        note.setWordWrap(True)
+
+        def changed(_i):
+            code = combo.currentData()
+            config.set_value("ui_language", code)
+            # Lo que se verá al volver a abrir; el aviso, en el idioma elegido si se puede.
+            if i18n.resolve(code) != i18n.current:
+                note.setText(_("Se aplicará la próxima vez que abras {app}.").format(app=APP_NAME))
+            else:
+                note.clear()
+
+        combo.currentIndexChanged.connect(changed)
+        row.addWidget(n)
+        row.addWidget(combo)
+        row.addStretch()
+        l.addLayout(row)
+        l.addWidget(note)
+        self.lay.addWidget(c)
+
     def _add_launcher_to_steam(self):
         from gogl import steam
         try:
             r = steam.add_launcher_shortcut()
         except steam.SteamError as e:
             if steam.steam_running() and QMessageBox.question(
-                    self, "Steam está abierto",
-                    "Steam reescribe sus accesos directos al cerrarse, así que hay que cerrarlo "
-                    "antes.\n\n¿Cerrar Steam ahora y continuar?") == QMessageBox.Yes:
+                    self, _("Steam está abierto"),
+                    _("Steam reescribe sus accesos directos al cerrarse, así que hay que cerrarlo "
+                      "antes.\n\n¿Cerrar Steam ahora y continuar?")) == QMessageBox.Yes:
                 from .game_page import _shutdown_steam
                 run_task(lambda _b: _shutdown_steam(), lambda _r: self._add_launcher_to_steam())
                 return
-            QMessageBox.warning(self, "No se pudo añadir a Steam", str(e))
+            QMessageBox.warning(self, _("No se pudo añadir a Steam"), str(e))
             return
-        QMessageBox.information(self, "Añadido a Steam",
-                                f"{APP_NAME} " + ("ya estaba" if r.updated else "está") + " en tu biblioteca "
-                                "de Steam, en «Juegos no de Steam». Ábrelo desde el modo juego y "
-                                "manéjalo con el mando.")
+        QMessageBox.information(self, _("Añadido a Steam"), (
+            _("{app} ya estaba en tu biblioteca de Steam, en «Juegos no de Steam». Ábrelo desde el modo "
+              "juego y manéjalo con el mando.") if r.updated else
+            _("{app} está en tu biblioteca de Steam, en «Juegos no de Steam». Ábrelo desde el modo juego "
+              "y manéjalo con el mando.")).format(app=APP_NAME))
 
     def _choose_root(self):
         from gogl.content import install_root
-        d = pick_directory(self, "Carpeta de instalación", str(install_root()))
+        d = pick_directory(self, _("Carpeta de instalación"), str(install_root()))
         if d:
             config.set_value("install_root", d)
             self.refresh()
 
     def _choose_offline_root(self):
         from gogl.content.offline import downloads_root
-        d = pick_directory(self, "Carpeta para extras e instaladores", str(downloads_root()))
+        d = pick_directory(self, _("Carpeta para extras e instaladores"), str(downloads_root()))
         if d:
             config.set_value("offline_root", d)
             self.refresh()
@@ -422,18 +458,18 @@ class SettingsPage(QWidget):
         self.refresh()
 
     def _remove_proton(self, name: str):
-        if QMessageBox.question(self, "Borrar Proton", f"¿Borrar {name}?") == QMessageBox.Yes:
+        if QMessageBox.question(self, _("Borrar Proton"), _("¿Borrar {name}?").format(name=name)) == QMessageBox.Yes:
             proton_mgr.remove(name)
             self.refresh()
 
     def _sync_pending(self):
         self.pending_btn.setEnabled(False)
-        self.pending_out.setText("Sincronizando…")
+        self.pending_out.setText(_("Sincronizando…"))
 
         def done(results):
             self.pending_btn.setEnabled(True)
             if not results:
-                self.pending_out.setText("No hay juegos pendientes.")
+                self.pending_out.setText(_("No hay juegos pendientes."))
             else:
                 from gogl.sync import describe
                 lines = []
@@ -589,9 +625,9 @@ class MainWindow(QMainWindow):
                 return
             names = ", ".join(e.title for e in new[:3]) + ("…" if len(new) > 3 else "")
             first = new[0].game_id
-            self.store.show_banner(f"🎉 Ya está en tu biblioteca: <b>{names}</b>", "Abrir su ficha",
-                                   lambda: self.open_game_id(first), kind="purchase")
-            self.sidebar.status.setText(f"Nuevo en tu biblioteca: {names}")
+            self.store.show_banner("🎉 " + _("Ya está en tu biblioteca: {names}").format(names=f"<b>{names}</b>"),
+                                   _("Abrir su ficha"), lambda: self.open_game_id(first), kind="purchase")
+            self.sidebar.status.setText(_("Nuevo en tu biblioteca: {names}").format(names=names))
 
         self.refresh_library(done)
 
@@ -683,7 +719,7 @@ class MainWindow(QMainWindow):
         if not dlg.exec() or not dlg.code:
             return
         code = dlg.code
-        self.sidebar.status.setText("Iniciando sesión…")
+        self.sidebar.status.setText(_("Iniciando sesión…"))
 
         def ok(_user_id):
             for b in self.sidebar.buttons.values():
@@ -692,11 +728,11 @@ class MainWindow(QMainWindow):
             self.refresh_library()
 
         run_task(lambda b: b.auth.login_with_code(code), ok,
-                 lambda e: self._error("No se pudo iniciar sesión", e))
+                 lambda e: self._error(_("No se pudo iniciar sesión"), e))
 
     def logout(self):
-        if QMessageBox.question(self, "Cerrar sesión",
-                                "¿Cerrar sesión? Los juegos vinculados y sus partidas no se tocan.") != QMessageBox.Yes:
+        if QMessageBox.question(self, _("Cerrar sesión"),
+                                _("¿Cerrar sesión? Los juegos vinculados y sus partidas no se tocan.")) != QMessageBox.Yes:
             return
         self.auth.logout()
         from .web import HAS_WEBENGINE, clear_session
@@ -707,7 +743,7 @@ class MainWindow(QMainWindow):
     # --- biblioteca ----------------------------------------------------
 
     def refresh_library(self, then=None):
-        self.sidebar.status.setText("Actualizando biblioteca…")
+        self.sidebar.status.setText(_("Actualizando biblioteca…"))
 
         def fetch(b):
             return fetch_owned(b.api), fetch_user(b.api)
@@ -719,11 +755,11 @@ class MainWindow(QMainWindow):
             (paths.cache_dir() / USER_CACHE).write_text(json.dumps({"username": name}))
             self.sidebar.set_user(name)
             self.reload_entries()
-            self.sidebar.status.setText(f"Biblioteca actualizada · {time.strftime('%H:%M')}")
+            self.sidebar.status.setText(_("Biblioteca actualizada · {time}").format(time=time.strftime("%H:%M")))
             if then:
                 then()
 
-        run_task(fetch, done, lambda e: self.sidebar.status.setText(f"No se pudo actualizar: {e}"))
+        run_task(fetch, done, lambda e: self.sidebar.status.setText(_("No se pudo actualizar: {error}").format(error=e)))
 
     def reload_entries(self):
         games = self.state.games()
@@ -752,7 +788,7 @@ class MainWindow(QMainWindow):
         if not dlg.exec():
             return
         install, prefix = dlg.install.path(), dlg.prefix.path()
-        self.sidebar.status.setText(f"Vinculando {entry.title}…")
+        self.sidebar.status.setText(_("Vinculando {title}…").format(title=entry.title))
 
         def work(b):
             game = register_installed(install, prefix, b.api)
@@ -763,21 +799,21 @@ class MainWindow(QMainWindow):
             return game
 
         def done(game):
-            self.sidebar.status.setText(f"{game.title} vinculado")
+            self.sidebar.status.setText(_("{title} vinculado").format(title=game.title))
             if game.game_id != entry.game_id:
-                QMessageBox.information(self, "Juego distinto",
-                                        f"Esa carpeta corresponde a «{game.title}» ({game.game_id}), "
-                                        f"no a «{entry.title}». Se ha vinculado igualmente a su juego.")
+                QMessageBox.information(self, _("Juego distinto"), _(
+                    "Esa carpeta corresponde a «{found}» ({id}), no a «{expected}». Se ha vinculado "
+                    "igualmente a su juego.").format(found=game.title, id=game.game_id, expected=entry.title))
             self.reload_entries()
             if game.game_id in self.entries:
                 self.open_game(self.entries[game.game_id])
 
-        run_task(work, done, lambda e: self._error("No se pudo vincular la instalación", e))
+        run_task(work, done, lambda e: self._error(_("No se pudo vincular la instalación"), e))
 
     def unlink(self, entry: Entry):
-        if QMessageBox.question(self, "Desvincular",
-                                f"¿Quitar «{entry.title}» del lanzador?\nNo se borra ningún archivo "
-                                "del juego ni de sus partidas.") != QMessageBox.Yes:
+        if QMessageBox.question(self, _("Desvincular"), _(
+                "¿Quitar «{title}» del lanzador?\nNo se borra ningún archivo del juego ni de sus "
+                "partidas.").format(title=entry.title)) != QMessageBox.Yes:
             return
         self.state.remove_game(entry.game_id)
         self.reload_entries()
@@ -799,28 +835,28 @@ class MainWindow(QMainWindow):
         from PySide6.QtWidgets import QCheckBox
         from gogl.content import uninstall
         box = QMessageBox(self)
-        box.setWindowTitle("Desinstalar")
-        box.setText(f"¿Desinstalar «{entry.title}»?")
-        box.setInformativeText(
-            f"Se borrará {entry.game.install_path}.\n\nAntes se guarda una copia de seguridad de las "
-            "partidas locales, y las de la nube de GOG no se tocan.")
-        rm_prefix = QCheckBox("Borrar también el prefijo de Proton (configuración del juego en Wine)")
+        box.setWindowTitle(_("Desinstalar"))
+        box.setText(_("¿Desinstalar «{title}»?").format(title=entry.title))
+        box.setInformativeText(_(
+            "Se borrará {path}.\n\nAntes se guarda una copia de seguridad de las partidas locales, y las "
+            "de la nube de GOG no se tocan.").format(path=entry.game.install_path))
+        rm_prefix = QCheckBox(_("Borrar también el prefijo de Proton (configuración del juego en Wine)"))
         box.setCheckBox(rm_prefix)
         box.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
-        box.button(QMessageBox.Yes).setText("Desinstalar")
+        box.button(QMessageBox.Yes).setText(_("Desinstalar"))
         if box.exec() != QMessageBox.Yes:
             return
         gid, remove_prefix = entry.game_id, rm_prefix.isChecked()
-        self.sidebar.status.setText(f"Desinstalando {entry.title}…")
+        self.sidebar.status.setText(_("Desinstalando {title}…").format(title=entry.title))
 
-        def done(_):
-            self.sidebar.status.setText(f"{entry.title} desinstalado")
+        def done(_r):
+            self.sidebar.status.setText(_("{title} desinstalado").format(title=entry.title))
             self.reload_entries()
             if gid in self.entries:
                 self.open_game(self.entries[gid])
 
         run_task(lambda b: uninstall(b.state, gid, remove_prefix), done,
-                 lambda e: self._error("No se pudo desinstalar", e))
+                 lambda e: self._error(_("No se pudo desinstalar"), e))
 
     def _error(self, title: str, e: Exception):
         self.sidebar.status.setText(title)

@@ -28,6 +28,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Callable
 
+from ..i18n import _
 from ..state import BaseEntry, Game, State
 from .cloud import CloudFile, CloudStorage, gzip_bytes, md5
 from .locations import SaveLocation, resolve_case_insensitive
@@ -86,7 +87,7 @@ class SyncPlan:
 
 class ConflictError(Exception):
     def __init__(self, plan: SyncPlan):
-        super().__init__(f"{len(plan.conflicts)} archivo(s) en conflicto")
+        super().__init__(_("{n} archivo(s) en conflicto").format(n=len(plan.conflicts)))
         self.plan = plan
 
 
@@ -180,12 +181,13 @@ def plan_sync(local: dict[str, LocalFile], cloud: dict[str, CloudFile], base: di
         if not in_base or (not has_local and not has_cloud):
             continue
         if not has_local:
-            warnings.append(f"«{loc.name}»: no hay archivos locales ({loc.path}); "
-                            "no se borrará nada en la nube, se restaurará desde ella")
+            warnings.append(_("«{name}»: no hay archivos locales ({path}); no se borrará nada en la nube, "
+                              "se restaurará desde ella").format(name=loc.name, path=loc.path))
             for k in in_base:
                 del base[k]
         elif not has_cloud:
-            warnings.append(f"«{loc.name}»: la nube está vacía; no se borrará nada local, se volverá a subir")
+            warnings.append(_("«{name}»: la nube está vacía; no se borrará nada local, se volverá a subir")
+                            .format(name=loc.name))
             for k in in_base:
                 del base[k]
 
@@ -203,33 +205,36 @@ def _same_content(L: LocalFile, C: CloudFile) -> bool:
         return False
 
 
+NO_HISTORY = _("existe en ambos lados sin historial")
+
+
 def _decide(k: str, L: LocalFile | None, C: CloudFile | None, B: BaseEntry | None) -> Item:
     if B is None:
         if L and C:
             if _same_content(L, C):
-                return Item(Action.ADOPT, k, L, C, "mismo contenido")
+                return Item(Action.ADOPT, k, L, C, _("mismo contenido"))
             # Puede ser el mismo contenido comprimido de otra forma (subido por
             # Galaxy en Windows): el Syncer lo resuelve descargando y comparando.
-            return Item(Action.CONFLICT, k, L, C, "existe en ambos lados sin historial")
+            return Item(Action.CONFLICT, k, L, C, NO_HISTORY)
         if L:
-            return Item(Action.UPLOAD, k, L, C, "solo local")
-        return Item(Action.DOWNLOAD, k, L, C, "solo en la nube")
+            return Item(Action.UPLOAD, k, L, C, _("solo local"))
+        return Item(Action.DOWNLOAD, k, L, C, _("solo en la nube"))
 
     l_changed = L is None or L.md5 != B.local_md5
     c_changed = C is None or C.hash != B.cloud_hash
     if L is None and C is None:
-        return Item(Action.DROP_BASE, k, L, C, "borrado en ambos lados")
+        return Item(Action.DROP_BASE, k, L, C, _("borrado en ambos lados"))
     if not l_changed and not c_changed:
         return Item(Action.NOOP, k, L, C)
     if l_changed and not c_changed:
-        return (Item(Action.UPLOAD, k, L, C, "modificado en local") if L
-                else Item(Action.DELETE_CLOUD, k, L, C, "borrado en local"))
+        return (Item(Action.UPLOAD, k, L, C, _("modificado en local")) if L
+                else Item(Action.DELETE_CLOUD, k, L, C, _("borrado en local")))
     if c_changed and not l_changed:
-        return (Item(Action.DOWNLOAD, k, L, C, "modificado en la nube") if C
-                else Item(Action.DELETE_LOCAL, k, L, C, "borrado en la nube"))
+        return (Item(Action.DOWNLOAD, k, L, C, _("modificado en la nube")) if C
+                else Item(Action.DELETE_LOCAL, k, L, C, _("borrado en la nube")))
     if L and C and _same_content(L, C):
-        return Item(Action.ADOPT, k, L, C, "mismo cambio en ambos lados")
-    return Item(Action.CONFLICT, k, L, C, "modificado en ambos lados")
+        return Item(Action.ADOPT, k, L, C, _("mismo cambio en ambos lados"))
+    return Item(Action.CONFLICT, k, L, C, _("modificado en ambos lados"))
 
 
 def resolve_conflicts(plan: SyncPlan, prefer: str) -> None:
@@ -240,7 +245,7 @@ def resolve_conflicts(plan: SyncPlan, prefer: str) -> None:
             it.action = Action.DOWNLOAD if it.cloud else Action.DELETE_LOCAL
         else:
             raise ValueError(prefer)
-        it.reason += f" → se mantiene {'local' if prefer == 'local' else 'nube'}"
+        it.reason += " → " + (_("se mantiene local") if prefer == "local" else _("se mantiene nube"))
 
 
 # --- escritura atómica --------------------------------------------------------
@@ -297,13 +302,13 @@ class Syncer:
         # Conflictos "sin historial": puede que sea el mismo contenido con otra
         # compresión. Lo comprobamos descargando (las partidas pesan poco).
         for it in plan.conflicts:
-            if it.local and it.cloud and it.reason == "existe en ambos lados sin historial":
+            if it.local and it.cloud and it.reason == NO_HISTORY:
                 data, mt = self.cloud.download(it.cloud)
                 self._downloaded[it.norm] = (data, mt)
                 if md5(data) == it.local.md5:
-                    it.action, it.reason = Action.ADOPT, "mismo contenido (otra compresión)"
+                    it.action, it.reason = Action.ADOPT, _("mismo contenido (otra compresión)")
         for w in plan.warnings:
-            self.log(f"aviso: {w}")
+            self.log(_("aviso: {warning}").format(warning=w))
         return plan
 
     def run(self, prefer: str | None = None, dry_run: bool = False,
@@ -323,7 +328,7 @@ class Syncer:
         if destructive and self.backup:
             res.backup = self.backup()
             if res.backup:
-                self.log(f"copia de seguridad: {res.backup}")
+                self.log(_("copia de seguridad: {path}").format(path=res.backup))
 
         for it in plan.items:
             if it.action == Action.ADOPT:
@@ -334,7 +339,7 @@ class Syncer:
                 self._download(it)
                 res.downloaded.append(it.key)
             elif it.action == Action.DELETE_LOCAL:
-                self.log(f"borrando local {it.key}")
+                self.log(_("borrando local {file}").format(file=it.key))
                 loc = location_of(it.local.key, self.locations)
                 it.local.path.unlink(missing_ok=True)
                 if loc:
@@ -346,7 +351,7 @@ class Syncer:
         for it in plan.of(Action.UPLOAD):
             expected[it.norm] = (it, self._upload(it))
         for it in plan.of(Action.DELETE_CLOUD):
-            self.log(f"borrando en la nube {it.key}")
+            self.log(_("borrando en la nube {file}").format(file=it.key))
             self.cloud.delete(it.cloud.key)
 
         if expected or plan.of(Action.DELETE_CLOUD):
@@ -354,7 +359,7 @@ class Syncer:
         return res
 
     def _download(self, it: Item) -> None:
-        self.log(f"descargando {it.cloud.key}")
+        self.log(_("descargando {file}").format(file=it.cloud.key))
         data, mtime = self._downloaded.pop(it.norm, None) or self.cloud.download(it.cloud)
         if it.local:
             path = it.local.path
@@ -362,11 +367,11 @@ class Syncer:
             found = location_of(it.cloud.key, self.locations)
             loc, rel = found
             if not safe_cloud_rel(rel):
-                raise SyncError(f"Ruta sospechosa en la nube: {it.cloud.key}")
+                raise SyncError(_("Ruta sospechosa en la nube: {file}").format(file=it.cloud.key))
             path = resolve_case_insensitive(loc.path / rel)
             base = loc.path.resolve()
             if base not in path.resolve().parents:
-                raise SyncError(f"{it.cloud.key} saldría de la carpeta de partidas")
+                raise SyncError(_("{file} saldría de la carpeta de partidas").format(file=it.cloud.key))
         atomic_write(path, data, mtime)
         st = path.stat()
         h = md5(data)
@@ -374,7 +379,7 @@ class Syncer:
         self.state.set_base(self.game.game_id, it.norm, h, it.cloud.hash)
 
     def _upload(self, it: Item) -> str:
-        self.log(f"subiendo {it.local.key}")
+        self.log(_("subiendo {file}").format(file=it.local.key))
         data = it.local.path.read_bytes()
         it.local.md5 = md5(data)  # por si cambió desde el escaneo
         key = it.cloud.key if it.cloud else it.local.key
@@ -402,15 +407,15 @@ class Syncer:
                     self.state.drop_base(gid, n)
                     res.deleted_cloud.append(it.key)
             if not bad_up and not bad_del:
-                self.log("verificado: la nube coincide con lo subido")
+                self.log(_("verificado: la nube coincide con lo subido"))
                 return
             if attempt == attempts - 1:
                 break
-            self.log(f"la nube aún no refleja {len(bad_up) + len(bad_del)} cambio(s); reintentando")
-            for n, (it, _) in bad_up.items():
+            self.log(_("la nube aún no refleja {n} cambio(s); reintentando").format(n=len(bad_up) + len(bad_del)))
+            for n, (it, _h) in bad_up.items():
                 bad_up[n] = (it, self._upload(it))
             for it in bad_del.values():
                 self.cloud.delete(it.cloud.key)
             expected, deletes = bad_up, bad_del
-        names = [it.key for it, _ in bad_up.values()] + [it.key for it in bad_del.values()]
-        raise SyncError("La nube no confirmó estos cambios: " + ", ".join(names))
+        names = [it.key for it, _h in bad_up.values()] + [it.key for it in bad_del.values()]
+        raise SyncError(_("La nube no confirmó estos cambios: {files}").format(files=", ".join(names)))

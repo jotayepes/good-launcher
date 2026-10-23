@@ -23,6 +23,7 @@ from typing import Protocol
 
 from . import APP_NAME
 from .api import GogApi
+from .i18n import _, n_
 from .auth import AuthManager
 from .runner import proton as proton_mgr
 from .selfcmd import cli_command
@@ -93,21 +94,21 @@ class ConsoleUI:
 
     def ask_conflict(self, title, plan, phase):
         for it in plan.conflicts:
-            print(f"  conflicto: {it.key}", file=sys.stderr)
-        return self._ask("¿Conservar (l)ocal, (n)ube o (s)altar?",
+            print("  " + _("conflicto: {file}").format(file=it.key), file=sys.stderr)
+        return self._ask(_("¿Conservar (l)ocal, (n)ube o (s)altar?"),
                          {"l": "local", "n": "cloud", "s": None}, None)
 
     def ask_offline(self, phase):
-        return self._ask("Sin conexión. ¿(r)eintentar, (c)ontinuar sin sincronizar o (s)alir?",
+        return self._ask(_("Sin conexión. ¿(r)eintentar, (c)ontinuar sin sincronizar o (s)alir?"),
                          {"r": "retry", "c": "continue", "s": "cancel"}, "continue")
 
     def ask_error(self, message, phase):
-        print(f"  error: {message}", file=sys.stderr)
-        return self._ask("¿(r)eintentar, (c)ontinuar o (s)alir?",
+        print("  " + _("error: {error}").format(error=message), file=sys.stderr)
+        return self._ask(_("¿(r)eintentar, (c)ontinuar o (s)alir?"),
                          {"r": "retry", "c": "continue", "s": "cancel"}, "continue")
 
     def error(self, message):
-        print(f"Error: {message}", file=sys.stderr)
+        print(_("Error: {error}").format(error=message), file=sys.stderr)
 
     def hide(self):
         pass
@@ -116,14 +117,14 @@ class ConsoleUI:
         pass
 
     def achievement(self, name, description, icon):
-        print(f"🏆 Logro conseguido: {name}", file=sys.stderr)
+        print("🏆 " + _("Logro conseguido: {name}").format(name=name), file=sys.stderr)
         notify_achievement(name, description, icon)
 
 
 def _sync_phase(service: SyncService, game, ui: SessionUI, phase: str) -> bool:
     """True si quedó sincronizado. Lanza Cancelled si el usuario aborta."""
     prefer = None
-    ui.status("Descargando partidas de la nube…" if phase == PRE else "Subiendo partidas a la nube…")
+    ui.status(_("Descargando partidas de la nube…") if phase == PRE else _("Subiendo partidas a la nube…"))
     while True:
         try:
             res = service.sync(game.game_id, prefer=prefer, wait_network=20)
@@ -132,7 +133,7 @@ def _sync_phase(service: SyncService, game, ui: SessionUI, phase: str) -> bool:
         except ConflictError as e:
             prefer = ui.ask_conflict(game.title, e.plan, phase)
             if prefer is None:
-                ui.log("conflicto sin resolver: queda pendiente")
+                ui.log(_("conflicto sin resolver: queda pendiente"))
                 return False
         except Offline:
             choice = ui.ask_offline(phase)
@@ -157,20 +158,20 @@ def _prepare(game, pv, ui: SessionUI) -> None:
     try:
         steps = pending_steps(game)
     except Exception as e:  # noqa: BLE001 - nunca debe impedir jugar
-        ui.log(f"aviso: no se pudo comprobar la preparación del juego: {e}")
+        ui.log(_("aviso: no se pudo comprobar la preparación del juego: {error}").format(error=e))
         return
     if not any(s.args for s in steps):
         if steps:
             run_setup(game, pv, steps)
         return
-    ui.status("Instalando componentes de Windows que necesita el juego (solo la primera vez)…")
+    ui.status(_("Instalando componentes de Windows que necesita el juego (solo la primera vez)…"))
     try:
         failed = run_setup(game, pv, steps, ui.log)
     except Exception as e:  # noqa: BLE001 - nunca debe impedir jugar
-        ui.log(f"aviso: falló la preparación del juego: {e}")
+        ui.log(_("aviso: falló la preparación del juego: {error}").format(error=e))
         return
     if failed:
-        ui.log("aviso: no terminó: " + ", ".join(failed) + " (detalles en el registro del juego)")
+        ui.log(_("aviso: no terminó: {steps} (detalles en el registro del juego)").format(steps=", ".join(failed)))
 
 
 def run_game(game_id: str, ui: SessionUI) -> int:
@@ -179,7 +180,7 @@ def run_game(game_id: str, ui: SessionUI) -> int:
     service = SyncService(state, auth, GogApi(auth), log=ui.log)
     game = state.game(game_id)
     if game is None:
-        ui.error(f"Juego {game_id} no registrado")
+        ui.error(_("Juego {id} no registrado").format(id=game_id))
         return 1
     try:
         spec = build_launch(game)
@@ -190,12 +191,12 @@ def run_game(game_id: str, ui: SessionUI) -> int:
 
     try:
         if spec.proton and not prefix_ready(spec.compat):
-            ui.status("Preparando el prefijo de Proton (solo la primera vez)…")
+            ui.status(_("Preparando el prefijo de Proton (solo la primera vez)…"))
             try:
                 init_prefix(game, spec.proton)
             except (OSError, subprocess.SubprocessError) as e:
                 # Proton lo vuelve a intentar al arrancar el juego.
-                ui.log(f"aviso: no se pudo preparar el prefijo: {e}")
+                ui.log(_("aviso: no se pudo preparar el prefijo: {error}").format(error=e))
         if spec.proton:
             _prepare(game, spec.proton, ui)
         if syncable:
@@ -207,12 +208,12 @@ def run_game(game_id: str, ui: SessionUI) -> int:
                              str(spec.compat) if spec.compat else None)
     if syncable:
         if not spawn_watcher(game_id, sid, os.getpid()):
-            ui.log("aviso: sin systemd-run; si Steam cierra el lanzador, la subida quedará pendiente")
+            ui.log(_("aviso: sin systemd-run; si Steam cierra el lanzador, la subida quedará pendiente"))
 
     global _current
     log = open_log(game_id)
     tracker = _start_achievements(game, spec, auth, ui, log)
-    ui.status(f"Jugando a {game.title}")
+    ui.status(_("Jugando a {title}").format(title=game.title))
     ui.hide()
     if spec.compat:
         from . import languages
@@ -226,13 +227,13 @@ def run_game(game_id: str, ui: SessionUI) -> int:
         log.close()
         state.update_session(sid, ended=time.time(), post_synced=1, note=f"no arrancó: {e}")
         ui.show()
-        ui.error(f"No se pudo arrancar el juego: {e}")
+        ui.error(_("No se pudo arrancar el juego: {error}").format(error=e))
         return 1
     rc = _current.wait()
     _current = None
     log.write(f"[gogl] el juego terminó con código {rc}\n")
     ui.show()
-    ui.status("Esperando a que el juego se cierre del todo…")
+    ui.status(_("Esperando a que el juego se cierre del todo…"))
     wait_wineserver(spec.proton, spec.compat, timeout=600)
     state.update_session(sid, ended=time.time())
     if tracker:
@@ -261,12 +262,13 @@ class _Achievements:
 
     def finish(self, ui: SessionUI):
         if self.comet.running():
-            ui.status("Guardando los logros…")
+            ui.status(_("Guardando los logros…"))
         self.comet.stop()
         got = self.comet.unlocked
         if got:
             names = ", ".join(name for _key, name in got)
-            ui.status(f"Has conseguido {len(got)} logro{'s' if len(got) != 1 else ''}: {names}")
+            ui.status(n_("Has conseguido {n} logro: {names}", "Has conseguido {n} logros: {names}", len(got))
+                      .format(n=len(got), names=names))
             time.sleep(3)  # que dé tiempo a leerlo antes de que se cierre la ventana
         # Refresca la copia local para que la ficha muestre lo nuevo.
         from . import achievements
@@ -292,7 +294,7 @@ def _start_achievements(game, spec, auth: AuthManager, ui: SessionUI, log) -> _A
         username = cached_username(GogApi(auth)) or "gogl"
         tokens = auth.galaxy_tokens()
     except Exception as e:  # noqa: BLE001
-        ui.log(f"aviso: los logros no se registrarán en esta partida: {e}")
+        ui.log(_("aviso: los logros no se registrarán en esta partida: {error}").format(error=e))
         return None
 
     from . import achievements
@@ -319,7 +321,7 @@ def _start_achievements(game, spec, auth: AuthManager, ui: SessionUI, log) -> _A
     try:
         proc.start()
     except OSError as e:
-        ui.log(f"aviso: no se pudo arrancar Comet: {e}")
+        ui.log(_("aviso: no se pudo arrancar Comet: {error}").format(error=e))
         return None
     log.write(f"[gogl] Comet {comet.VERSION} activo: los logros se registran mientras juegas\n")
     log.flush()
@@ -351,7 +353,7 @@ def achievement_icon(url: str) -> str | None:
 def notify_achievement(name: str, description: str, icon: str | None) -> None:
     if shutil.which("notify-send"):
         args = ["notify-send", "-a", APP_NAME, "-i", icon or "trophy-gold"]
-        subprocess.run([*args, f"🏆 {name}", description or "Logro conseguido"],
+        subprocess.run([*args, f"🏆 {name}", description or _("Logro conseguido")],
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
@@ -407,7 +409,7 @@ def watch(game_id: str, sid: int, pid: int, log=print) -> int:
     s = state.session(sid)
     if s is None or s["post_synced"]:
         return 0
-    log("el lanzador terminó sin subir las partidas; me encargo yo")
+    log(_("el lanzador terminó sin subir las partidas; me encargo yo"))
     pv = proton_mgr.get(s["proton"]) if s["proton"] else None
     wait_wineserver(pv, Path(s["compat"]) if s["compat"] else None, timeout=900)
     auth = AuthManager()
@@ -419,18 +421,19 @@ def watch(game_id: str, sid: int, pid: int, log=print) -> int:
         state.update_session(sid, post_synced=2, note="vigilante: ok")
         log(describe(res))
         if res.uploaded or res.deleted_cloud:
-            notify("Partidas subidas", title)
+            notify(_("Partidas subidas"), title)
         return 0
     except Offline:
         state.update_session(sid, post_synced=2, note="vigilante: sin conexión")
-        notify("Partidas pendientes de subir", f"{title}: se subirán cuando haya conexión")
+        notify(_("Partidas pendientes de subir"), _("{title}: se subirán cuando haya conexión").format(title=title))
     except SyncUnavailable as e:  # el juego no tiene sincronización: nada pendiente
         state.update_session(sid, post_synced=2, note=f"vigilante: {e}")
         return 0
     except ConflictError:
         state.update_session(sid, post_synced=2, note="vigilante: conflicto")
-        notify("Conflicto de partidas", f"{title}: ábrelo en {APP_NAME} para elegir qué versión conservar")
+        notify(_("Conflicto de partidas"), _("{title}: ábrelo en {app} para elegir qué versión conservar")
+               .format(title=title, app=APP_NAME))
     except Exception as e:  # noqa: BLE001
         state.update_session(sid, post_synced=2, note=f"vigilante: {e}")
-        notify("Partidas pendientes de subir", f"{title}: se reintentará más tarde")
+        notify(_("Partidas pendientes de subir"), _("{title}: se reintentará más tarde").format(title=title))
     return 1

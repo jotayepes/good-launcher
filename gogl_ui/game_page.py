@@ -12,7 +12,8 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QFrame, QMenu, QMessageB
                                QPushButton, QScrollArea, QSizePolicy, QTextBrowser, QVBoxLayout,
                                QWidget)
 
-from gogl import APP_NAME, languages
+from gogl import APP_NAME, i18n, languages
+from gogl.i18n import _
 from gogl.library import product_details
 from gogl.runner import proton as proton_mgr
 from gogl.saves.engine import ConflictError
@@ -154,7 +155,7 @@ class GamePage(QWidget):
         self.hero = Hero()
         hl = QVBoxLayout(self.hero)
         hl.setContentsMargins(36, 18, 36, 26)
-        back = QPushButton("←  Biblioteca")
+        back = QPushButton("←  " + _("Biblioteca"))
         back.setObjectName("Ghost")
         back.clicked.connect(self.back)
         hl.addWidget(back, 0, Qt.AlignLeft)
@@ -177,15 +178,15 @@ class GamePage(QWidget):
         content.setContentsMargins(36, 8, 36, 0)
         content.setSpacing(20)
         left = QVBoxLayout()
-        about, al = card("Acerca del juego")
+        about, al = card(_("Acerca del juego"))
         self.summary = QTextBrowser()
         self.summary.setOpenExternalLinks(True)
         self.summary.setMinimumHeight(160)
         al.addWidget(self.summary)
         left.addWidget(about)
-        self.install_card, self.install_lay = card("Instalación")
+        self.install_card, self.install_lay = card(_("Instalación"))
         left.addWidget(self.install_card)
-        ach_card, ach_lay = card("Logros")
+        ach_card, ach_lay = card(_("Logros"))
         self.achievements = AchievementsPanel(images, state)
         ach_lay.addWidget(self.achievements)
         left.addWidget(ach_card)
@@ -193,10 +194,10 @@ class GamePage(QWidget):
         content.addLayout(left, 3)
 
         right = QVBoxLayout()
-        self.cloud_card, self.cloud_lay = card("Partidas en la nube")
+        self.cloud_card, self.cloud_lay = card(_("Partidas en la nube"))
         self.cloud_card.setMinimumWidth(380)
         right.addWidget(self.cloud_card)
-        off_card, off_lay = card("Extras e instaladores")
+        off_card, off_lay = card(_("Extras e instaladores"))
         self.offline = OfflinePanel(downloads)
         off_lay.addWidget(self.offline)
         right.addWidget(off_card)
@@ -240,19 +241,19 @@ class GamePage(QWidget):
         if not g:
             return ""
         if g.platform != "windows":
-            return "La versión de Linux de los juegos de GOG no registra logros."
+            return _("La versión de Linux de los juegos de GOG no registra logros.")
         if not comet.uses_galaxy_sdk(g.install_path):
-            return ("Este juego no trae el kit de Galaxy, así que no puede registrar logros nuevos "
-                    "fuera de GOG Galaxy.")
+            return _("Este juego no trae el kit de Galaxy, así que no puede registrar logros nuevos "
+                     "fuera de GOG Galaxy.")
         if not comet.enabled(g):
-            return "Registrar logros mientras juegas está desactivado para este juego."
-        return f"Se registran mientras juegas desde {APP_NAME}, con aviso al conseguirlos."
+            return _("Registrar logros mientras juegas está desactivado para este juego.")
+        return _("Se registran mientras juegas desde {app}, con aviso al conseguirlos.").format(app=APP_NAME)
 
     def _on_details(self, d: dict):
         if not self.entry or d.get("id") != self.entry.game_id:
             return
         self.details = d
-        self.summary.setPlainText(d.get("summary") or "Sin descripción.")
+        self.summary.setPlainText(d.get("summary") or _("Sin descripción."))
         self.hero.set_pixmap(self.images.image(d.get("background")))
         self._render_meta()
         if self.entry.game:
@@ -301,66 +302,69 @@ class GamePage(QWidget):
         e = self.entry
         if e.installed:
             running = self._is_running(e.game_id)
-            play = QPushButton("En ejecución…" if running else "▶  Jugar")
+            play = QPushButton(_("En ejecución…") if running else "▶  " + _("Jugar"))
             self._primary = play
             play.setObjectName("Primary")
             play.setEnabled(not running)
             play.clicked.connect(self._play)
             self.actions.addWidget(play)
-            steam_btn = QPushButton("Añadir a Steam")
-            steam_btn.setToolTip("Crea un acceso directo en Steam (con carátulas) para jugar desde "
-                                 "el modo juego con sincronización de partidas")
+            steam_btn = QPushButton(_("Añadir a Steam"))
+            steam_btn.setToolTip(_("Crea un acceso directo en Steam (con carátulas) para jugar desde "
+                                   "el modo juego con sincronización de partidas"))
             steam_btn.clicked.connect(self._add_to_steam)
             self.actions.addWidget(steam_btn)
             job = self.downloads.active(e.game_id) if self.downloads else None
             if job:
-                prog = QPushButton(f"{'Actualizando' if job.kind == 'update' else 'Reparando'} "
-                                   f"{job.progress.fraction * 100:.0f}%")
+                pct = f"{job.progress.fraction * 100:.0f}%"
+                prog = QPushButton((_("Actualizando {pct}") if job.kind == "update" else
+                                    _("Reparando {pct}")).format(pct=pct))
                 prog.clicked.connect(self.show_downloads)
                 self.actions.addWidget(prog)
             elif self.updates.get(e.game_id):
                 old, new = self.updates[e.game_id]
-                upd = QPushButton(f"Actualizar a {new}" if new else "Actualizar")
-                upd.setToolTip(f"Versión instalada: {old or '?'}. Solo se descarga lo que ha cambiado.")
+                upd = QPushButton(_("Actualizar a {version}").format(version=new) if new else _("Actualizar"))
+                upd.setToolTip(_("Versión instalada: {version}. Solo se descarga lo que ha cambiado.")
+                               .format(version=old or "?"))
                 upd.clicked.connect(lambda: self._enqueue("update"))
                 self.actions.addWidget(upd)
-            manage = QPushButton("Gestionar ▾")
+            manage = QPushButton(_("Gestionar") + " ▾")
             manage.setObjectName("Ghost")
             menu = QMenu(manage)
             if e.game.extra.get("managed"):
-                menu.addAction("Buscar actualizaciones", self._check_update_now)
-                menu.addAction("Verificar y reparar archivos", lambda: self._enqueue("repair"))
-            menu.addAction("Ver registro de la última partida", self._open_log)
+                menu.addAction(_("Buscar actualizaciones"), self._check_update_now)
+                menu.addAction(_("Verificar y reparar archivos"), lambda: self._enqueue("repair"))
+            menu.addAction(_("Ver registro de la última partida"), self._open_log)
             if e.game.platform == "windows" and e.game.extra.get("managed"):
-                menu.addAction("Repetir la preparación de Windows", self._reset_setup)
+                menu.addAction(_("Repetir la preparación de Windows"), self._reset_setup)
             if e.game.platform == "windows":
                 on = e.game.extra.get("achievements", True) is not False
-                menu.addAction("No registrar logros en este juego" if on else "Registrar logros en este juego",
+                menu.addAction(_("No registrar logros en este juego") if on else
+                               _("Registrar logros en este juego"),
                                lambda: self._toggle_achievements(not on))
             if e.game.extra.get("managed"):
                 menu.addSeparator()
-                menu.addAction("Desinstalar…", lambda: self.uninstall_requested.emit(self.entry))
+                menu.addAction(_("Desinstalar…"), lambda: self.uninstall_requested.emit(self.entry))
             manage.setMenu(menu)
             self._manage = manage
             self.actions.addWidget(manage)
         else:
             job = self.downloads.active(e.game_id) if self.downloads else None
             if job:
-                inst = QPushButton("En cola…" if job.status == "queued" else
-                                   f"Instalando {job.progress.fraction * 100:.0f}%")
+                inst = QPushButton(_("En cola…") if job.status == "queued" else
+                                   _("Instalando {pct}").format(pct=f"{job.progress.fraction * 100:.0f}%"))
                 inst.setObjectName("Primary")
                 inst.clicked.connect(self.show_downloads)
             else:
-                inst = QPushButton("Instalar")
+                inst = QPushButton(_("Instalar"))
                 inst.setObjectName("Primary")
                 inst.setEnabled(bool({"windows", "linux"} & set(e.platforms)) and self.downloads is not None)
                 inst.clicked.connect(self._install)
             self._primary = inst
             self.actions.addWidget(inst)
-            link = QPushButton("Vincular instalación existente…")
+            link = QPushButton(_("Vincular instalación existente…"))
             link.clicked.connect(lambda: self.link_requested.emit(self.entry))
             self.actions.addWidget(link)
-        store = QPushButton("Ver en GOG.com")
+        store = QPushButton(_("Ver en GOG.com"))
         store.setObjectName("Ghost")
         url = e.product.get("url")
         store.setEnabled(bool(url))
@@ -372,20 +376,21 @@ class GamePage(QWidget):
         clear_after_title(self.install_lay)
         g = self.entry.game
         if not g:
-            l = QLabel("No instalado.")
+            l = QLabel(_("No instalado."))
             l.setObjectName("Muted")
             self.install_lay.addWidget(l)
             return
-        self._path_row(self.install_lay, "Carpeta", str(g.install_path))
+        self._path_row(self.install_lay, _("Carpeta"), str(g.install_path))
         if g.prefix:
-            self._path_row(self.install_lay, "Prefijo", str(g.prefix))
+            self._path_row(self.install_lay, _("Prefijo"), str(g.prefix))
         if g.platform == "windows":
             prow = QHBoxLayout()
             lbl = QLabel("Proton")
             lbl.setStyleSheet("font-weight: 700;")
             combo = QComboBox()
             d = proton_mgr.default()
-            combo.addItem(f"Predeterminado ({d.name})" if d else "Predeterminado (ninguno instalado)", None)
+            combo.addItem(_("Predeterminado ({name})").format(name=d.name) if d else
+                          _("Predeterminado (ninguno instalado)"), None)
             for v in proton_mgr.installed():
                 combo.addItem(v.name, v.name)
             idx = combo.findData(g.extra.get("proton"))
@@ -396,34 +401,34 @@ class GamePage(QWidget):
             prow.addWidget(combo)
             self.install_lay.addLayout(prow)
         lrow = QHBoxLayout()
-        lbl = QLabel("Idioma")
+        lbl = QLabel(_("Idioma"))
         lbl.setStyleSheet("font-weight: 700;")
         lang = QComboBox()
         current = g.extra.get("language")
         codes = set(self.details.get("languages") or []) | {current or "en-US"}
         if not current:
-            lang.addItem("El del sistema", None)
+            lang.addItem(_("El del sistema"), None)
         for code in sorted(codes, key=languages.name):
             lang.addItem(languages.name(code), code)
         lang.setCurrentIndex(max(lang.findData(current), 0))
-        lang.setToolTip(f"Idioma que {APP_NAME} indica al juego al arrancar (vía Wine/Proton). Si el juego "
-                        "tiene paquetes de idioma propios, se ofrece descargarlos.")
+        lang.setToolTip(_("Idioma que {app} indica al juego al arrancar (vía Wine/Proton). Si el juego "
+                          "tiene paquetes de idioma propios, se ofrece descargarlos.").format(app=APP_NAME))
         lang.currentIndexChanged.connect(lambda _i, c=lang: self._set_language(c.currentData()))
         lrow.addWidget(lbl)
         lrow.addStretch()
         lrow.addWidget(lang)
         self.install_lay.addLayout(lrow)
         row = QHBoxLayout()
-        opts = QPushButton("Opciones de lanzamiento…")
-        opts.setToolTip("Argumentos, variables de entorno y comando previo (MangoHud, GameMode…)")
+        opts = QPushButton(_("Opciones de lanzamiento…"))
+        opts.setToolTip(_("Argumentos, variables de entorno y comando previo (MangoHud, GameMode…)"))
         opts.clicked.connect(self._launch_options)
         row.addWidget(opts)
         if g.extra.get("launch"):
-            row.addWidget(pill("Personalizado", theme.ACCENT))
+            row.addWidget(pill(_("Personalizado"), theme.ACCENT))
         row.addStretch()
-        unlink = QPushButton("Desvincular")
+        unlink = QPushButton(_("Desvincular"))
         unlink.setObjectName("Ghost")
-        unlink.setToolTip("Quita el juego del lanzador sin borrar ningún archivo")
+        unlink.setToolTip(_("Quita el juego del lanzador sin borrar ningún archivo"))
         unlink.clicked.connect(lambda: self.unlink_requested.emit(self.entry))
         row.addWidget(unlink)
         self.install_lay.addLayout(row)
@@ -434,7 +439,7 @@ class GamePage(QWidget):
         head = QHBoxLayout()
         name = QLabel(label)
         name.setStyleSheet("font-weight: 700;")
-        open_ = QPushButton("Abrir")
+        open_ = QPushButton(_("Abrir"))
         open_.setObjectName("Ghost")
         target = path.split("  (")[0]
         open_.clicked.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(target)))
@@ -477,10 +482,10 @@ class GamePage(QWidget):
         def done(r):
             self._on_update_check(gid, r)
             if not r:
-                QMessageBox.information(self, "Actualizaciones", "Tienes la última versión.")
+                QMessageBox.information(self, _("Actualizaciones"), _("Tienes la última versión."))
 
         run_task(lambda b: check_update(b.api, gid), done,
-                 lambda e: QMessageBox.warning(self, "Actualizaciones", str(e)))
+                 lambda e: QMessageBox.warning(self, _("Actualizaciones"), str(e)))
 
     def on_download_progress(self, gid: str):
         if not (self.entry and self.entry.game_id == gid and self.downloads):
@@ -522,10 +527,10 @@ class GamePage(QWidget):
             extra_bytes, m = r
             from .downloads import Job, human
             if QMessageBox.question(
-                    self, "Archivos de idioma",
-                    f"{languages.name(code)} tiene archivos propios (voces o textos) que no están "
-                    f"instalados. ¿Descargarlos ahora? (unos {human(extra_bytes)}; solo se baja lo que "
-                    "cambia)") == QMessageBox.Yes:
+                    self, _("Archivos de idioma"),
+                    _("{language} tiene archivos propios (voces o textos) que no están instalados. "
+                      "¿Descargarlos ahora? (unos {size}; solo se baja lo que cambia)").format(
+                        language=languages.name(code), size=human(extra_bytes))) == QMessageBox.Yes:
                 self.downloads.enqueue(Job(gid, self.entry.title, "install", {
                     "platform": "windows", "language": code, "dlcs": g.extra.get("dlcs") or [],
                     "install_path": Path(m["install_path"])}))
@@ -562,15 +567,16 @@ class GamePage(QWidget):
         from gogl.runner.setup import reset
         reset(self.entry.game)
         QMessageBox.information(
-            self, "Preparación de Windows",
-            "En la próxima partida se volverán a instalar los componentes que pide el juego "
-            "(Visual C++, DirectX…) y a ejecutar sus scripts de instalación de GOG.")
+            self, _("Preparación de Windows"),
+            _("En la próxima partida se volverán a instalar los componentes que pide el juego "
+              "(Visual C++, DirectX…) y a ejecutar sus scripts de instalación de GOG."))
 
     def _open_log(self):
         from gogl.runner.game import log_path
         p = log_path(self.entry.game_id)
         if not p.exists():
-            QMessageBox.information(self, "Registro", f"Este juego todavía no se ha lanzado desde {APP_NAME}.")
+            QMessageBox.information(self, _("Registro"),
+                                    _("Este juego todavía no se ha lanzado desde {app}.").format(app=APP_NAME))
             return
         QDesktopServices.openUrl(QUrl.fromLocalFile(str(p)))
 
@@ -593,9 +599,9 @@ class GamePage(QWidget):
         g = self.entry.game
         if g.platform == "windows" and not proton_mgr.installed():
             if QMessageBox.question(
-                    self, "Falta Proton-GE",
-                    "Para jugar a juegos de Windows hace falta Proton-GE.\n\n"
-                    f"¿Descargar ahora la última versión (unos 550 MB) a la carpeta de {APP_NAME}?") != QMessageBox.Yes:
+                    self, _("Falta Proton-GE"),
+                    _("Para jugar a juegos de Windows hace falta Proton-GE.\n\n¿Descargar ahora la última "
+                      "versión (unos 550 MB) a la carpeta de {app}?").format(app=APP_NAME)) != QMessageBox.Yes:
                 return
             if not ProtonDownloadDialog(self).exec():
                 return
@@ -623,19 +629,21 @@ class GamePage(QWidget):
         def failed(e: Exception):
             if isinstance(e, steam.SteamError) and steam.steam_running():
                 if QMessageBox.question(
-                        self, "Steam está abierto",
-                        "Steam reescribe sus accesos directos al cerrarse, así que hay que cerrarlo "
-                        "antes de añadir el juego.\n\n¿Cerrar Steam ahora y continuar?") == QMessageBox.Yes:
+                        self, _("Steam está abierto"),
+                        _("Steam reescribe sus accesos directos al cerrarse, así que hay que cerrarlo "
+                          "antes de añadir el juego.\n\n¿Cerrar Steam ahora y continuar?")) == QMessageBox.Yes:
                     run_task(lambda _b: _shutdown_steam(), lambda _r: self._add_to_steam())
                 return
-            QMessageBox.warning(self, "No se pudo añadir a Steam", str(e))
+            QMessageBox.warning(self, _("No se pudo añadir a Steam"), str(e))
 
         def done(r):
+            head = (_("«{title}» se ha actualizado en tu biblioteca de Steam, con sus carátulas.") if r.updated else
+                    _("«{title}» ya está en tu biblioteca de Steam, con sus carátulas."))
             QMessageBox.information(
-                self, "Añadido a Steam",
-                f"«{self.entry.title}» {'se ha actualizado' if r.updated else 'ya está'} en tu biblioteca de "
-                "Steam, con sus carátulas.\n\nNo hace falta forzar ninguna herramienta de compatibilidad: "
-                f"{APP_NAME} usa su propio Proton-GE y sincroniza las partidas antes y después de jugar.")
+                self, _("Añadido a Steam"),
+                head.format(title=self.entry.title) + "\n\n" +
+                _("No hace falta forzar ninguna herramienta de compatibilidad: {app} usa su propio Proton-GE "
+                  "y sincroniza las partidas antes y después de jugar.").format(app=APP_NAME))
 
         run_task(lambda b: steam.add_shortcut(b.state.game(gid)), done, failed)
 
@@ -645,27 +653,28 @@ class GamePage(QWidget):
         clear_after_title(self.cloud_lay)
         g = self.entry.game
         if not g:
-            msg = ("Vincula la instalación para gestionar sus partidas guardadas."
+            msg = (_("Vincula la instalación para gestionar sus partidas guardadas.")
                    if "windows" in self.entry.platforms else
-                   "GOG no ofrece partidas en la nube para juegos nativos de Linux.")
+                   _("GOG no ofrece partidas en la nube para juegos nativos de Linux."))
             self._muted(self.cloud_lay, msg)
             return
         if g.platform != "windows":
-            self._muted(self.cloud_lay, "Juego nativo de Linux: GOG no ofrece partidas en la nube "
-                                        "para esta versión. Si las necesitas, usa la versión de Windows con Proton.")
+            self._muted(self.cloud_lay, _("Juego nativo de Linux: GOG no ofrece partidas en la nube para esta "
+                                          "versión. Si las necesitas, usa la versión de Windows con Proton."))
             return
 
         st = self.state.status(g.game_id) or {}
         head = QHBoxLayout()
         if st.get("pending"):
             conflict = st.get("last_error") == "conflicto"
-            head.addWidget(pill("Conflicto" if conflict else "Pendiente", theme.DANGER if conflict else theme.WARN))
+            head.addWidget(pill(_("Conflicto") if conflict else _("Pendiente"),
+                                theme.DANGER if conflict else theme.WARN))
         elif st.get("last_ok"):
-            head.addWidget(pill("Sincronizado", theme.OK))
+            head.addWidget(pill(_("Sincronizado"), theme.OK))
         else:
-            head.addWidget(pill("Nunca sincronizado", theme.MUTED))
-        when = time.strftime("%d/%m/%Y %H:%M", time.localtime(st["last_ok"])) if st.get("last_ok") else "—"
-        last = QLabel(f"Último sync correcto: {when}")
+            head.addWidget(pill(_("Nunca sincronizado"), theme.MUTED))
+        when = time.strftime(i18n.date_format(), time.localtime(st["last_ok"])) if st.get("last_ok") else "—"
+        last = QLabel(_("Último sync correcto: {when}").format(when=when))
         last.setObjectName("Muted")
         head.addWidget(last)
         head.addStretch()
@@ -678,27 +687,27 @@ class GamePage(QWidget):
 
         self.locs_box = QVBoxLayout()
         self.cloud_lay.addLayout(self.locs_box)
-        self._muted(self.locs_box, "Buscando ubicaciones de partidas…")
+        self._muted(self.locs_box, _("Buscando ubicaciones de partidas…"))
         gid = g.game_id
         run_task(lambda b: b.service.locations(b.state.game(gid), refresh=False),
                  lambda locs: self._on_locations(gid, locs),
                  lambda e: self._on_locations(gid, e))
 
         row = QHBoxLayout()
-        self.sync_btn = QPushButton("Sincronizar ahora")
+        self.sync_btn = QPushButton(_("Sincronizar ahora"))
         self.sync_btn.setObjectName("Primary")
         self.sync_btn.setStyleSheet("padding: 8px 20px; font-size: 10pt;")
         self.sync_btn.clicked.connect(lambda: self._sync())
-        preview = QPushButton("Ver cambios")
-        preview.setToolTip("Muestra qué se subiría o descargaría sin tocar nada")
+        preview = QPushButton(_("Ver cambios"))
+        preview.setToolTip(_("Muestra qué se subiría o descargaría sin tocar nada"))
         preview.clicked.connect(lambda: self._sync(dry_run=True))
-        in_cloud = QPushButton("En la nube")
+        in_cloud = QPushButton(_("En la nube"))
         in_cloud.setObjectName("Ghost")
-        in_cloud.setToolTip("Ver y borrar las partidas guardadas en la nube de GOG y su espacio usado")
+        in_cloud.setToolTip(_("Ver y borrar las partidas guardadas en la nube de GOG y su espacio usado"))
         in_cloud.clicked.connect(lambda: self.show_cloud.emit(self.entry.game_id))
-        backups = QPushButton("Copias")
+        backups = QPushButton(_("Copias"))
         backups.setObjectName("Ghost")
-        backups.setToolTip("Abrir la carpeta de copias de seguridad de este juego")
+        backups.setToolTip(_("Abrir la carpeta de copias de seguridad de este juego"))
         backups.clicked.connect(self._open_backups)
         row.addWidget(self.sync_btn)
         row.addWidget(preview)
@@ -725,14 +734,14 @@ class GamePage(QWidget):
                 self.sync_btn.setEnabled(False)
             return
         for loc in result:
-            change = QPushButton("Cambiar")
+            change = QPushButton(_("Cambiar"))
             change.setObjectName("Ghost")
-            change.clicked.connect(lambda _=False, l=loc: self._change_location(l))
-            exists = "" if loc.path.is_dir() else "  (aún no existe)"
+            change.clicked.connect(lambda _c=False, l=loc: self._change_location(l))
+            exists = "" if loc.path.is_dir() else "  (" + _("aún no existe") + ")"
             self._path_row(self.locs_box, loc.name, str(loc.path) + exists, change)
 
     def _change_location(self, loc):
-        d = pick_directory(self, f"Carpeta para «{loc.name}»", str(loc.path))
+        d = pick_directory(self, _("Carpeta para «{name}»").format(name=loc.name), str(loc.path))
         if not d:
             return
         g = self.state.game(self.entry.game_id)
@@ -751,7 +760,7 @@ class GamePage(QWidget):
         gid = self.entry.game_id
         self.busy = True
         self.sync_btn.setEnabled(False)
-        self.sync_btn.setText("Sincronizando…" if not dry_run else "Analizando…")
+        self.sync_btn.setText(_("Sincronizando…") if not dry_run else _("Analizando…"))
         self.log.show()
         self.log.clear()
         run_task(lambda b: b.service.sync(gid, prefer=prefer, dry_run=dry_run, wait_network=10),
@@ -775,10 +784,10 @@ class GamePage(QWidget):
             self.log.show()
             self.log.setPlainText(log)
             if res.dry_run:
-                self.log.appendPlainText("\nCambios que se aplicarían:\n" + describe(res))
+                self.log.appendPlainText("\n" + _("Cambios que se aplicarían:") + "\n" + describe(res))
             else:
                 for w in res.plan.warnings:
-                    self.log.appendPlainText(f"aviso: {w}")
+                    self.log.appendPlainText(_("aviso: {warning}").format(warning=w))
                 self.log.appendPlainText(f"\n✓ {describe(res)}")
 
     def _sync_failed(self, gid: str, e: Exception):

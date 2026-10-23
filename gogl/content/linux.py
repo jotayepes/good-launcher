@@ -13,6 +13,7 @@ import zipfile
 from pathlib import Path
 
 from .. import paths
+from ..i18n import _
 from .common import ContentError, FileEntry, InstallPlan, safe_name
 from .installer import Cancelled, Installer, Progress, dir_is_new, load_manifest, save_manifest
 
@@ -20,7 +21,7 @@ PRODUCT_URL = "https://api.gog.com/products/{id}"
 PAYLOAD = "data/noarch/"
 
 
-def linux_installer(installer: Installer, game_id: str, language: str = "es-ES") -> tuple[dict, dict]:
+def linux_installer(installer: Installer, game_id: str, language: str = "en-US") -> tuple[dict, dict]:
     """(producto, instalador de Linux elegido por idioma)."""
     r = installer.http.get(PRODUCT_URL.format(id=game_id), params={"expand": "downloads"})
     if r.status_code != 200:
@@ -28,7 +29,7 @@ def linux_installer(installer: Installer, game_id: str, language: str = "es-ES")
     product = r.json()
     linux = [i for i in (product.get("downloads") or {}).get("installers", []) if i.get("os") == "linux"]
     if not linux:
-        raise ContentError("Este juego no tiene versión nativa de Linux")
+        raise ContentError(_("Este juego no tiene versión nativa de Linux"))
     short = language.split("-")[0]
     chosen = next((i for i in linux if i.get("language") == short), None) or \
         next((i for i in linux if i.get("language") == "en"), linux[0])
@@ -36,7 +37,7 @@ def linux_installer(installer: Installer, game_id: str, language: str = "es-ES")
 
 
 def install_linux(installer: Installer, game_id: str, install_path: Path | None,
-                  language: str = "es-ES"):
+                  language: str = "en-US"):
     product, inst = linux_installer(installer, game_id, language)
     if install_path is None:
         from . import install_root
@@ -59,7 +60,7 @@ def install_linux(installer: Installer, game_id: str, install_path: Path | None,
     _download_resumable(installer, url, sh, size)
     if expected and _md5(sh) != expected:
         sh.unlink(missing_ok=True)
-        raise ContentError("El instalador descargado está corrupto (MD5 distinto); vuelve a intentarlo")
+        raise ContentError(_("El instalador descargado está corrupto (MD5 distinto); vuelve a intentarlo"))
 
     installer.p.stage = "finalize"
     installer._emit(True)
@@ -95,19 +96,19 @@ def _pick_file(installer: Installer, files: list[dict]) -> tuple[dict, dict]:
     no son partes de un mismo instalador, sino versiones distintas completas
     (cada una un .sh con su zip): se elige la más reciente."""
     if not files:
-        raise ContentError("GOG no lista ningún archivo para este instalador")
+        raise ContentError(_("GOG no lista ningún archivo para este instalador"))
     links = []
     for f in files:
         link = installer.api._get(f["downlink"]).json()
         if not link.get("downlink"):
-            raise ContentError("GOG no devolvió enlace de descarga")
+            raise ContentError(_("GOG no devolvió enlace de descarga"))
         links.append((f, link))
     if len(links) == 1:
         return links[0]
     versions = [_sh_version(link["downlink"]) for _f, link in links]
     if any(v is None for v in versions):
-        raise ContentError("Este instalador de Linux viene partido en varios archivos que no son .sh; "
-                           "gogl no sabe unirlos. Instala la versión de Windows.")
+        raise ContentError(_("Este instalador de Linux viene partido en varios archivos que no son .sh; "
+                             "gogl no sabe unirlos. Instala la versión de Windows."))
     best = max(range(len(links)), key=lambda i: (versions[i], i))
     return links[best]
 
@@ -141,7 +142,7 @@ def _download_resumable(installer: Installer, url: str, dest: Path, size: int) -
             raise
         except Exception as e:  # noqa: BLE001
             if attempt == 4:
-                raise ContentError(f"No se pudo descargar el instalador: {e}") from e
+                raise ContentError(_("No se pudo descargar el instalador: {error}").format(error=e)) from e
             time.sleep(2 ** attempt)
 
 
@@ -161,7 +162,7 @@ def _extract(sh: Path, root: Path, installer: Installer) -> tuple[list[FileEntry
     try:
         zf = zipfile.ZipFile(sh)  # zipfile admite datos antepuestos (el script makeself)
     except zipfile.BadZipFile as e:
-        raise ContentError("El instalador no contiene un zip válido") from e
+        raise ContentError(_("El instalador no contiene un zip válido")) from e
     with zf:
         members = [m for m in zf.infolist() if m.filename.startswith(PAYLOAD) and m.filename != PAYLOAD]
         installer.p.disk_total = sum(m.file_size for m in members)
@@ -171,7 +172,7 @@ def _extract(sh: Path, root: Path, installer: Installer) -> tuple[list[FileEntry
             rel = m.filename[len(PAYLOAD):].rstrip("/")
             parts = rel.split("/")
             if not rel or rel.startswith("/") or ".." in parts:
-                raise ContentError(f"Ruta sospechosa en el instalador: {m.filename}")
+                raise ContentError(_("Ruta sospechosa en el instalador: {path}").format(path=m.filename))
             # Se escribe en la ruta tal cual, sin resolver: resolverla seguiría los
             # enlaces de una instalación anterior y pisaría el archivo al que apuntan.
             dest = root / rel
@@ -183,7 +184,7 @@ def _extract(sh: Path, root: Path, installer: Installer) -> tuple[list[FileEntry
             # Pero la carpeta sí se resuelve: un enlace a carpeta no puede sacarnos fuera.
             parent = dest.parent.resolve()
             if parent != real_root and real_root not in parent.parents:
-                raise ContentError(f"Ruta sospechosa en el instalador: {m.filename}")
+                raise ContentError(_("Ruta sospechosa en el instalador: {path}").format(path=m.filename))
             if stat.S_ISLNK(mode):
                 target = zf.read(m).decode()
                 if dest.is_symlink() or dest.is_file():

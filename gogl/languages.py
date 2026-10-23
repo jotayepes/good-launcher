@@ -10,8 +10,12 @@ from __future__ import annotations
 
 import functools
 import json
+import os
 import subprocess
 from pathlib import Path
+
+from . import config
+from .i18n import _
 
 # Códigos de la tienda (api.gog.com/products → "languages") → códigos de depot.
 STORE_TO_CODE = {
@@ -23,12 +27,13 @@ STORE_TO_CODE = {
 }
 
 NAMES = {
-    "en-US": "Inglés", "es-ES": "Español", "es-MX": "Español (Latinoamérica)", "fr-FR": "Francés",
-    "de-DE": "Alemán", "it-IT": "Italiano", "pt-BR": "Portugués (Brasil)", "pt-PT": "Portugués",
-    "ru-RU": "Ruso", "pl-PL": "Polaco", "zh-Hans": "Chino simplificado", "zh-Hant": "Chino tradicional",
-    "ja-JP": "Japonés", "ko-KR": "Coreano", "cs-CZ": "Checo", "hu-HU": "Húngaro", "tr-TR": "Turco",
-    "nl-NL": "Neerlandés", "uk-UA": "Ucraniano", "sv-SE": "Sueco", "da-DK": "Danés", "fi-FI": "Finés",
-    "nb-NO": "Noruego", "ar-SA": "Árabe", "th-TH": "Tailandés", "ro-RO": "Rumano", "el-GR": "Griego",
+    "en-US": _("Inglés"), "es-ES": _("Español"), "es-MX": _("Español (Latinoamérica)"), "fr-FR": _("Francés"),
+    "de-DE": _("Alemán"), "it-IT": _("Italiano"), "pt-BR": _("Portugués (Brasil)"), "pt-PT": _("Portugués"),
+    "ru-RU": _("Ruso"), "pl-PL": _("Polaco"), "zh-Hans": _("Chino simplificado"),
+    "zh-Hant": _("Chino tradicional"), "ja-JP": _("Japonés"), "ko-KR": _("Coreano"), "cs-CZ": _("Checo"),
+    "hu-HU": _("Húngaro"), "tr-TR": _("Turco"), "nl-NL": _("Neerlandés"), "uk-UA": _("Ucraniano"),
+    "sv-SE": _("Sueco"), "da-DK": _("Danés"), "fi-FI": _("Finés"), "nb-NO": _("Noruego"),
+    "ar-SA": _("Árabe"), "th-TH": _("Tailandés"), "ro-RO": _("Rumano"), "el-GR": _("Griego"),
 }
 
 # Nombre en inglés que Galaxy escribe en goggame-<id>.info («language»).
@@ -46,6 +51,27 @@ _UNIX_SPECIAL = {"zh-Hans": "zh_CN", "zh-Hant": "zh_TW"}
 
 def name(code: str) -> str:
     return NAMES.get(code, code)
+
+
+def system_default(env=os.environ) -> str:
+    """Idioma de juego que corresponde al locale del sistema (en-US si no hay ninguno)."""
+    loc = next((env[v] for v in ("LC_ALL", "LC_MESSAGES", "LANG") if env.get(v)), "")
+    loc = loc.split(".")[0].split("@")[0]
+    lang, _sep, region = loc.partition("_")
+    if lang == "zh":
+        return "zh-Hant" if region in ("TW", "HK", "MO") else "zh-Hans"
+    if lang == "es" and region and region != "ES":
+        return "es-MX"  # GOG solo distingue el español de España y el latinoamericano
+    if lang == "pt":
+        return "pt-BR" if region == "BR" else "pt-PT"
+    if f"{lang}-{region}" in NAMES:
+        return f"{lang}-{region}"
+    return next((c for c in NAMES if c.split("-")[0] == lang), "en-US")
+
+
+def preferred() -> str:
+    """Idioma con el que se instalan los juegos: el elegido en Ajustes o el del sistema."""
+    return config.load().get("language") or system_default()
 
 
 def from_store(store_languages: dict | list | None) -> list[str]:

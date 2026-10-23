@@ -15,6 +15,8 @@ from PySide6.QtCore import QPoint, Qt, QTimer
 from PySide6.QtGui import QGuiApplication, QPixmap
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
+from gogl.i18n import _
+
 from . import theme
 
 SHOW_MS = 6000
@@ -83,7 +85,7 @@ class AchievementToast(QWidget):
         row.addWidget(pic)
         text = QVBoxLayout()
         text.setSpacing(2)
-        head = QLabel("LOGRO CONSEGUIDO")
+        head = QLabel(_("LOGRO CONSEGUIDO"))
         head.setStyleSheet(f"color: {theme.ACCENT}; font-size: 8pt; font-weight: 800; letter-spacing: 1px;")
         title = QLabel(name)
         title.setStyleSheet("font-size: 12pt; font-weight: 800; color: white;")

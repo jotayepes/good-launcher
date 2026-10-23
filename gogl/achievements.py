@@ -18,6 +18,7 @@ import httpx
 
 from .api import ApiError, GogApi
 from .auth import AuthManager
+from .i18n import _
 from .state import State
 
 GAMEPLAY = "https://gameplay.gog.com/clients/{client_id}/users/{user_id}/achievements"
@@ -102,7 +103,7 @@ def fetch_raw(api: GogApi, auth: AuthManager, client_id: str, client_secret: str
             creds = auth.credentials(client_id, client_secret, force_refresh=True)
             continue
         if r.status_code != 200:
-            raise ApiError(f"logros: gameplay.gog.com respondió {r.status_code}")
+            raise ApiError(_("logros: gameplay.gog.com respondió {code}").format(code=r.status_code))
         data = r.json()
         items += data.get("items") or []
         token = data.get("page_token")

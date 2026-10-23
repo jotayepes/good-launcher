@@ -19,6 +19,7 @@ import shutil
 import sys
 from pathlib import Path
 
+from .i18n import _
 from .paths import data_dir
 
 # Si la AppImage se ha movido y aún no se ha vuelto a abrir, se busca en la
@@ -42,7 +43,7 @@ if [ ! -f "$A" ]; then
         done)
 fi
 if [ -z "$A" ]; then
-    msg="No se encuentra la AppImage de gogl. Ábrela una vez desde donde esté y todo volverá a funcionar."
+    msg={msg}
     echo "$msg" >&2
     command -v notify-send >/dev/null && notify-send gogl "$msg"
     exit 127
@@ -89,7 +90,8 @@ def register() -> Path | None:
     if not img:
         return None
     path = launcher_path()
-    text = LAUNCHER_SH.format(path=shlex.quote(img), sha=_sha256(img))
+    msg = _("No se encuentra la AppImage de gogl. Ábrela una vez desde donde esté y todo volverá a funcionar.")
+    text = LAUNCHER_SH.format(path=shlex.quote(img), sha=_sha256(img), msg=shlex.quote(msg))
     try:
         if path.read_text() == text:
             return path

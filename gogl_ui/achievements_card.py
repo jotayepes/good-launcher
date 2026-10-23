@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (QButtonGroup, QCheckBox, QHBoxLayout, QLabel, QPr
 
 from gogl import achievements
 from gogl.achievements import Achievement
+from gogl.i18n import _
 
 from . import theme
 from .images import ImageStore
@@ -39,10 +40,10 @@ class AchievementRow(QWidget):
         row.addWidget(self.icon)
         text = QVBoxLayout()
         text.setSpacing(1)
-        name = QLabel("Logro oculto" if hidden else a.name)
+        name = QLabel(_("Logro oculto") if hidden else a.name)
         name.setStyleSheet("font-weight: 700;" + ("" if a.unlocked else f"color: {theme.MUTED};"))
         text.addWidget(name)
-        desc = QLabel("Sigue jugando para descubrirlo." if hidden else a.description)
+        desc = QLabel(_("Sigue jugando para descubrirlo.") if hidden else a.description)
         desc.setObjectName("Muted")
         desc.setWordWrap(True)
         text.addWidget(desc)
@@ -50,12 +51,12 @@ class AchievementRow(QWidget):
         side = QVBoxLayout()
         side.setSpacing(1)
         if a.unlocked:
-            when = QLabel(time.strftime("%d/%m/%Y", time.localtime(a.unlocked_at)))
+            when = QLabel(time.strftime(_("%d/%m/%Y"), time.localtime(a.unlocked_at)))
             when.setStyleSheet(f"color: {theme.OK}; font-weight: 700;")
             when.setAlignment(Qt.AlignRight)
             side.addWidget(when)
         if a.rarity:
-            r = QLabel(f"{a.rarity:.1f}% de jugadores")
+            r = QLabel(_("{pct} de jugadores").format(pct=f"{a.rarity:.1f}%"))
             r.setObjectName("Muted")
             r.setAlignment(Qt.AlignRight)
             r.setToolTip(a.rarity_label)
@@ -103,7 +104,7 @@ class AchievementsPanel(QWidget):
             self.items = cached
             self._render()
         else:
-            self._message("Cargando logros…")
+            self._message(_("Cargando logros…"))
         run_task(lambda b: achievements.fetch(b.api, b.auth, b.state, game_id),
                  lambda items: self._loaded(game_id, items),
                  lambda e: self._failed(game_id, e))
@@ -116,7 +117,7 @@ class AchievementsPanel(QWidget):
 
     def _failed(self, game_id: str, e: Exception):
         if game_id == self.game_id and not self.items:
-            self._message(f"No se pudieron cargar los logros: {e}")
+            self._message(_("No se pudieron cargar los logros: {error}").format(error=e))
 
     def _clear(self):
         from .game_page import clear
@@ -133,12 +134,13 @@ class AchievementsPanel(QWidget):
     def _render(self):
         self._clear()
         if not self.items:
-            self._message("Este juego no tiene logros de GOG.")
+            self._message(_("Este juego no tiene logros de GOG."))
             return
         got = [a for a in self.items if a.unlocked]
         missing = [a for a in self.items if not a.unlocked]
         head = QHBoxLayout()
-        count = QLabel(f"<b style='font-size:15pt'>{len(got)}</b> de {len(self.items)}")
+        count = QLabel(_("{got} de {total}").format(got=f"<b style='font-size:15pt'>{len(got)}</b>",
+                                                    total=len(self.items)))
         head.addWidget(count)
         bar = QProgressBar()
         bar.setTextVisible(False)
@@ -158,7 +160,8 @@ class AchievementsPanel(QWidget):
 
         tabs = QHBoxLayout()
         group = QButtonGroup(self)
-        for key, label in (("unlocked", f"Conseguidos ({len(got)})"), ("locked", f"Pendientes ({len(missing)})")):
+        for key, label in (("unlocked", _("Conseguidos ({n})").format(n=len(got))),
+                           ("locked", _("Pendientes ({n})").format(n=len(missing)))):
             b = QPushButton(label)
             b.setObjectName("Chip")
             b.setCheckable(True)
@@ -170,7 +173,7 @@ class AchievementsPanel(QWidget):
         hidden_count = sum(1 for a in missing if not a.visible)
         if self.tab == "locked" and hidden_count:
             self.reveal = getattr(self, "reveal", False)
-            chk = QCheckBox(f"Mostrar ocultos ({hidden_count})")
+            chk = QCheckBox(_("Mostrar ocultos ({n})").format(n=hidden_count))
             chk.setChecked(self.reveal)
             chk.toggled.connect(self._set_reveal)
             tabs.addWidget(chk)
@@ -178,11 +181,11 @@ class AchievementsPanel(QWidget):
 
         if self.tab == "unlocked":
             shown = sorted(got, key=lambda a: -(a.unlocked_at or 0))
-            empty = "Todavía no has conseguido ninguno."
+            empty = _("Todavía no has conseguido ninguno.")
         else:
             # Primero los más comunes: suelen ser los siguientes que caerán.
             shown = sorted(missing, key=lambda a: (not a.visible, -a.rarity))
-            empty = "¡Los tienes todos!"
+            empty = _("¡Los tienes todos!")
         if not shown:
             self._message_inline(empty)
             return
@@ -192,7 +195,7 @@ class AchievementsPanel(QWidget):
             self.rows.append(r)
             self.lay.addWidget(r)
         if len(shown) > limit:
-            more = QPushButton(f"Ver todos ({len(shown)})")
+            more = QPushButton(_("Ver todos ({n})").format(n=len(shown)))
             more.setObjectName("Ghost")
             more.clicked.connect(self._expand)
             self.lay.addWidget(more, 0, Qt.AlignLeft)

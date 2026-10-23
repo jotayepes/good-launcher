@@ -1,6 +1,10 @@
 import gzip
+import os
 
-import pytest
+# Los tests comparan textos en español, sea cual sea el idioma del sistema.
+os.environ["GOGL_LANG"] = "es"
+
+import pytest  # noqa: E402
 
 from gogl.saves.cloud import CloudFile, gzip_bytes, iso_utc, md5
 from gogl.saves.engine import Syncer

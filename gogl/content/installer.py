@@ -29,6 +29,7 @@ import httpx
 
 from .. import paths
 from ..api import GogApi
+from ..i18n import _
 from ..state import Game, State
 from .common import Chunk, ContentError, FileEntry, InstallPlan, SecureLinks, galaxy_path, safe_rel
 
@@ -192,8 +193,9 @@ class Installer:
         need = sum(f.size for f in todo)
         free = shutil.disk_usage(install_path).free
         if need > free:
-            raise ContentError(f"No hay espacio suficiente: hacen falta {need / 2**30:.1f} GB y hay "
-                               f"{free / 2**30:.1f} GB libres en {install_path}")
+            raise ContentError(_("No hay espacio suficiente: hacen falta {need} y hay {free} libres en {path}")
+                               .format(need=f"{need / 2**30:.1f} GB", free=f"{free / 2**30:.1f} GB",
+                                       path=install_path))
 
         self.p = Progress(download_total=sum(f.download_size for f in todo + redist_todo),
                           disk_total=need + sum(f.size for f in redist_todo),
@@ -383,17 +385,17 @@ class Installer:
                     raise ContentError(f"HTTP {r.status_code}")
                 raw = r.content
                 if hashlib.md5(raw).hexdigest() != c.compressed_md5:
-                    raise ContentError("MD5 comprimido incorrecto")
+                    raise ContentError(_("MD5 comprimido incorrecto"))
                 data = zlib.decompress(raw)
                 if len(data) != c.size or hashlib.md5(data).hexdigest() != c.md5:
-                    raise ContentError("trozo descomprimido incorrecto")
+                    raise ContentError(_("trozo descomprimido incorrecto"))
                 _pwrite(st.part, c.offset, data)
                 self._add(downloaded=len(raw), written=len(data))
                 return
             except (httpx.HTTPError, ContentError, zlib.error) as e:
                 last_err = e
                 time.sleep(min(2 ** attempt, 10))
-        raise ContentError(f"No se pudo descargar {st.f.path}: {last_err}")
+        raise ContentError(_("No se pudo descargar {file}: {error}").format(file=st.f.path, error=last_err))
 
     def _piece_v1(self, st: "_FileState", piece: tuple[int, int], links: SecureLinks):
         off, size = piece
@@ -411,23 +413,23 @@ class Installer:
                     # Un 200 es el main.bin entero (pueden ser GB): solo vale si es justo este trozo.
                     whole = r.status_code == 200 and start == 0 and r.headers.get("content-length") == str(size)
                     if r.status_code != 206 and not whole:
-                        raise ContentError(f"HTTP {r.status_code}: el servidor no respeta el rango pedido")
+                        raise ContentError(f"HTTP {r.status_code}: " + _("el servidor no respeta el rango pedido"))
                     data = r.read()
                 if len(data) != size:
-                    raise ContentError(f"{len(data)} bytes de {size}")
+                    raise ContentError(_("{got} bytes de {size}").format(got=len(data), size=size))
                 _pwrite(st.part, off, data)
                 self._add(downloaded=size, written=size)
                 return
             except (httpx.HTTPError, ContentError) as e:
                 last_err = e
                 time.sleep(min(2 ** attempt, 10))
-        raise ContentError(f"No se pudo descargar {st.f.path}: {last_err}")
+        raise ContentError(_("No se pudo descargar {file}: {error}").format(file=st.f.path, error=last_err))
 
     def _finish_file(self, st: "_FileState"):
         f = st.f
         if not f.chunks and f.md5 and f.size and md5_file(st.part) != f.md5:
             st.part.unlink(missing_ok=True)
-            raise ContentError(f"{f.path}: el MD5 del archivo descargado no coincide")
+            raise ContentError(_("{file}: el MD5 del archivo descargado no coincide").format(file=f.path))
         fd = os.open(st.part, os.O_RDONLY)
         try:
             os.fsync(fd)
@@ -443,7 +445,8 @@ class Installer:
             fh.seek(offset)
             data = fh.read(f.size)
         if f.md5 and hashlib.md5(data).hexdigest() != f.md5:
-            raise ContentError(f"{f.path}: contenido incorrecto en el contenedor de archivos pequeños")
+            raise ContentError(_("{file}: contenido incorrecto en el contenedor de archivos pequeños")
+                               .format(file=f.path))
         dest = root / f.path
         dest.parent.mkdir(parents=True, exist_ok=True)
         tmp = dest.with_name(dest.name + ".gogl-part")
@@ -458,7 +461,7 @@ class Installer:
         """Rutas que no coinciden con el manifiesto (faltan o están corruptas)."""
         m = load_manifest(game_id)
         if not m:
-            raise ContentError("Este juego no se instaló con gogl; no hay manifiesto para verificar")
+            raise ContentError(_("Este juego no se instaló con gogl; no hay manifiesto para verificar"))
         plan = InstallPlan.from_json(m["plan"])
         root = Path(m["install_path"])
         files = [f for f in plan.files if not safe_rel(f.path).startswith(".gogl-sfc/")]
@@ -577,7 +580,7 @@ def uninstall(state: State, game_id: str, remove_prefix: bool = False) -> None:
     if m:
         root = Path(m["install_path"])
         if not safe_to_delete(root):
-            raise ContentError(f"Me niego a borrar {root}: parece una carpeta del sistema")
+            raise ContentError(_("Me niego a borrar {path}: parece una carpeta del sistema").format(path=root))
         if m.get("created_dir"):
             shutil.rmtree(root, ignore_errors=True)
         else:

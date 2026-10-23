@@ -18,6 +18,7 @@ from typing import Callable
 import httpx
 
 from .. import config, paths
+from ..i18n import _
 
 RELEASES_URL = "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases"
 
@@ -86,14 +87,14 @@ def get(name: str | None) -> ProtonVersion | None:
 
 def set_default(name: str) -> None:
     if not get(name):
-        raise ProtonError(f"{name} no está instalado")
+        raise ProtonError(_("{name} no está instalado").format(name=name))
     config.set_value("default_proton", name)
 
 
 def remove(name: str) -> None:
     v = get(name)
     if not v:
-        raise ProtonError(f"{name} no está instalado")
+        raise ProtonError(_("{name} no está instalado").format(name=name))
     shutil.rmtree(v.path)
     if config.load().get("default_proton") == name:
         config.set_value("default_proton", None)
@@ -104,7 +105,7 @@ def available(limit: int = 10, http: httpx.Client | None = None) -> list[Release
     r = http.get(RELEASES_URL, params={"per_page": limit},
                  headers={"Accept": "application/vnd.github+json"})
     if r.status_code != 200:
-        raise ProtonError(f"GitHub respondió {r.status_code}")
+        raise ProtonError(_("GitHub respondió {code}").format(code=r.status_code))
     arch = platform.machine() or "x86_64"
     out = []
     for rel in r.json():
@@ -124,7 +125,7 @@ def install(release: Release, progress: Callable[[int, int], None] = lambda d, t
     if get(release.name):
         return get(release.name)
     if not release.checksum_url:
-        raise ProtonError(f"{release.name} no publica su SHA-512: no se puede verificar la descarga")
+        raise ProtonError(_("{name} no publica su SHA-512: no se puede verificar la descarga").format(name=release.name))
     http = http or httpx.Client(timeout=httpx.Timeout(60, connect=20), follow_redirects=True)
     root = proton_root()
     tmp_dir = root / f".tmp-{release.name}"
@@ -135,7 +136,7 @@ def install(release: Release, progress: Callable[[int, int], None] = lambda d, t
         h = hashlib.sha512()
         with http.stream("GET", release.url) as r:
             if r.status_code != 200:
-                raise ProtonError(f"Descarga fallida: HTTP {r.status_code}")
+                raise ProtonError(_("Descarga fallida: HTTP {code}").format(code=r.status_code))
             total = int(r.headers.get("content-length") or release.size)
             done = 0
             with open(archive, "wb") as fh:
@@ -147,7 +148,7 @@ def install(release: Release, progress: Callable[[int, int], None] = lambda d, t
         r = http.get(release.checksum_url)
         expected = r.text.split()[0].lower() if r.status_code == 200 and r.text.split() else ""
         if h.hexdigest() != expected:
-            raise ProtonError("El SHA-512 del archivo descargado no coincide; descarga corrupta")
+            raise ProtonError(_("El SHA-512 del archivo descargado no coincide; descarga corrupta"))
         out = tmp_dir / "x"
         with tarfile.open(archive, "r:gz") as tar:
             # filtro «tar»: impide rutas fuera del destino pero conserva los
@@ -155,7 +156,7 @@ def install(release: Release, progress: Callable[[int, int], None] = lambda d, t
             tar.extractall(out, filter="tar")
         tops = [d for d in out.iterdir() if d.is_dir()]
         if len(tops) != 1 or not (tops[0] / "proton").exists():
-            raise ProtonError("El archivo no tiene la estructura esperada de Proton")
+            raise ProtonError(_("El archivo no tiene la estructura esperada de Proton"))
         dest = root / release.name
         tops[0].rename(dest)
         return ProtonVersion(release.name, dest)

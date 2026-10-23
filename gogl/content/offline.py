@@ -30,6 +30,7 @@ import httpx
 
 from .. import config
 from ..api import ApiError, GogApi
+from ..i18n import _
 from .common import ContentError, safe_name
 from .installer import Cancelled, Progress
 
@@ -39,10 +40,10 @@ BLOCK = 1024 * 1024
 RETRIES = 5
 
 EXTRA_TYPES = {
-    "manuals": "Manual", "artworks": "Arte", "wallpapers": "Fondos de pantalla",
-    "audio": "Banda sonora", "soundtrack": "Banda sonora", "video": "Vídeo",
-    "avatars": "Avatares", "guides & reference": "Guía", "game add-ons": "Contenido adicional",
-    "e-books": "Libro", "images": "Imágenes", "maps": "Mapas", "other": "Otros",
+    "manuals": _("Manual"), "artworks": _("Arte"), "wallpapers": _("Fondos de pantalla"),
+    "audio": _("Banda sonora"), "soundtrack": _("Banda sonora"), "video": _("Vídeo"),
+    "avatars": _("Avatares"), "guides & reference": _("Guía"), "game add-ons": _("Contenido adicional"),
+    "e-books": _("Libro"), "images": _("Imágenes"), "maps": _("Mapas"), "other": _("Otros"),
 }
 
 
@@ -75,7 +76,7 @@ class Bundle:
 
     @property
     def type_label(self) -> str:
-        return EXTRA_TYPES.get(self.type.lower(), self.type.capitalize() or "Extra")
+        return EXTRA_TYPES.get(self.type.lower(), self.type.capitalize() or _("Extra"))
 
 
 @dataclass
@@ -197,7 +198,7 @@ class OfflineDownloader:
         info = self.api._get(f.downlink).json()
         url = info.get("downlink")
         if not url:
-            raise ContentError("GOG no ha dado el enlace de descarga")
+            raise ContentError(_("GOG no ha dado el enlace de descarga"))
         checksum = None
         if info.get("checksum"):
             try:
@@ -217,8 +218,8 @@ class OfflineDownloader:
         need = bundle.total_size - sum(_part_size(dest, f) for f in bundle.files)
         free = shutil.disk_usage(dest).free
         if need > free:
-            raise ContentError(f"No hay espacio suficiente en {dest}: hacen falta "
-                               f"{need / 2**30:.1f} GB y quedan {free / 2**30:.1f} GB")
+            raise ContentError(_("No hay espacio suficiente en {path}: hacen falta {need} y quedan {free}")
+                               .format(path=dest, need=f"{need / 2**30:.1f} GB", free=f"{free / 2**30:.1f} GB"))
         out = []
         for f in bundle.files:
             self._check_cancel()
@@ -259,9 +260,9 @@ class OfflineDownloader:
                 self.p.downloaded -= c.end - c.start + 1
                 url = self._fetch(f, url, part, c.start, c.end + 1, overwrite=True)
             if self._bad_chunks(part, cs):
-                raise ContentError(f"{name}: los datos descargados no coinciden con los de GOG")
+                raise ContentError(_("{file}: los datos descargados no coinciden con los de GOG").format(file=name))
         elif part.stat().st_size != size:
-            raise ContentError(f"{name}: tamaño incorrecto tras la descarga")
+            raise ContentError(_("{file}: tamaño incorrecto tras la descarga").format(file=name))
         os.replace(part, target)
         _remember(dest, f, name)
         return target
@@ -286,13 +287,13 @@ class OfflineDownloader:
                 headers = {"Range": f"bytes={pos}-{end - 1}"}
                 with self.http.stream("GET", url, headers=headers) as r:
                     if r.status_code in (401, 403, 404, 410):
-                        url, _ = self._resolve(f)  # enlace caducado
+                        url, _name = self._resolve(f)  # enlace caducado
                         tries += 1
                         if tries > RETRIES:
-                            raise ContentError(f"GOG rechaza la descarga ({r.status_code})")
+                            raise ContentError(_("GOG rechaza la descarga ({code})").format(code=r.status_code))
                         continue
                     if r.status_code == 200 and pos > 0:
-                        raise ContentError("el servidor no permite reanudar la descarga")
+                        raise ContentError(_("el servidor no permite reanudar la descarga"))
                     if r.status_code not in (200, 206):
                         raise httpx.HTTPStatusError(f"HTTP {r.status_code}", request=r.request,
                                                     response=r)
@@ -312,7 +313,7 @@ class OfflineDownloader:
             except (httpx.TransportError, httpx.HTTPStatusError) as e:
                 tries += 1
                 if tries > RETRIES:
-                    raise ContentError(f"error de red: {e}") from e
+                    raise ContentError(_("error de red: {error}").format(error=e)) from e
                 time.sleep(min(2 ** tries, 30))
         return url
 
@@ -385,7 +386,7 @@ def download_bundle(api: GogApi, game_id: str, bundle_key: str, progress=lambda 
     for b in off.installers + off.extras:
         if b.key == bundle_key:
             return OfflineDownloader(api, progress, cancel).download(b)
-    raise ApiError("Ese archivo ya no está disponible en tu cuenta de GOG")
+    raise ApiError(_("Ese archivo ya no está disponible en tu cuenta de GOG"))
 
 
 __all__ = ["Bundle", "Offline", "OfflineDownloader", "OfflineFile", "bundle_dir", "download_bundle",
