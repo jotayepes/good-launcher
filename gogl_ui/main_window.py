@@ -28,6 +28,7 @@ from .images import ImageStore
 from .library_view import Entry, LibraryPage, build_entries
 from .profile_page import ProfilePage
 from .store_page import StorePage
+from .web import store_available
 from .workers import run_task
 
 USER_CACHE = "user.json"
@@ -111,6 +112,7 @@ class Sidebar(QFrame):
         section.setObjectName("SectionLabel")
         lay.addWidget(section)
         self._nav(lay, "store", _("Tienda"))
+        self.buttons["store"].setVisible(store_available())
         self._nav(lay, "profile", _("Perfil"))
         section = QLabel(_("LANZADOR"))
         section.setObjectName("SectionLabel")
@@ -485,6 +487,8 @@ class SettingsPage(QWidget):
 
 
 class MainWindow(QMainWindow):
+    gamepad_overlays = True  # diálogos y menús del mando dentro de la ventana (overlay.py)
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle(APP_TITLE)
@@ -573,6 +577,8 @@ class MainWindow(QMainWindow):
             self.cloud.refresh()
             self.stack.setCurrentWidget(self.cloud)
         elif key == "store":
+            if not store_available():
+                return
             self.store.ensure_view()
             self.stack.setCurrentWidget(self.store)
         elif key == "profile":
@@ -604,6 +610,8 @@ class MainWindow(QMainWindow):
             self.open_game(e)
 
     def show_store(self, path_or_url: str):
+        if not store_available():
+            return
         self.sidebar.buttons["store"].setChecked(True)
         self.store.go(path_or_url)
         self.stack.setCurrentWidget(self.store)
@@ -691,9 +699,10 @@ class MainWindow(QMainWindow):
         if not self.auth.is_logged_in():
             return False
         if name in ("lb", "rb"):
+            sections = [k for k in SECTIONS if k != "store" or store_available()]
             checked = next((k for k, b in self.sidebar.buttons.items() if b.isChecked()), "all")
-            i = SECTIONS.index(checked) if checked in SECTIONS else 0
-            self.navigate(SECTIONS[(i + (1 if name == "rb" else -1)) % len(SECTIONS)])
+            i = sections.index(checked) if checked in sections else 0
+            self.navigate(sections[(i + (1 if name == "rb" else -1)) % len(sections)])
             QTimer.singleShot(0, self._focus_page)  # aunque la página no cambie (filtros)
             return True
         if name == "y":

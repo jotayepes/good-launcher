@@ -10,6 +10,8 @@ Las ventanas pueden ofrecer, si les interesa:
   gamepad_back() -> bool          qué hacer con B cuando no hay diálogo ni menú
   gamepad_button(acción) -> bool  X, Y, LB, RB, Start, Select
   gamepad_default_focus() -> QWidget | None
+  gamepad_overlays = True         diálogos, menús y desplegables dentro de la ventana
+                                  (overlay.py) en vez de ventanas aparte
 """
 
 from __future__ import annotations
@@ -21,11 +23,11 @@ import subprocess
 from PySide6.QtCore import QEvent, QObject, QPoint, QRect, QSocketNotifier, Qt, QTimer, Signal
 from PySide6.QtGui import QCursor, QKeyEvent
 from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QAbstractScrollArea,
-                               QAbstractSpinBox, QApplication, QComboBox, QLineEdit, QMenu,
-                               QPlainTextEdit, QPushButton, QScrollArea, QScrollBar,
+                               QAbstractSpinBox, QApplication, QComboBox, QDialog, QLineEdit, QMenu,
+                               QMessageBox, QPlainTextEdit, QPushButton, QScrollArea, QScrollBar,
                                QStackedWidget, QTextEdit, QWidget)
 
-from . import gamepad, theme
+from . import gamepad, overlay, theme
 
 REPEAT_DELAY, REPEAT_RATE = 380, 90  # ms
 SCROLL_SPEED = 28  # px por tick a fondo
@@ -73,8 +75,10 @@ def global_rect(w: QWidget) -> QRect:
 
 
 def focusable(win: QWidget) -> list[QWidget]:
+    """Los controles a los que puede ir el foco: los de la capa de arriba, si la hay."""
     out = []
-    for w in win.findChildren(QWidget):
+    scope = overlay.top(win) or win
+    for w in scope.findChildren(QWidget):
         if not (w.isVisible() and w.isEnabled()):
             continue
         policy = w.focusPolicy()
@@ -159,11 +163,8 @@ def pick_in_window(w: QWidget, cur: QRect, cands: list[tuple[QWidget, QRect]], d
 
 
 def focus_widget(w: QWidget, origin: QRect | None = None) -> None:
-    win = w.window()
-    if win is not QApplication.activeWindow():
-        # En gamescope un diálogo puede abrirse sin quedar activo: sin esto el foco
-        # no llega a verse y cada pulsación volvía al control inicial.
-        win.activateWindow()
+    # Nunca activateWindow(): al abrir la tienda, la vista web rehace la ventana
+    # nativa y pedírselo entonces a gamescope dejaba colgado el modo juego.
     w.setFocus(Qt.TabFocusReason)
     if isinstance(w, QAbstractItemView):
         _enter_view(w, origin)
@@ -213,7 +214,8 @@ QPushButton#Chip:focus {{ border: 2px solid {theme.ACCENT}; padding: 4px 13px; c
 QLineEdit:focus {{ border: 2px solid {theme.ACCENT}; padding: 6px 13px; }}
 QComboBox:focus {{ border: 2px solid {theme.ACCENT}; padding: 5px 9px; background: {theme.SURFACE_2}; }}
 QComboBox QAbstractItemView {{ selection-background-color: {theme.ACCENT}; selection-color: white; }}
-QCheckBox:focus, QRadioButton:focus {{ color: white; background: {theme.SURFACE_2}; border-radius: 6px; }}
+QCheckBox:focus, QRadioButton:focus {{ color: white; background: {theme.SURFACE_2}; border-radius: 6px;
+                                     outline: none; border: 2px solid {theme.ACCENT}; padding: 1px 6px; }}
 QTableWidget:focus {{ border: 2px solid {theme.ACCENT}; }}
 QTextBrowser:focus, QPlainTextEdit:focus {{ border: 2px solid {theme.ACCENT}; border-radius: 8px; }}
 """
@@ -362,14 +364,20 @@ class Navigator(QObject):
 
     def _focus_missing(self) -> bool:
         w, win = self._current(), self._window()
-        return win is not None and (w is None or not w.isVisible() or w.window() is not win)
+        if win is None:
+            return False
+        if w is None or not w.isVisible() or w.window() is not win:
+            return True
+        layer = overlay.top(win)
+        return layer is not None and not layer.isAncestorOf(w)
 
     def _default_focus(self) -> bool:
         win = self._window()
         if win is None:
             return False
         target = None
-        fn = getattr(win, "gamepad_default_focus", None)
+        layer = overlay.top(win)
+        fn = layer.default_focus if layer is not None else getattr(win, "gamepad_default_focus", None)
         if fn:
             target = fn()
         if target is None:
@@ -418,10 +426,10 @@ class Navigator(QObject):
         if w is None:
             return
         if isinstance(w, QComboBox):
-            w.showPopup()
+            if not overlay.combo(w):
+                w.showPopup()
         elif isinstance(w, QPushButton) and w.menu() is not None:
-            QTimer.singleShot(0, w.showMenu)  # showMenu es bloqueante: fuera de este manejador
-            QTimer.singleShot(0, lambda m=w.menu(): _select_first(m))  # corre ya con el menú abierto
+            open_menu(w)
         elif isinstance(w, QAbstractButton):
             w.animateClick()
         elif isinstance(w, QAbstractItemView):
@@ -441,6 +449,10 @@ class Navigator(QObject):
             _send_key(modal, Qt.Key_Escape)
             return
         win = QApplication.activeWindow()
+        layer = overlay.top(win)
+        if layer is not None:
+            layer.on_back()
+            return
         fn = getattr(win, "gamepad_back", None)
         if fn is None or not fn():
             if win is not None:
@@ -463,7 +475,8 @@ class Navigator(QObject):
             bar.setValue(bar.value() + sign * bar.pageStep())
 
     def _window_button(self, name: str):
-        if QApplication.activePopupWidget() is not None or QApplication.activeModalWidget() is not None:
+        if (QApplication.activePopupWidget() is not None or QApplication.activeModalWidget() is not None
+                or overlay.top(QApplication.activeWindow()) is not None):
             return
         fn = getattr(QApplication.activeWindow(), "gamepad_button", None)
         if fn:
@@ -475,6 +488,8 @@ class Navigator(QObject):
         w = self._current()
         chain = [w, *_ancestors(w)] if w is not None else []
         for p in chain:
+            if focused_only and p.objectName() == "OverlayScroll":
+                break  # el fondo de una capa no cuenta: dentro, el stick cambia de opción
             if isinstance(p, QAbstractScrollArea) and p.verticalScrollBar().maximum() > 0:
                 return p
         if focused_only:
@@ -491,7 +506,9 @@ class Navigator(QObject):
         (un registro largo), el stick derecho cambia de opción como la cruceta."""
         if QApplication.activePopupWidget() is not None:
             return True
-        return QApplication.activeModalWidget() is not None and self._scroll_area(focused_only=True) is None
+        in_dialog = (QApplication.activeModalWidget() is not None
+                     or overlay.top(QApplication.activeWindow()) is not None)
+        return in_dialog and self._scroll_area(focused_only=True) is None
 
     def _scroll_tick(self):
         v = next((d[0].tr.scroll for d in self.devices.values() if d[0].tr.scroll), 0.0)
@@ -505,6 +522,29 @@ class Navigator(QObject):
             bar.setValue(bar.value() + int(v * abs(v) * SCROLL_SPEED))
 
 
+def open_menu(button: QPushButton) -> None:
+    """El menú de un botón: con el mando, como lista dentro de la ventana."""
+    if gamepad_active() and overlay.menu(button):
+        return
+    QTimer.singleShot(0, button.showMenu)  # showMenu es bloqueante: fuera del manejador
+    QTimer.singleShot(0, lambda m=button.menu(): _select_first(m))  # corre ya con el menú abierto
+
+
+def _embed_dialogs() -> None:
+    """Con el mando o en gamescope, los diálogos que se abren con exec() se dibujan
+    dentro de la ventana (overlay.embed). Los de QMessageBox.question() y compañía,
+    que hacen exec() desde C++, siguen saliendo aparte."""
+    for cls in (QDialog, QMessageBox):
+        original = cls.exec
+
+        def exec_(self, _original=original):
+            if (in_gamescope() or gamepad_active()) and overlay.embed(self) and _instance is not None:
+                QTimer.singleShot(0, _instance._default_focus)
+            return _original(self)
+
+        cls.exec = exec_
+
+
 _instance: Navigator | None = None
 
 
@@ -512,6 +552,7 @@ def install(app: QApplication, require_active: bool = True) -> Navigator:
     global _instance
     if _instance is None:
         _instance = Navigator(app, require_active)
+        _embed_dialogs()
     return _instance
 
 

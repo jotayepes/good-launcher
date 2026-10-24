@@ -25,6 +25,7 @@ class LoginDialog(QDialog):
 
     Todo el proceso (contraseña, captcha y verificación en dos pasos) ocurre en
     las páginas de GOG; solo se lee la URL final on_login_success?code=…"""
+    embeddable = False  # la vista web, mejor en su propia ventana
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -89,9 +90,14 @@ def pick_directory(parent, title: str, start: str) -> str:
     escritorio (portal) ni se maneja con el mando ni siempre se ve en el modo juego."""
     from .navigation import in_steam
     opts = QFileDialog.ShowDirsOnly
-    if in_steam():
-        opts |= QFileDialog.DontUseNativeDialog
-    return QFileDialog.getExistingDirectory(parent, title, start, opts)
+    if not in_steam():
+        return QFileDialog.getExistingDirectory(parent, title, start, opts)
+    # Con exec() (y no con getExistingDirectory, que lo hace desde C++) el diálogo
+    # se puede dibujar dentro de la ventana para el mando (overlay.embed).
+    dlg = QFileDialog(parent, title, start)
+    dlg.setFileMode(QFileDialog.Directory)
+    dlg.setOptions(opts | QFileDialog.DontUseNativeDialog)
+    return dlg.selectedFiles()[0] if dlg.exec() and dlg.selectedFiles() else ""
 
 
 class PathRow(QHBoxLayout):

@@ -15,6 +15,7 @@ from gogl.i18n import _, n_
 from . import theme
 from .game_page import card, clear
 from .images import ImageStore
+from .web import store_available
 from .workers import run_task
 
 AVATAR = 96
@@ -129,6 +130,7 @@ class ProfilePage(QWidget):
         full.setToolTip(_("Tu perfil público de gog.com con horas jugadas y estadísticas"))
         full.setEnabled(bool(p))
         full.clicked.connect(lambda: self.open_store.emit(f"https://www.gog.com/u/{p.username}"))
+        full.setVisible(store_available())
         head.addWidget(full, 0, Qt.AlignVCenter)
         self.lay.addLayout(head)
 
@@ -240,9 +242,10 @@ class ProfilePage(QWidget):
             go = QPushButton(_("Ver"))
             go.setObjectName("Ghost")
             go.clicked.connect(lambda _=False, u=w.url: self.open_store.emit(u))
+            go.setVisible(store_available())
             r.addWidget(go)
             l.addLayout(r)
-        if p and len(p.wishlist) > 12:
+        if p and len(p.wishlist) > 12 and store_available():
             more = QPushButton(_("Ver la lista completa ({n})").format(n=len(p.wishlist)))
             more.setObjectName("Ghost")
             more.clicked.connect(lambda: self.open_store.emit("/account/wishlist"))

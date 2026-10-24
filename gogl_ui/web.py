@@ -32,6 +32,13 @@ _profile = None
 _pages: "weakref.WeakSet" = weakref.WeakSet()
 
 
+def store_available() -> bool:
+    """La tienda y los enlaces a gog.com. En el modo juego de SteamOS no: el overlay
+    de Steam revienta el proceso de Chromium al abrirla y deja la Deck colgada."""
+    from .navigation import in_gamescope
+    return HAS_WEBENGINE and not in_gamescope()
+
+
 def profile():
     """El perfil compartido (se crea la primera vez)."""
     global _profile
@@ -138,4 +145,5 @@ def store_url(path: str = "") -> QUrl:
     return QUrl(f"https://www.gog.com/{i18n.web_language()}{path}")
 
 
-__all__ = ["HAS_WEBENGINE", "clear_session", "make_view", "profile", "shutdown", "store_url"]
+__all__ = ["HAS_WEBENGINE", "clear_session", "make_view", "profile", "shutdown", "store_available",
+           "store_url"]

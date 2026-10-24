@@ -1,5 +1,6 @@
 """Punto de entrada de la interfaz gráfica."""
 
+import os
 import sys
 
 from PySide6.QtWidgets import QApplication
@@ -27,6 +28,11 @@ def _refresh_integrations() -> None:
 
 def main() -> int:
     _refresh_integrations()
+    if not navigation.in_gamescope():
+        # La ventana se crea desde el principio preparada para la vista web: si no,
+        # al abrir la tienda Qt la destruye y la vuelve a crear (se ve cerrarse y
+        # abrirse). En el modo juego no hay tienda (web.store_available).
+        os.environ.setdefault("QT_WIDGETS_RHI", "1")
     app = QApplication(sys.argv)
     app.setApplicationName("gogl")
     app.setApplicationDisplayName(APP_TITLE)

@@ -2,7 +2,7 @@
 
 from .i18n import _
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 # Nombre que ve el usuario. Lo interno (paquete, comando, carpetas) sigue siendo «gogl».
 APP_NAME = "Good Launcher"

@@ -21,12 +21,13 @@ from gogl.selfcmd import cli_command
 from gogl.state import State
 from gogl.sync import SyncUnavailable, describe
 
-from . import theme
+from . import navigation, theme
 from .achievements_card import AchievementsPanel
 from .dialogs import ConflictDialog, ProtonDownloadDialog, pick_directory
 from .images import ImageStore
 from .library_view import Entry
 from .offline_card import OfflinePanel
+from .web import store_available
 from .workers import run_task
 
 HERO_H = 340
@@ -285,7 +286,7 @@ class GamePage(QWidget):
         if self._manage is None or not self._manage.isVisible():
             return False
         self._manage.setFocus()
-        QTimer.singleShot(0, self._manage.showMenu)
+        navigation.open_menu(self._manage)
         return True
 
     def _render_actions(self):
@@ -369,6 +370,7 @@ class GamePage(QWidget):
         url = e.product.get("url")
         store.setEnabled(bool(url))
         store.clicked.connect(lambda: self.window().show_store(url))
+        store.setVisible(store_available())
         self.actions.addWidget(store)
         self.actions.addStretch()
 
