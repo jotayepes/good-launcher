@@ -1609,6 +1609,10 @@ msgid "Instalar"
 msgstr "Install"
 
 #: gogl_ui/dialogs.py
+msgid "Usar Wayland nativo"
+msgstr "Use native Wayland"
+
+#: gogl_ui/dialogs.py
 msgid "Argumentos"
 msgstr "Arguments"
 
@@ -1659,6 +1663,14 @@ msgstr "not enough space"
 #: gogl_ui/dialogs.py
 msgid "Opciones de lanzamiento"
 msgstr "Launch options"
+
+#: gogl_ui/dialogs.py
+msgid "Pantalla"
+msgstr "Display"
+
+#: gogl_ui/dialogs.py
+msgid "Activa PROTON_ENABLE_WAYLAND. Arregla juegos que se quedan con la imagen congelada o en negro, p. ej. los de OpenGL antiguo a pantalla completa."
+msgstr "Enables PROTON_ENABLE_WAYLAND. Fixes games whose picture stays frozen or black, e.g. old fullscreen OpenGL games."
 
 #: gogl_ui/dialogs.py
 msgid "Una por línea, CLAVE=valor."
@@ -1928,6 +1940,10 @@ msgstr "System language"
 msgid "Registro"
 msgstr "Log"
 
+#: gogl_ui/game_page.py
+msgid "Cerrar el juego"
+msgstr "Close the game"
+
 #: gogl_ui/game_page.py gogl_ui/main_window.py
 msgid "No se pudo añadir a Steam"
 msgstr "Could not add to Steam"
@@ -1971,6 +1987,10 @@ msgstr "Analyzing…"
 #: gogl_ui/game_page.py
 msgid "En ejecución…"
 msgstr "Running…"
+
+#: gogl_ui/game_page.py
+msgid "Fuerza el cierre del juego y de sus procesos si no responde o no llega a abrir ventana"
+msgstr "Force-closes the game and its processes if it is unresponsive or never opened a window"
 
 #: gogl_ui/game_page.py gogl_ui/main_window.py
 msgid "Gestionar"
@@ -2021,6 +2041,10 @@ msgid "Falta Proton-GE"
 msgstr "Proton-GE missing"
 
 #: gogl_ui/game_page.py
+msgid "No se pudo cerrar el juego"
+msgstr "Could not close the game"
+
+#: gogl_ui/game_page.py
 msgid "Último sync correcto: {when}"
 msgstr "Last successful sync: {when}"
 
@@ -2047,6 +2071,16 @@ msgstr "Queued…"
 #: gogl_ui/game_page.py
 msgid "Este juego todavía no se ha lanzado desde {app}."
 msgstr "This game has not been launched from {app} yet."
+
+#: gogl_ui/game_page.py
+msgid ""
+"Se cerrará {title} a la fuerza; lo que no hayas guardado se perderá.\n"
+"\n"
+"¿Continuar?"
+msgstr ""
+"{title} will be force-closed; anything you have not saved will be lost.\n"
+"\n"
+"Continue?"
 
 #: gogl_ui/game_page.py gogl_ui/main_window.py
 msgid "Steam está abierto"

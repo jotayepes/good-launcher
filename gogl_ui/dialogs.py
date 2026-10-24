@@ -480,7 +480,7 @@ class LaunchOptionsDialog(QDialog):
     """Argumentos, variables de entorno y comando previo de un juego."""
 
     def __init__(self, title: str, options: dict, windows: bool, parent=None):
-        from PySide6.QtWidgets import QPlainTextEdit
+        from PySide6.QtWidgets import QCheckBox, QPlainTextEdit
         super().__init__(parent)
         self.setWindowTitle(_("Opciones de lanzamiento") + f" · {title}")
         self.setMinimumWidth(620)
@@ -497,6 +497,13 @@ class LaunchOptionsDialog(QDialog):
             h.setWordWrap(True)
             lay.addWidget(h)
             lay.addSpacing(6)
+
+        self.wayland = QCheckBox(_("Usar Wayland nativo"))
+        self.wayland.setChecked(bool(options.get("wayland")))
+        if windows:
+            field(_("Pantalla"), _("Activa PROTON_ENABLE_WAYLAND. Arregla juegos que se quedan con la imagen "
+                                   "congelada o en negro, p. ej. los de OpenGL antiguo a pantalla completa."),
+                  self.wayland)
 
         self.args = QLineEdit(options.get("args", ""))
         self.args.setPlaceholderText("-windowed -skipintro")
@@ -546,5 +553,6 @@ class LaunchOptionsDialog(QDialog):
             return
         self.options = {k: v for k, v in (("args", self.args.text().strip()),
                                           ("env", self.env.toPlainText().strip()),
-                                          ("wrapper", self.wrapper.text().strip())) if v}
+                                          ("wrapper", self.wrapper.text().strip()),
+                                          ("wayland", self.wayland.isChecked())) if v}
         self.accept()

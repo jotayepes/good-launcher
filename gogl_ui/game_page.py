@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QFrame, QMenu, QMessageB
                                QPushButton, QScrollArea, QSizePolicy, QTextBrowser, QVBoxLayout,
                                QWidget)
 
-from gogl import APP_NAME, i18n, languages
+from gogl import APP_NAME, i18n, languages, session
 from gogl.i18n import _
 from gogl.library import product_details
 from gogl.runner import proton as proton_mgr
@@ -309,6 +309,12 @@ class GamePage(QWidget):
             play.setEnabled(not running)
             play.clicked.connect(self._play)
             self.actions.addWidget(play)
+            if running:
+                stop = QPushButton(_("Cerrar el juego"))
+                stop.setToolTip(_("Fuerza el cierre del juego y de sus procesos si no responde "
+                                  "o no llega a abrir ventana"))
+                stop.clicked.connect(self._stop)
+                self.actions.addWidget(stop)
             steam_btn = QPushButton(_("Añadir a Steam"))
             steam_btn.setToolTip(_("Crea un acceso directo en Steam (con carátulas) para jugar desde "
                                    "el modo juego con sincronización de partidas"))
@@ -613,6 +619,20 @@ class GamePage(QWidget):
             [*cli_command(), "run", g.game_id], start_new_session=True)
         self._render_actions()
         self.poll.start()
+
+    def _stop(self):
+        g = self.entry.game
+        p = self.running.get(g.game_id)
+        if p is None:
+            return
+        if QMessageBox.question(
+                self, _("Cerrar el juego"),
+                _("Se cerrará {title} a la fuerza; lo que no hayas guardado se perderá.\n\n¿Continuar?")
+                .format(title=g.title)) != QMessageBox.Yes:
+            return
+        run_task(lambda _b: session.force_close(g, p),
+                 lambda _r: self._poll_running(),
+                 lambda e: QMessageBox.warning(self, _("No se pudo cerrar el juego"), str(e)))
 
     def _poll_running(self):
         for gid, p in list(self.running.items()):

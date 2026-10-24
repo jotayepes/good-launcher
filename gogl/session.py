@@ -41,22 +41,79 @@ class Cancelled(Exception):
 
 
 _current: subprocess.Popen | None = None
+_wine: tuple | None = None  # (Proton, prefijo) del juego en marcha
+
+
+def _wineserver_kill(pv, compat, wait: bool = False) -> None:
+    """`wineserver -k`: cierra todos los procesos de Wine del prefijo."""
+    if not pv or not compat or not pv.wineserver:
+        return
+    env = os.environ.copy()
+    env["WINEPREFIX"] = str(compat / "pfx")
+    try:
+        p = subprocess.Popen([str(pv.wineserver), "-k"], env=env, stdout=subprocess.DEVNULL,
+                             stderr=subprocess.DEVNULL, start_new_session=True)
+        if wait:
+            p.wait(timeout=15)
+    except (OSError, subprocess.SubprocessError):
+        pass
 
 
 def terminate_current(*_args) -> None:
     """Steam pidió cerrar: cerramos el juego y seguimos al post-sync. Si después
-    nos matan sin más, el vigilante termina el trabajo."""
+    nos matan sin más, el vigilante termina el trabajo.
+
+    Avisar solo al script de Proton no basta: los procesos de Wine siguen vivos y
+    Steam acaba matándolo todo a la fuerza tras ~30 s (el juego parece bloqueado)."""
     if _current is not None and _current.poll() is None:
         try:
             _current.terminate()
         except ProcessLookupError:
             pass
+        if _wine:
+            _wineserver_kill(*_wine)
 
 
 def install_signal_handlers() -> None:
     """Solo funciona desde el hilo principal; la interfaz Qt lo llama ella misma."""
-    signal.signal(signal.SIGTERM, terminate_current)
-    signal.signal(signal.SIGHUP, terminate_current)
+    # Steam avisa con SIGINT al pulsar «Salir del juego».
+    for sig in (signal.SIGTERM, signal.SIGHUP, signal.SIGINT):
+        signal.signal(sig, terminate_current)
+
+
+def force_close(game, wrapper: subprocess.Popen | int | None, grace: float = 10) -> None:
+    """Cierra un juego aunque no responda (o no haya llegado a abrir ventana).
+
+    Avisa al lanzador (que cierra el juego y sube las partidas), mata los procesos
+    de Wine del prefijo y, si el lanzador sigue vivo pasado `grace`, lo mata con todo
+    su grupo; la subida pendiente la termina el vigilante."""
+    pid = wrapper.pid if isinstance(wrapper, subprocess.Popen) else wrapper
+
+    def alive() -> bool:
+        if isinstance(wrapper, subprocess.Popen):
+            return wrapper.poll() is None
+        try:
+            os.kill(pid, 0)
+        except OSError:
+            return False
+        return True
+
+    if pid and alive():
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except OSError:
+            pass
+    if game.platform == "windows":
+        from .runner.game import compat_data_path
+        _wineserver_kill(proton_mgr.get(game.extra.get("proton")), compat_data_path(game), wait=True)
+    deadline = time.time() + grace
+    while pid and alive() and time.time() < deadline:
+        time.sleep(0.2)
+    if pid and alive():
+        try:
+            os.killpg(os.getpgid(pid), signal.SIGKILL)
+        except OSError:
+            pass
 
 
 class SessionUI(Protocol):
@@ -210,7 +267,7 @@ def run_game(game_id: str, ui: SessionUI) -> int:
         if not spawn_watcher(game_id, sid, os.getpid()):
             ui.log(_("aviso: sin systemd-run; si Steam cierra el lanzador, la subida quedará pendiente"))
 
-    global _current
+    global _current, _wine
     log = open_log(game_id)
     tracker = _start_achievements(game, spec, auth, ui, log)
     ui.status(_("Jugando a {title}").format(title=game.title))
@@ -229,6 +286,7 @@ def run_game(game_id: str, ui: SessionUI) -> int:
         ui.show()
         ui.error(_("No se pudo arrancar el juego: {error}").format(error=e))
         return 1
+    _wine = (spec.proton, spec.compat)
     rc = _current.wait()
     _current = None
     log.write(f"[gogl] el juego terminó con código {rc}\n")

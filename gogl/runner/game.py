@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import shlex
 import subprocess
 from dataclasses import dataclass
@@ -155,9 +156,17 @@ def _apply_options(spec: LaunchSpec, game: Game) -> LaunchSpec:
         # Los juegos de Windows trocean sus argumentos como Windows; los nativos, como la shell.
         split = split_windows_args if game.platform == "windows" else shlex.split
         spec.argv += split(opts["args"])
+    if opts.get("wayland") and game.platform == "windows":
+        spec.env["PROTON_ENABLE_WAYLAND"] = "1"
     spec.env.update(parse_env(opts.get("env") or ""))
     if opts.get("wrapper"):
-        spec.argv = [*shlex.split(opts["wrapper"]), *spec.argv]
+        wrapper = shlex.split(opts["wrapper"])
+        # Como en Steam, «VAR=1 mangohud» son variables y luego el comando: sin esto,
+        # el sistema intentaría ejecutar un programa llamado «VAR=1».
+        while wrapper and re.match(r"[A-Za-z_][A-Za-z0-9_]*=", wrapper[0]):
+            key, _sep, value = wrapper.pop(0).partition("=")
+            spec.env[key] = value
+        spec.argv = [*wrapper, *spec.argv]
     return spec
 
 

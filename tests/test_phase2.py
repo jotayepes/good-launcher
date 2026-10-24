@@ -167,6 +167,18 @@ def test_launch_options(home, monkeypatch):
     assert spec.argv[:2] == ["mangohud", "--dlsym"] and spec.argv[3] == "waitforexitandrun"
     assert spec.argv[-3:] == ["-skipintro", "-windowed", "C:\\Mis Juegos"]
     assert spec.env["DXVK_HUD"] == "fps" and spec.env["PROTON_USE_WINED3D"] == "1"
+    g.extra["launch"] = {"wrapper": "PROTON_ENABLE_WAYLAND=1 FOO=a=b mangohud --dlsym"}
+    spec = rgame.build_launch(g)
+    assert spec.argv[:2] == ["mangohud", "--dlsym"]
+    assert spec.env["PROTON_ENABLE_WAYLAND"] == "1" and spec.env["FOO"] == "a=b"
+    g.extra["launch"] = {"wrapper": "PROTON_ENABLE_WAYLAND=1"}  # solo variables, sin comando
+    spec = rgame.build_launch(g)
+    assert spec.argv[1] == "waitforexitandrun" and spec.env["PROTON_ENABLE_WAYLAND"] == "1"
+    g.extra["launch"] = {"wayland": True, "env": "PROTON_ENABLE_WAYLAND=0"}
+    spec = rgame.build_launch(g)
+    assert spec.env["PROTON_ENABLE_WAYLAND"] == "0"  # las variables del usuario mandan
+    g.extra["launch"] = {"wayland": True}
+    assert rgame.build_launch(g).env["PROTON_ENABLE_WAYLAND"] == "1"
     g.extra["launch"] = {"env": "sin igual"}
     with pytest.raises(rgame.LaunchError):
         rgame.build_launch(g)
@@ -264,3 +276,41 @@ def test_watch_syncs_when_wrapper_was_killed(home, monkeypatch):
 ])
 def test_split_windows_args(cmd, expected):
     assert rgame.split_windows_args(cmd) == expected
+
+
+def test_sigint_closes_game_and_wine(tmp_path, monkeypatch):
+    """Steam avisa con SIGINT: se termina el script de Proton y se matan los procesos de Wine."""
+    import signal
+    import subprocess
+    from types import SimpleNamespace
+
+    from gogl import session
+
+    calls = []
+    real_popen = subprocess.Popen
+
+    class FakeChild:
+        terminated = False
+        def poll(self): return None
+        def terminate(self): self.terminated = True
+
+    def fake_popen(argv, **kw):
+        calls.append((argv, kw["env"]["WINEPREFIX"]))
+        return SimpleNamespace(wait=lambda timeout=None: 0)
+
+    child = FakeChild()
+    pv = SimpleNamespace(wineserver=tmp_path / "wineserver")
+    monkeypatch.setattr(session, "_current", child)
+    monkeypatch.setattr(session, "_wine", (pv, tmp_path / "compat"))
+    monkeypatch.setattr(session.subprocess, "Popen", fake_popen)
+    old = {s: signal.getsignal(s) for s in (signal.SIGTERM, signal.SIGHUP, signal.SIGINT)}
+    try:
+        session.install_signal_handlers()
+        assert all(signal.getsignal(s) is session.terminate_current for s in old)
+        session.terminate_current()
+    finally:
+        monkeypatch.setattr(session.subprocess, "Popen", real_popen)
+        for s, h in old.items():
+            signal.signal(s, h)
+    assert child.terminated
+    assert calls == [([str(tmp_path / "wineserver"), "-k"], str(tmp_path / "compat/pfx"))]

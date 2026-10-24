@@ -1609,6 +1609,10 @@ msgid "Instalar"
 msgstr ""
 
 #: gogl_ui/dialogs.py
+msgid "Usar Wayland nativo"
+msgstr ""
+
+#: gogl_ui/dialogs.py
 msgid "Argumentos"
 msgstr ""
 
@@ -1658,6 +1662,14 @@ msgstr ""
 
 #: gogl_ui/dialogs.py
 msgid "Opciones de lanzamiento"
+msgstr ""
+
+#: gogl_ui/dialogs.py
+msgid "Pantalla"
+msgstr ""
+
+#: gogl_ui/dialogs.py
+msgid "Activa PROTON_ENABLE_WAYLAND. Arregla juegos que se quedan con la imagen congelada o en negro, p. ej. los de OpenGL antiguo a pantalla completa."
 msgstr ""
 
 #: gogl_ui/dialogs.py
@@ -1928,6 +1940,10 @@ msgstr ""
 msgid "Registro"
 msgstr ""
 
+#: gogl_ui/game_page.py
+msgid "Cerrar el juego"
+msgstr ""
+
 #: gogl_ui/game_page.py gogl_ui/main_window.py
 msgid "No se pudo añadir a Steam"
 msgstr ""
@@ -1970,6 +1986,10 @@ msgstr ""
 
 #: gogl_ui/game_page.py
 msgid "En ejecución…"
+msgstr ""
+
+#: gogl_ui/game_page.py
+msgid "Fuerza el cierre del juego y de sus procesos si no responde o no llega a abrir ventana"
 msgstr ""
 
 #: gogl_ui/game_page.py gogl_ui/main_window.py
@@ -2021,6 +2041,10 @@ msgid "Falta Proton-GE"
 msgstr ""
 
 #: gogl_ui/game_page.py
+msgid "No se pudo cerrar el juego"
+msgstr ""
+
+#: gogl_ui/game_page.py
 msgid "Último sync correcto: {when}"
 msgstr ""
 
@@ -2046,6 +2070,13 @@ msgstr ""
 
 #: gogl_ui/game_page.py
 msgid "Este juego todavía no se ha lanzado desde {app}."
+msgstr ""
+
+#: gogl_ui/game_page.py
+msgid ""
+"Se cerrará {title} a la fuerza; lo que no hayas guardado se perderá.\n"
+"\n"
+"¿Continuar?"
 msgstr ""
 
 #: gogl_ui/game_page.py gogl_ui/main_window.py
