@@ -156,6 +156,7 @@ def test_build_launch_windows(home, monkeypatch):
     assert spec.cwd == home / "game/Bin"
     assert spec.env["STEAM_COMPAT_DATA_PATH"] == str(home / "pfxs/7")
     assert spec.env["SteamGameId"] == "999"  # no se pisa el de Steam
+    assert spec.env["PROTON_USE_XALIA"] == "0"
 
 
 def test_launch_options(home, monkeypatch):

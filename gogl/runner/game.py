@@ -125,6 +125,11 @@ def proton_env(game: Game, compat: Path) -> dict[str, str]:
     env.setdefault("SteamGameId", "0")
     env.setdefault("STEAM_COMPAT_APP_ID", "0")
     env.setdefault("WINEDEBUG", "-all")
+    # Xalia (Proton-GE) rastrea las ventanas del juego para manejarlas con el mando;
+    # con juegos de teclado y ratón solo lo estorba (excepciones sin fin en el registro
+    # y el uso de CPU). La navegación con mando la damos nosotros. Se puede reactivar
+    # con PROTON_USE_XALIA=1 en las opciones de lanzamiento del juego.
+    env.setdefault("PROTON_USE_XALIA", "0")
     env.update(languages.env_for(game.extra.get("language")))
     return env
 
