@@ -619,6 +619,23 @@ class GamePage(QWidget):
             [*cli_command(), "run", g.game_id], start_new_session=True)
         self._render_actions()
         self.poll.start()
+        self._hide_for_game()
+
+    def _hide_for_game(self):
+        """En gamescope todas las ventanas son del mismo «juego» de Steam y la de la app, a
+        pantalla completa, tapa la del juego (ScummVM, DOSBox…, que además es más pequeña).
+        Mientras se juega se oculta; vuelve al terminar."""
+        if not navigation.in_gamescope():
+            return
+        QApplication.setQuitOnLastWindowClosed(False)
+        self.window().hide()
+
+    def _show_after_game(self):
+        w = self.window()
+        if navigation.in_gamescope() and not w.isVisible():
+            w.showFullScreen()
+            w.raise_()
+            w.activateWindow()
 
     def _stop(self):
         g = self.entry.game
@@ -643,6 +660,7 @@ class GamePage(QWidget):
                     self._render_actions()
         if not self.running:
             self.poll.stop()
+            self._show_after_game()
 
     def _add_to_steam(self, force: bool = False):
         from gogl import steam

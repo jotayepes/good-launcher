@@ -88,6 +88,21 @@ def split_windows_args(cmdline: str) -> list[str]:
     return args
 
 
+def in_gamescope() -> bool:
+    return bool(os.environ.get("GAMESCOPE_WAYLAND_DISPLAY")
+                or os.environ.get("XDG_CURRENT_DESKTOP", "").lower() == "gamescope")
+
+
+def _scummvm_windowed(exe: Path, args: list[str]) -> list[str]:
+    """ScummVM a pantalla completa cambia el modo de vídeo de Wine y en gamescope la
+    imagen sale negra o congelada; en ventana, gamescope la escala solo."""
+    if exe.name.lower() != "scummvm.exe" or not in_gamescope():
+        return args
+    if any(a in ("-f", "-F", "--fullscreen", "--no-fullscreen") for a in args):
+        return args
+    return ["--no-fullscreen", *args]
+
+
 def _win_path(base: Path, rel: str) -> Path:
     rel = rel.replace("\\", "/").lstrip("/")
     return resolve_case_insensitive(base / rel)
@@ -197,6 +212,7 @@ def _build_launch(game: Game, proton_name: str | None = None) -> LaunchSpec:
     if not exe.exists():
         raise LaunchError(_("No se encuentra el ejecutable {exe}").format(exe=exe))
     cwd = _win_path(game.install_path, task["workingDir"]) if task.get("workingDir") else exe.parent
+    extra = _scummvm_windowed(exe, extra)
     compat = compat_data_path(game)
     argv = [str(pv.script), "waitforexitandrun", str(exe), *extra]
     return LaunchSpec(argv, proton_env(game, compat), cwd, compat, pv)

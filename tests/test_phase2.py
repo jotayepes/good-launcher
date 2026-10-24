@@ -314,3 +314,16 @@ def test_sigint_closes_game_and_wine(tmp_path, monkeypatch):
             signal.signal(s, h)
     assert child.terminated
     assert calls == [([str(tmp_path / "wineserver"), "-k"], str(tmp_path / "compat/pfx"))]
+
+
+def test_scummvm_en_ventana_solo_en_gamescope(monkeypatch):
+    from pathlib import Path
+    from gogl.runner import game as g
+    exe, otro = Path("ScummVM/scummvm.exe"), Path("juego.exe")
+    monkeypatch.delenv("GAMESCOPE_WAYLAND_DISPLAY", raising=False)
+    monkeypatch.setenv("XDG_CURRENT_DESKTOP", "KDE")
+    assert g._scummvm_windowed(exe, ["-c", "x.ini"]) == ["-c", "x.ini"]
+    monkeypatch.setenv("XDG_CURRENT_DESKTOP", "gamescope")
+    assert g._scummvm_windowed(exe, ["-c", "x.ini"]) == ["--no-fullscreen", "-c", "x.ini"]
+    assert g._scummvm_windowed(exe, ["-f", "x"]) == ["-f", "x"]
+    assert g._scummvm_windowed(otro, ["-c"]) == ["-c"]
