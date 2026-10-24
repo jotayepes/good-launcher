@@ -2,7 +2,8 @@
 
 Botones:
   cruceta / stick izq.   mover el foco          A   activar     B   atrás
-  stick dcho.            desplazar              LB/RB  secciones
+  stick dcho.            desplazar (en diálogos y menús, mover el foco)
+  LB/RB  secciones
   LT/RT                  página arriba/abajo    X, Y, Start: según la ventana
 
 Las ventanas pueden ofrecer, si les interesa:
@@ -53,6 +54,14 @@ def open_keyboard() -> None:
 def _send_key(w: QWidget, key) -> None:
     QApplication.sendEvent(w, QKeyEvent(QEvent.KeyPress, key, Qt.NoModifier))
     QApplication.sendEvent(w, QKeyEvent(QEvent.KeyRelease, key, Qt.NoModifier))
+
+
+def _select_first(menu: QMenu) -> None:
+    """Marca la primera opción, para que con el mando se vea dónde se está."""
+    if menu.isVisible() and menu.activeAction() is None:
+        first = next((a for a in menu.actions() if a.isEnabled() and not a.isSeparator() and a.isVisible()), None)
+        if first is not None:
+            menu.setActiveAction(first)
 
 
 def global_rect(w: QWidget) -> QRect:
@@ -150,6 +159,11 @@ def pick_in_window(w: QWidget, cur: QRect, cands: list[tuple[QWidget, QRect]], d
 
 
 def focus_widget(w: QWidget, origin: QRect | None = None) -> None:
+    win = w.window()
+    if win is not QApplication.activeWindow():
+        # En gamescope un diálogo puede abrirse sin quedar activo: sin esto el foco
+        # no llega a verse y cada pulsación volvía al control inicial.
+        win.activateWindow()
     w.setFocus(Qt.TabFocusReason)
     if isinstance(w, QAbstractItemView):
         _enter_view(w, origin)
@@ -198,6 +212,7 @@ QPushButton#NavButton:focus {{ border: 2px solid {theme.ACCENT}; padding: 7px 12
 QPushButton#Chip:focus {{ border: 2px solid {theme.ACCENT}; padding: 4px 13px; color: {theme.TEXT}; }}
 QLineEdit:focus {{ border: 2px solid {theme.ACCENT}; padding: 6px 13px; }}
 QComboBox:focus {{ border: 2px solid {theme.ACCENT}; padding: 5px 9px; background: {theme.SURFACE_2}; }}
+QComboBox QAbstractItemView {{ selection-background-color: {theme.ACCENT}; selection-color: white; }}
 QCheckBox:focus, QRadioButton:focus {{ color: white; background: {theme.SURFACE_2}; border-radius: 6px; }}
 QTableWidget:focus {{ border: 2px solid {theme.ACCENT}; }}
 QTextBrowser:focus, QPlainTextEdit:focus {{ border: 2px solid {theme.ACCENT}; border-radius: 8px; }}
@@ -270,7 +285,8 @@ class Navigator(QObject):
         # Un menú desplegable abierto también cuenta como «en primer plano»: en
         # gamescope, al abrirse (es otra ventana) la aplicación puede dejar de
         # figurar como activa y se perdían las pulsaciones dentro del menú.
-        popup_open = QApplication.activePopupWidget() is not None
+        # Lo mismo con los diálogos modales.
+        popup_open = QApplication.activePopupWidget() is not None or QApplication.activeModalWidget() is not None
         if self.require_active and not popup_open and self.app.applicationState() != Qt.ApplicationActive:
             dev.tr.reset()  # p. ej. mientras se juega: el mando es del juego
             self._stop_repeat()
@@ -303,10 +319,12 @@ class Navigator(QObject):
     # --- acciones ------------------------------------------------------------
 
     def handle(self, name: str, pressed: bool):
-        if name in gamepad.DIRECTIONS:
+        if name in gamepad.RIGHT_STICK and pressed and not self._stick_moves_focus():
+            return  # aquí el stick derecho desplaza (_scroll_tick)
+        if name in gamepad.DIRECTIONS or name in gamepad.RIGHT_STICK:
             if pressed:
                 self.set_active(True)
-                self.move(name)
+                self.move(gamepad.RIGHT_STICK.get(name, name))
                 self.repeating = name
                 self.repeat.start(REPEAT_DELAY)
             elif self.repeating == name:
@@ -328,13 +346,22 @@ class Navigator(QObject):
     def _repeat(self):
         if self.repeating:
             self.repeat.setInterval(REPEAT_RATE)
-            self.move(self.repeating)
+            self.move(gamepad.RIGHT_STICK.get(self.repeating, self.repeating))
 
     def _window(self) -> QWidget | None:
         return QApplication.activeModalWidget() or QApplication.activeWindow()
 
-    def _focus_missing(self) -> bool:
+    def _current(self) -> QWidget | None:
+        """El control con el foco en la ventana que manda. Si esa ventana no figura
+        como activa (gamescope), Qt no lo da como foco de la aplicación pero sí lo
+        recuerda la ventana."""
         w, win = QApplication.focusWidget(), self._window()
+        if win is not None and (w is None or w.window() is not win):
+            w = win.focusWidget()
+        return w
+
+    def _focus_missing(self) -> bool:
+        w, win = self._current(), self._window()
         return win is not None and (w is None or not w.isVisible() or w.window() is not win)
 
     def _default_focus(self) -> bool:
@@ -366,7 +393,7 @@ class Navigator(QObject):
         if self._focus_missing():
             self._default_focus()
             return
-        w = QApplication.focusWidget()
+        w = self._current()
         if isinstance(w, QAbstractItemView) and w.model() is not None and w.model().rowCount():
             before = w.currentIndex()
             _send_key(w, KEYS[d])
@@ -387,11 +414,14 @@ class Navigator(QObject):
         if self._focus_missing():
             self._default_focus()
             return
-        w = QApplication.focusWidget()
+        w = self._current()
+        if w is None:
+            return
         if isinstance(w, QComboBox):
             w.showPopup()
         elif isinstance(w, QPushButton) and w.menu() is not None:
             QTimer.singleShot(0, w.showMenu)  # showMenu es bloqueante: fuera de este manejador
+            QTimer.singleShot(0, lambda m=w.menu(): _select_first(m))  # corre ya con el menú abierto
         elif isinstance(w, QAbstractButton):
             w.animateClick()
         elif isinstance(w, QAbstractItemView):
@@ -414,7 +444,7 @@ class Navigator(QObject):
         fn = getattr(win, "gamepad_back", None)
         if fn is None or not fn():
             if win is not None:
-                _send_key(QApplication.focusWidget() or win, Qt.Key_Escape)
+                _send_key(self._current() or win, Qt.Key_Escape)
 
     def _on_lt(self):
         self._page(Qt.Key_PageUp, -1)
@@ -423,7 +453,7 @@ class Navigator(QObject):
         self._page(Qt.Key_PageDown, 1)
 
     def _page(self, key, sign: int):
-        w = QApplication.focusWidget()
+        w = self._current()
         if isinstance(w, QAbstractItemView):
             _send_key(w, key)
             return
@@ -441,12 +471,14 @@ class Navigator(QObject):
 
     # --- desplazamiento con el stick derecho ----------------------------------
 
-    def _scroll_area(self) -> QAbstractScrollArea | None:
-        w = QApplication.focusWidget()
+    def _scroll_area(self, focused_only: bool = False) -> QAbstractScrollArea | None:
+        w = self._current()
         chain = [w, *_ancestors(w)] if w is not None else []
         for p in chain:
             if isinstance(p, QAbstractScrollArea) and p.verticalScrollBar().maximum() > 0:
                 return p
+        if focused_only:
+            return None
         win = self._window()
         if win is not None:
             for a in win.findChildren(QAbstractScrollArea):
@@ -454,9 +486,17 @@ class Navigator(QObject):
                     return a
         return None
 
+    def _stick_moves_focus(self) -> bool:
+        """En un menú, o en un diálogo salvo que el foco esté en algo que se desplaza
+        (un registro largo), el stick derecho cambia de opción como la cruceta."""
+        if QApplication.activePopupWidget() is not None:
+            return True
+        return QApplication.activeModalWidget() is not None and self._scroll_area(focused_only=True) is None
+
     def _scroll_tick(self):
         v = next((d[0].tr.scroll for d in self.devices.values() if d[0].tr.scroll), 0.0)
-        if not v or (self.require_active and self.app.applicationState() != Qt.ApplicationActive):
+        if not v or self._stick_moves_focus() or (self.require_active
+                                                  and self.app.applicationState() != Qt.ApplicationActive):
             self.scroller.stop()
             return
         area = self._scroll_area()

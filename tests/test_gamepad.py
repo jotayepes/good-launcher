@@ -51,3 +51,14 @@ def test_spatial_pick():
     assert pick(cur, cands, "down") == "b"   # el que está alineado gana aunque esté más lejos
     assert pick(cur, cands, "right") == "c"
     assert pick(cur, cands, "up") is None
+
+
+def test_right_stick_emits_directions():
+    t = gp.Translator(axes={gp.ABS_RX: gp.Axis(-32768, 32767), gp.ABS_RY: gp.Axis(-32768, 32767)})
+    assert t.feed(gp.EV_ABS, gp.ABS_RY, 32767) == [("rs-down", True)]
+    assert t.feed(gp.EV_ABS, gp.ABS_RY, 15000) == []                    # histéresis
+    assert t.feed(gp.EV_ABS, gp.ABS_RY, -32768) == [("rs-down", False), ("rs-up", True)]
+    assert t.feed(gp.EV_ABS, gp.ABS_RY, 0) == [("rs-up", False)]
+    assert t.feed(gp.EV_ABS, gp.ABS_RX, 32767) == [("rs-right", True)]
+    assert t.reset() == [("rs-right", False)]
+    assert gp.RIGHT_STICK["rs-up"] == "up"

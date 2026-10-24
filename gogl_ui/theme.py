@@ -62,6 +62,12 @@ QLineEdit:focus {{ border-color: {ACCENT}; }}
 QComboBox {{ background: {SURFACE}; border: 1px solid {BORDER}; border-radius: 8px; padding: 6px 10px; }}
 QComboBox QAbstractItemView {{ background: {SURFACE}; border: 1px solid {BORDER}; selection-background-color: {SURFACE_2}; }}
 
+QMenu {{ background: {SURFACE}; border: 1px solid {BORDER}; border-radius: 8px; padding: 6px; }}
+QMenu::item {{ background: transparent; padding: 8px 18px; border-radius: 6px; }}
+QMenu::item:selected {{ background: {ACCENT}; color: white; }}
+QMenu::item:disabled {{ color: {MUTED}; }}
+QMenu::separator {{ height: 1px; background: {BORDER}; margin: 5px 8px; }}
+
 QListView {{ background: {BG}; border: none; outline: none; }}
 QScrollBar:vertical {{ background: transparent; width: 10px; margin: 2px; }}
 QScrollBar::handle:vertical {{ background: {SURFACE_2}; border-radius: 4px; min-height: 40px; }}

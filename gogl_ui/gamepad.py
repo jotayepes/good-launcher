@@ -43,6 +43,8 @@ BUTTONS = {
     BTN_DPAD_UP: "up", BTN_DPAD_DOWN: "down", BTN_DPAD_LEFT: "left", BTN_DPAD_RIGHT: "right",
 }
 DIRECTIONS = ("up", "down", "left", "right")
+# Stick derecho a fondo: en los diálogos y menús cambia de opción (fuera, desplaza).
+RIGHT_STICK = {"rs-up": "up", "rs-down": "down", "rs-left": "left", "rs-right": "right"}
 
 
 def _ioc(direction: int, nr: int, size: int) -> int:
@@ -100,6 +102,7 @@ class Translator:
     axes: dict[int, Axis] = field(default_factory=dict)
     held: dict[str, set[str]] = field(default_factory=dict)  # dirección → fuentes que la mantienen
     triggers: dict[int, bool] = field(default_factory=dict)
+    right: dict[int, str | None] = field(default_factory=dict)  # eje del stick dcho. → dirección
     scroll: float = 0.0  # stick derecho, vertical: -1 arriba … 1 abajo
 
     PRESS, RELEASE = 0.55, 0.35  # histéresis del stick
@@ -124,25 +127,34 @@ class Translator:
         if code in (ABS_X, ABS_Y):
             neg, pos = ("left", "right") if code == ABS_X else ("up", "down")
             src = f"stick{code}"
-            cur = {d for d, s in self.held.items() if src in s}
-            if v <= -self.PRESS:
-                want = {neg}
-            elif v >= self.PRESS:
-                want = {pos}
-            elif abs(v) < self.RELEASE:
-                want = set()
-            else:
-                want = cur  # zona de histéresis: no cambia
-            return self._source(src, want)
-        if code == ABS_RY:
-            self.scroll = 0.0 if abs(v) < self.DEAD else v
-            return []
+            cur = next((d for d, s in self.held.items() if src in s), None)
+            want = self._hysteresis(v, cur, neg, pos)
+            return self._source(src, {want} if want else set())
+        if code in (ABS_RX, ABS_RY):
+            if code == ABS_RY:
+                self.scroll = 0.0 if abs(v) < self.DEAD else v
+            neg, pos = ("rs-left", "rs-right") if code == ABS_RX else ("rs-up", "rs-down")
+            cur = self.right.get(code)
+            want = self._hysteresis(v, cur, neg, pos)
+            if want == cur:
+                return []
+            self.right[code] = want
+            return ([(cur, False)] if cur else []) + ([(want, True)] if want else [])
         if code in (ABS_Z, ABS_RZ):
             on = v > 0.6 if ax.lo >= 0 else v > 0.2
             if on != self.triggers.get(code, False):
                 self.triggers[code] = on
                 return [("lt" if code == ABS_Z else "rt", on)]
         return []
+
+    def _hysteresis(self, v: float, cur: str | None, neg: str, pos: str) -> str | None:
+        if v <= -self.PRESS:
+            return neg
+        if v >= self.PRESS:
+            return pos
+        if abs(v) < self.RELEASE:
+            return None
+        return cur  # zona de histéresis: no cambia
 
     def _source(self, src: str, want: set[str]) -> list[tuple[str, bool]]:
         out = []
@@ -159,7 +171,9 @@ class Translator:
 
     def reset(self) -> list[tuple[str, bool]]:
         out = [(d, False) for d, s in self.held.items() if s]
+        out += [(d, False) for d in self.right.values() if d]
         self.held.clear()
+        self.right.clear()
         self.scroll = 0.0
         return out
 
