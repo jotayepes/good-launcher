@@ -85,14 +85,21 @@ def prepare_environment() -> None:
       sandbox y GPU. Esos procesos se lanzan sin él (un envoltorio en
       QTWEBENGINEPROCESS_PATH); la ventana del lanzador y los juegos lo conservan.
 
-    Además, en el modo juego la web no se expone a la accesibilidad (AT-SPI): Qt
-    WebEngine traduce entonces cada nodo de la página a objetos de D-Bus, algo que
-    con una página como la tienda va lentísimo (QTBUG-59922) y aquí no se usa."""
+    Además, en el modo juego:
+    - Sin sondear la GPU (QSG_RHI_BACKEND=null). Aunque dibuje por software, al crear
+      la primera vista Qt WebEngine abre en la ventana del lanzador un contexto OpenGL
+      y un dispositivo Vulkan solo para saber el fabricante de la gráfica. Con las capas
+      de Vulkan de Steam y gamescope, la ventana se quedaba minutos sin redibujarse
+      (ni la barra de carga se veía). Qt Quick no se usa para nada más que la web.
+    - La web no se expone a la accesibilidad (AT-SPI): Qt WebEngine traduce entonces
+      cada nodo de la página a objetos de D-Bus, algo que con una página como la tienda
+      va lentísimo (QTBUG-59922) y aquí no se usa."""
     if not HAS_WEBENGINE:
         return
     from .navigation import in_gamescope
     if in_gamescope():
         os.environ.setdefault("QT_QUICK_BACKEND", "software")
+        os.environ.setdefault("QSG_RHI_BACKEND", "null")
         os.environ.setdefault("QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY", "0")
         flags = os.environ.get("QTWEBENGINE_CHROMIUM_FLAGS", "").split()
         flags += [f for f in ("--disable-gpu", "--disable-gpu-compositing") if f not in flags]
@@ -128,9 +135,10 @@ def trace(msg: str) -> None:
             _log_ready = True
             if log.exists():
                 log.replace(log.with_suffix(".log.old"))
-            env = {k: os.environ[k] for k in ("XDG_CURRENT_DESKTOP", "QT_QUICK_BACKEND", "QTWEBENGINE_CHROMIUM_FLAGS",
-                                              "QTWEBENGINEPROCESS_PATH", "QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY",
-                                              "QT_QPA_PLATFORM", "WAYLAND_DISPLAY", "DISPLAY") if k in os.environ}
+            keys = ("XDG_CURRENT_DESKTOP", "QT_QUICK_BACKEND", "QSG_RHI_BACKEND", "QTWEBENGINE_CHROMIUM_FLAGS",
+                    "QTWEBENGINEPROCESS_PATH", "QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY", "QT_QPA_PLATFORM",
+                    "WAYLAND_DISPLAY", "DISPLAY")
+            env = {k: os.environ[k] for k in keys if k in os.environ}
             with log.open("a", encoding="utf-8") as f:
                 f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} pid {os.getpid()} {env}\n")
         with log.open("a", encoding="utf-8") as f:
@@ -338,7 +346,25 @@ if HAS_WEBENGINE:
         view = QWebEngineView(parent)
         view.setPage(GogPage(view))
         trace("vista web creada")
+        from .navigation import in_gamescope
+        if in_gamescope():
+            view.loadFinished.connect(lambda _ok, v=weakref.ref(view): _reshow_once(v()))
         return view
+
+    def _reshow_once(view) -> None:
+        """En gamescope, la primera página podía quedarse sin verse hasta ir a otra
+        sección y volver. Eso mismo (ocultar y mostrar la vista) se hace solo una vez,
+        al terminar la primera carga."""
+        if view is None or getattr(view, "_reshown", False):
+            return
+        view._reshown = True
+        if view.isVisible():
+            trace("volviendo a mostrar la vista web")
+            focused = view.hasFocus() or view.isAncestorOf(QApplication.focusWidget())
+            view.hide()
+            view.show()
+            if focused:
+                view.setFocus()  # al ocultarla, Qt pasa el foco a otro control
 
 
 def store_url(path: str = "") -> QUrl:

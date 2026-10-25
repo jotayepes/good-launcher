@@ -15,7 +15,7 @@ OVERLAY = "/home/deck/.local/share/Steam/ubuntu12_64/gameoverlayrenderer.so"
 def clean_env(tmp_path, monkeypatch):
     monkeypatch.setenv("GOGL_HOME", str(tmp_path / "home"))
     for k in ("QT_QUICK_BACKEND", "QTWEBENGINE_CHROMIUM_FLAGS", "QTWEBENGINEPROCESS_PATH",
-              "QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY",
+              "QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY", "QSG_RHI_BACKEND",
               "GAMESCOPE_WAYLAND_DISPLAY", "XDG_CURRENT_DESKTOP", "LD_PRELOAD"):
         monkeypatch.delenv(k, raising=False)
     return monkeypatch
@@ -28,12 +28,13 @@ def test_game_mode_draws_web_by_software(clean_env):
     assert os.environ["QT_QUICK_BACKEND"] == "software"
     assert os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] == "--disable-gpu --foo --disable-gpu-compositing"
     assert os.environ["QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY"] == "0"  # el árbol de accesibilidad de la tienda
+    assert os.environ["QSG_RHI_BACKEND"] == "null"  # sin sondear OpenGL ni Vulkan al crear la vista
 
 
 def test_desktop_without_steam_touches_nothing(clean_env):
     web.prepare_environment()
     assert not {"QT_QUICK_BACKEND", "QTWEBENGINE_CHROMIUM_FLAGS", "QTWEBENGINEPROCESS_PATH",
-                "QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY"} & set(os.environ)
+                "QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY", "QSG_RHI_BACKEND"} & set(os.environ)
 
 
 def test_chromium_processes_start_without_steam_overlay(clean_env, tmp_path):

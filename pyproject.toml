@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gogl"
-version = "0.2.6"
+version = "0.2.7"
 description = "Lanzador de juegos de GOG para Linux con sincronización fiable de partidas"
 requires-python = ">=3.11"
 readme = "README.md"
