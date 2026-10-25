@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QApplication
 from gogl import APP_TITLE, selfcmd, services, steam
 from gogl.i18n import _
 
-from . import navigation, qt_i18n, theme
+from . import navigation, qt_i18n, theme, web
 from .desktop import desktop_entry_installed, refresh_desktop_entry
 from .main_window import MainWindow
 
@@ -31,8 +31,9 @@ def main() -> int:
     if not navigation.in_gamescope():
         # La ventana se crea desde el principio preparada para la vista web: si no,
         # al abrir la tienda Qt la destruye y la vuelve a crear (se ve cerrarse y
-        # abrirse). En el modo juego no hay tienda (web.store_available).
+        # abrirse). En el modo juego se dibuja por software (web.prepare_environment).
         os.environ.setdefault("QT_WIDGETS_RHI", "1")
+    web.prepare_environment()
     app = QApplication(sys.argv)
     app.setApplicationName("gogl")
     app.setApplicationDisplayName(APP_TITLE)

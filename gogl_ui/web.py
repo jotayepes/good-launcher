@@ -9,14 +9,18 @@ no se lee ni se guarda nada de ellos.
 
 Orden de destrucción: una página tiene que desaparecer antes que su perfil (si
 no, Qt WebEngine avisa «Expect troubles» y puede cerrarse de golpe). Por eso el
-perfil no tiene padre y, al salir, se borran primero todas las páginas."""
+perfil no tiene padre y, al salir, se borran primero todas las páginas.
+
+Dentro de Steam (sobre todo en el modo juego), ver prepare_environment()."""
 
 from __future__ import annotations
 
+import os
 import re
+import shlex
 import weakref
 
-from PySide6.QtCore import QCoreApplication, QEvent, Qt, QUrl
+from PySide6.QtCore import QCoreApplication, QEvent, QLibraryInfo, Qt, QUrl
 from PySide6.QtWidgets import QApplication, QDialog, QVBoxLayout
 
 from gogl import i18n, paths
@@ -32,11 +36,72 @@ _profile = None
 _pages: "weakref.WeakSet" = weakref.WeakSet()
 
 
+OVERLAY_LIB = "gameoverlayrenderer"  # el overlay de Steam, que Steam mete en LD_PRELOAD
+
+# Envoltorio de QtWebEngineProcess: quita el overlay de Steam de LD_PRELOAD y
+# arranca el de verdad. Lo heredan todos los procesos de Chromium (zigoto,
+# renderizadores, GPU…), que nacen de él.
+_WRAPPER = """#!/bin/sh
+# Generado por gogl (gogl_ui/web.py) en cada arranque: no editar.
+keep=
+set -f
+IFS=': '
+for lib in ${{LD_PRELOAD:-}}; do
+    case "$lib" in
+        *{overlay}*) ;;
+        *) keep="${{keep:+$keep:}}$lib" ;;
+    esac
+done
+if [ -n "$keep" ]; then export LD_PRELOAD="$keep"; else unset LD_PRELOAD; fi
+exec {real} "$@"
+"""
+
+
 def store_available() -> bool:
-    """La tienda y los enlaces a gog.com. En el modo juego de SteamOS no: el overlay
-    de Steam revienta el proceso de Chromium al abrirla y deja la Deck colgada."""
+    """La tienda y los enlaces a gog.com (también en el modo juego: prepare_environment)."""
+    return HAS_WEBENGINE
+
+
+def prepare_environment() -> None:
+    """Antes de crear QApplication. En el modo juego, abrir una página web colgaba la
+    Deck. Dos causas, con su remedio:
+
+    - La primera vista web hace que Qt destruya la ventana nativa y la cree de nuevo
+      en OpenGL, y gamescope se queda sin la ventana del «juego». En gamescope la vista
+      web se dibuja por software (Qt Quick y Chromium sin GPU): la ventana sigue siendo
+      la misma de principio a fin. Para las páginas de GOG no hace falta más.
+    - Steam mete su overlay (gameoverlayrenderer.so) con LD_PRELOAD en todo lo que
+      arranca el «juego», también en los procesos de Chromium, que tienen su propio
+      sandbox y GPU. Esos procesos se lanzan sin él (un envoltorio en
+      QTWEBENGINEPROCESS_PATH); la ventana del lanzador y los juegos lo conservan."""
+    if not HAS_WEBENGINE:
+        return
     from .navigation import in_gamescope
-    return HAS_WEBENGINE and not in_gamescope()
+    if in_gamescope():
+        os.environ.setdefault("QT_QUICK_BACKEND", "software")
+        flags = os.environ.get("QTWEBENGINE_CHROMIUM_FLAGS", "").split()
+        flags += [f for f in ("--disable-gpu", "--disable-gpu-compositing") if f not in flags]
+        os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = " ".join(flags)
+    if OVERLAY_LIB in os.environ.get("LD_PRELOAD", "") and "QTWEBENGINEPROCESS_PATH" not in os.environ:
+        wrapper = _process_wrapper()
+        if wrapper:
+            os.environ["QTWEBENGINEPROCESS_PATH"] = wrapper
+
+
+def _process_wrapper() -> str | None:
+    real = os.path.join(QLibraryInfo.path(QLibraryInfo.LibraryExecutablesPath), "QtWebEngineProcess")
+    if not os.access(real, os.X_OK):
+        return None
+    # Se reescribe en cada arranque: la AppImage se monta cada vez en otra ruta.
+    wrapper = paths.cache_dir() / "QtWebEngineProcess"
+    tmp = wrapper.with_name(wrapper.name + f".{os.getpid()}")
+    try:
+        tmp.write_text(_WRAPPER.format(overlay=OVERLAY_LIB, real=shlex.quote(real)))
+        tmp.chmod(0o755)
+        tmp.replace(wrapper)
+    except OSError:
+        return None
+    return str(wrapper)
 
 
 def profile():
@@ -145,5 +210,5 @@ def store_url(path: str = "") -> QUrl:
     return QUrl(f"https://www.gog.com/{i18n.web_language()}{path}")
 
 
-__all__ = ["HAS_WEBENGINE", "clear_session", "make_view", "profile", "shutdown", "store_available",
-           "store_url"]
+__all__ = ["HAS_WEBENGINE", "clear_session", "make_view", "prepare_environment", "profile", "shutdown",
+           "store_available", "store_url"]
