@@ -63,6 +63,12 @@ for lib in ${{LD_PRELOAD:-}}; do
     esac
 done
 if [ -n "$keep" ]; then export LD_PRELOAD="$keep"; else unset LD_PRELOAD; fi
+type=browser
+for arg in "$@"; do
+    case "$arg" in --type=*) type="${{arg#--type=}}" ;; esac
+done
+printf '        -  %s arranca QtWebEngineProcess (%s)\n' "$(date +%H:%M:%S.%N | cut -c1-12)" "$type" \
+    >> {log} 2>/dev/null
 exec {real} "$@"
 """
 
@@ -93,7 +99,12 @@ def prepare_environment() -> None:
       (ni la barra de carga se veía). Qt Quick no se usa para nada más que la web.
     - La web no se expone a la accesibilidad (AT-SPI): Qt WebEngine traduce entonces
       cada nodo de la página a objetos de D-Bus, algo que con una página como la tienda
-      va lentísimo (QTBUG-59922) y aquí no se usa."""
+      va lentísimo (QTBUG-59922) y aquí no se usa.
+    - Sin el sandbox de Chromium (QTWEBENGINE_DISABLE_SANDBOX), como hace Heroic al
+      abrirse desde Steam (--no-sandbox; en Flatpak lo sustituye zypak). Crear el perfil
+      espera a que arranquen los zigotos de Chromium, que montan ese sandbox, y en el
+      modo juego la espera llegaba a minutos (web.log se quedaba en «creando el perfil
+      web»). Las páginas que se abren son las de GOG y su pasarela de pago."""
     if not HAS_WEBENGINE:
         return
     from .navigation import in_gamescope
@@ -101,6 +112,7 @@ def prepare_environment() -> None:
         os.environ.setdefault("QT_QUICK_BACKEND", "software")
         os.environ.setdefault("QSG_RHI_BACKEND", "null")
         os.environ.setdefault("QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY", "0")
+        os.environ.setdefault("QTWEBENGINE_DISABLE_SANDBOX", "1")
         flags = os.environ.get("QTWEBENGINE_CHROMIUM_FLAGS", "").split()
         flags += [f for f in ("--disable-gpu", "--disable-gpu-compositing") if f not in flags]
         os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = " ".join(flags)
@@ -118,7 +130,8 @@ def _process_wrapper() -> str | None:
     wrapper = paths.cache_dir() / "QtWebEngineProcess"
     tmp = wrapper.with_name(wrapper.name + f".{os.getpid()}")
     try:
-        tmp.write_text(_WRAPPER.format(overlay=OVERLAY_LIB, real=shlex.quote(real)))
+        tmp.write_text(_WRAPPER.format(overlay=OVERLAY_LIB, real=shlex.quote(real),
+                                       log=shlex.quote(str(paths.state_dir() / "web.log"))))
         tmp.chmod(0o755)
         tmp.replace(wrapper)
     except OSError:
@@ -136,13 +149,16 @@ def trace(msg: str) -> None:
             if log.exists():
                 log.replace(log.with_suffix(".log.old"))
             keys = ("XDG_CURRENT_DESKTOP", "QT_QUICK_BACKEND", "QSG_RHI_BACKEND", "QTWEBENGINE_CHROMIUM_FLAGS",
-                    "QTWEBENGINEPROCESS_PATH", "QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY", "QT_QPA_PLATFORM",
-                    "WAYLAND_DISPLAY", "DISPLAY")
+                    "QTWEBENGINEPROCESS_PATH", "QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY",
+                    "QTWEBENGINE_DISABLE_SANDBOX", "QT_QPA_PLATFORM", "WAYLAND_DISPLAY", "DISPLAY",
+                    "LD_LIBRARY_PATH")
             env = {k: os.environ[k] for k in keys if k in os.environ}
             with log.open("a", encoding="utf-8") as f:
                 f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} pid {os.getpid()} {env}\n")
         with log.open("a", encoding="utf-8") as f:
-            f.write(f"{time.monotonic() - _started:9.2f}s {msg}\n")
+            now = time.time()
+            wall = time.strftime("%H:%M:%S", time.localtime(now)) + f".{int(now % 1 * 1000):03d}"
+            f.write(f"{time.monotonic() - _started:9.2f}s {wall} {msg}\n")
     except OSError:
         pass
 
@@ -164,7 +180,15 @@ def profile():
     global _profile, _heartbeat, _last_beat
     if _profile is None:
         trace("creando el perfil web")
-        _profile = QWebEngineProfile("gogl")
+        # Crear el perfil arranca Chromium y espera a sus procesos sin soltar Python:
+        # si Steam pide cerrar mientras tanto, que el proceso termine en el acto (si no,
+        # el aviso no se atiende hasta que Chromium acaba de arrancar).
+        handlers = {sig: signal.signal(sig, signal.SIG_DFL) for sig in (signal.SIGINT, signal.SIGTERM)}
+        try:
+            _profile = QWebEngineProfile("gogl")
+        finally:
+            for sig, h in handlers.items():
+                signal.signal(sig, h if h is not None else signal.SIG_DFL)
         _profile.setPersistentStoragePath(str(paths.data_dir() / "web"))
         _profile.setCachePath(str(paths.cache_dir() / "web"))
         _profile.setPersistentCookiesPolicy(QWebEngineProfile.ForcePersistentCookies)
