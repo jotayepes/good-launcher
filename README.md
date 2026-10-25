@@ -45,7 +45,8 @@ A [GOG](https://www.gog.com) game launcher for Linux and SteamOS, focused on mak
   with prices and discounts.
 - **Steam integration**: adds games (and the launcher itself) as "non-Steam games" with their
   cover art.
-- **Gamepad control** (D-pad/stick, A, B, LB/RB…), designed for SteamOS Game Mode.
+- **Gamepad control** (D-pad/stick, A, B, LB/RB…), designed for SteamOS Game Mode. It also
+  works inside the store pages (links and buttons), and there you can drag with a finger to scroll.
 - **English and Spanish**: follows the system language (any other language falls back to
   English) and can be set in Settings → Language. The language games are installed in also
   comes from the system, unless you pick another one.
@@ -116,6 +117,7 @@ gogl --help                # the remaining commands
 | Database, Proton-GE, Comet, prefixes, backups, store session | `~/.local/share/gogl/` |
 | Extras and offline installers (default) | `~/Downloads/GOG/` (the system Downloads folder) |
 | Per-game logs | `~/.local/state/gogl/logs/` |
+| Store/web timing log (`web.log`) | `~/.local/state/gogl/` |
 | Games (default) | `~/Games/gogl/` |
 
 The `~/.config`, `~/.local/share` and `~/.local/state` locations follow the `XDG_CONFIG_HOME`,

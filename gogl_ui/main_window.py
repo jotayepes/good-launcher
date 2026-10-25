@@ -19,7 +19,7 @@ from gogl.library import fetch_owned, fetch_user
 from gogl.runner import proton as proton_mgr
 from gogl.state import State
 
-from . import navigation, theme
+from . import navigation, theme, webpad
 from .dialogs import LinkInstallDialog, LoginDialog, ProtonDownloadDialog, pick_directory
 from .downloads import DownloadManager, DownloadsPage
 from .cloud_page import CloudPage
@@ -61,6 +61,8 @@ class GamepadHints(QLabel):
                      "<b>☰</b> " + _("Jugar / Instalar"), "<b>" + _("Stick dcho.") + "</b> " + _("Desplazar")],
             "other": [a + _("Seleccionar"), b + _("Biblioteca"), "<b>LB RB</b> " + _("Sección"),
                       "<b>" + _("Stick dcho.") + "</b> " + _("Desplazar")],
+            "store": [a + _("Seleccionar"), b + _("Atrás"), y + _("Buscar"), "<b>LB RB</b> " + _("Sección"),
+                      "<b>LT RT</b> " + _("Página"), "<b>" + _("Stick dcho.") + "</b> " + _("Desplazar")],
         }[ctx]
         self.setText(sep.join(items))
 
@@ -645,13 +647,16 @@ class MainWindow(QMainWindow):
         self.hints.setVisible(on)
         if on:
             self._page_changed()
+        elif self.store.view is not None:
+            webpad.clear(self.store.view)  # sin la marca del mando al usar el dedo o el ratón
 
     def _page_changed(self, *_):
         page = self.stack.currentWidget()
         if page is not self.store:
             self.store.leaving()
         self.hints.set_context("library" if page is self.library else
-                               "game" if page is self.game else "other")
+                               "game" if page is self.game else
+                               "store" if page is self.store and self.store.view is not None else "other")
         if navigation.gamepad_active():
             # Tras construirse la página (p. ej. los botones de la ficha del juego).
             QTimer.singleShot(0, self._focus_page)
@@ -671,6 +676,8 @@ class MainWindow(QMainWindow):
             return self.welcome.login_btn
         if page is self.cloud and self.cloud.first_button is not None:
             return self.cloud.first_button
+        if page is self.store and self.store.view is not None:
+            return self.store.view  # se entra en la página: su primer enlace (webpad)
         cands = navigation.focusable(page)
         return min(cands, key=lambda w: (navigation.global_rect(w).top(),
                                          navigation.global_rect(w).left())) if cands else None
@@ -704,6 +711,10 @@ class MainWindow(QMainWindow):
             i = sections.index(checked) if checked in sections else 0
             self.navigate(sections[(i + (1 if name == "rb" else -1)) % len(sections)])
             QTimer.singleShot(0, self._focus_page)  # aunque la página no cambie (filtros)
+            return True
+        if name == "y" and self.stack.currentWidget() is self.store:
+            navigation.focus_widget(self.store.search)
+            navigation.open_keyboard()
             return True
         if name == "y":
             if self.stack.currentWidget() is not self.library:

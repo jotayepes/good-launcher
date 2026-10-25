@@ -11,16 +11,21 @@ Orden de destrucción: una página tiene que desaparecer antes que su perfil (si
 no, Qt WebEngine avisa «Expect troubles» y puede cerrarse de golpe). Por eso el
 perfil no tiene padre y, al salir, se borran primero todas las páginas.
 
-Dentro de Steam (sobre todo en el modo juego), ver prepare_environment()."""
+Dentro de Steam (sobre todo en el modo juego), ver prepare_environment(). Lo que
+tarda la web en arrancar, cargar y cerrarse queda en web.log (carpeta de estado):
+en la Deck no hay otra forma de verlo."""
 
 from __future__ import annotations
 
 import os
 import re
 import shlex
+import signal
+import threading
+import time
 import weakref
 
-from PySide6.QtCore import QCoreApplication, QEvent, QLibraryInfo, Qt, QUrl
+from PySide6.QtCore import QCoreApplication, QEvent, QLibraryInfo, Qt, QTimer, QUrl
 from PySide6.QtWidgets import QApplication, QDialog, QVBoxLayout
 
 from gogl import i18n, paths
@@ -34,6 +39,11 @@ except ImportError:  # pragma: no cover - depende de la instalación
 
 _profile = None
 _pages: "weakref.WeakSet" = weakref.WeakSet()
+_started = time.monotonic()
+_log_ready = False
+_heartbeat = None
+
+CLOSE_LIMIT = 8  # s: si Qt WebEngine tarda más en cerrarse, se corta (ver shutdown)
 
 
 OVERLAY_LIB = "gameoverlayrenderer"  # el overlay de Steam, que Steam mete en LD_PRELOAD
@@ -73,12 +83,17 @@ def prepare_environment() -> None:
     - Steam mete su overlay (gameoverlayrenderer.so) con LD_PRELOAD en todo lo que
       arranca el «juego», también en los procesos de Chromium, que tienen su propio
       sandbox y GPU. Esos procesos se lanzan sin él (un envoltorio en
-      QTWEBENGINEPROCESS_PATH); la ventana del lanzador y los juegos lo conservan."""
+      QTWEBENGINEPROCESS_PATH); la ventana del lanzador y los juegos lo conservan.
+
+    Además, en el modo juego la web no se expone a la accesibilidad (AT-SPI): Qt
+    WebEngine traduce entonces cada nodo de la página a objetos de D-Bus, algo que
+    con una página como la tienda va lentísimo (QTBUG-59922) y aquí no se usa."""
     if not HAS_WEBENGINE:
         return
     from .navigation import in_gamescope
     if in_gamescope():
         os.environ.setdefault("QT_QUICK_BACKEND", "software")
+        os.environ.setdefault("QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY", "0")
         flags = os.environ.get("QTWEBENGINE_CHROMIUM_FLAGS", "").split()
         flags += [f for f in ("--disable-gpu", "--disable-gpu-compositing") if f not in flags]
         os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = " ".join(flags)
@@ -104,10 +119,43 @@ def _process_wrapper() -> str | None:
     return str(wrapper)
 
 
+def trace(msg: str) -> None:
+    """Una línea en web.log con los segundos desde el arranque. Nunca falla."""
+    global _log_ready
+    try:
+        log = paths.state_dir() / "web.log"
+        if not _log_ready:  # uno por arranque; el anterior se guarda como web.log.old
+            _log_ready = True
+            if log.exists():
+                log.replace(log.with_suffix(".log.old"))
+            env = {k: os.environ[k] for k in ("XDG_CURRENT_DESKTOP", "QT_QUICK_BACKEND", "QTWEBENGINE_CHROMIUM_FLAGS",
+                                              "QTWEBENGINEPROCESS_PATH", "QTWEBENGINE_ENABLE_LINUX_ACCESSIBILITY",
+                                              "QT_QPA_PLATFORM", "WAYLAND_DISPLAY", "DISPLAY") if k in os.environ}
+            with log.open("a", encoding="utf-8") as f:
+                f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} pid {os.getpid()} {env}\n")
+        with log.open("a", encoding="utf-8") as f:
+            f.write(f"{time.monotonic() - _started:9.2f}s {msg}\n")
+    except OSError:
+        pass
+
+
+def _beat() -> None:
+    """Si el hilo de la interfaz se queda parado (algo de la web lo bloquea), se apunta."""
+    global _last_beat
+    now = time.monotonic()
+    if now - _last_beat > 1.5:
+        trace(f"la interfaz estuvo bloqueada {now - _last_beat:.1f} s")
+    _last_beat = now
+
+
+_last_beat = 0.0
+
+
 def profile():
     """El perfil compartido (se crea la primera vez)."""
-    global _profile
+    global _profile, _heartbeat, _last_beat
     if _profile is None:
+        trace("creando el perfil web")
         _profile = QWebEngineProfile("gogl")
         _profile.setPersistentStoragePath(str(paths.data_dir() / "web"))
         _profile.setCachePath(str(paths.cache_dir() / "web"))
@@ -118,11 +166,25 @@ def profile():
         app = QApplication.instance()
         if app is not None:
             app.aboutToQuit.connect(shutdown)
+            _last_beat = time.monotonic()
+            _heartbeat = QTimer(app)
+            _heartbeat.setInterval(250)
+            _heartbeat.timeout.connect(_beat)
+            _heartbeat.start()
+        trace("perfil web listo")
     return _profile
 
 
 def shutdown() -> None:
+    """Al salir: páginas y perfil, en ese orden. Si se usó la web, el cierre tiene un
+    límite: en la Deck llegaba a tardar minutos y Steam seguía dando el «juego» por
+    abierto. Pasado CLOSE_LIMIT se cierran los procesos de Chromium y se sale."""
     global _profile
+    if _heartbeat is not None:
+        _heartbeat.stop()
+    if _profile is not None:
+        trace("cerrando la web")
+        _arm_close_limit()
     for page in list(_pages):
         try:
             page.deleteLater()
@@ -130,9 +192,74 @@ def shutdown() -> None:
             pass
     QCoreApplication.sendPostedEvents(None, QEvent.DeferredDelete)
     if _profile is not None:
+        trace("páginas cerradas")
         _profile.deleteLater()
         QCoreApplication.sendPostedEvents(None, QEvent.DeferredDelete)
         _profile = None
+        trace("perfil cerrado")
+
+
+def _arm_close_limit() -> None:
+    import atexit
+    atexit.register(lambda: trace("fin del proceso"))
+    _close_timer(CLOSE_LIMIT)
+    # Por si el hilo del temporizador no llega a correr (Qt bloqueado sin soltar Python):
+    # la alarma la atiende el núcleo, que termina el proceso. No si hay tareas en marcha
+    # (p. ej. sincronizando partidas): esas se esperan.
+    if not _busy() and signal.getsignal(signal.SIGALRM) in (signal.SIG_DFL, None):
+        signal.alarm(CLOSE_LIMIT * 2)
+
+
+def _close_timer(seconds: float) -> None:
+    t = threading.Timer(seconds, _force_exit)
+    t.daemon = True
+    t.start()
+
+
+def _busy() -> bool:
+    from PySide6.QtCore import QThreadPool
+    return QThreadPool.globalInstance().activeThreadCount() > 0
+
+
+def _force_exit() -> None:
+    if _busy():
+        signal.alarm(0)
+        _close_timer(2)
+        return
+    trace(f"el cierre pasa de {CLOSE_LIMIT} s: se fuerza")
+    for pid in _web_processes():
+        try:
+            os.kill(pid, signal.SIGKILL)
+        except OSError:
+            pass
+    os._exit(0)
+
+
+def _web_processes() -> list[int]:
+    """Los procesos de Chromium que cuelgan de este (zigoto, renderizadores…)."""
+    me, out = os.getpid(), []
+    children = {me}
+    try:
+        stats = []
+        for d in os.listdir("/proc"):
+            if d.isdigit():
+                try:
+                    with open(f"/proc/{d}/stat", "rb") as f:
+                        data = f.read().decode(errors="replace")
+                except OSError:
+                    continue
+                ppid = int(data.rsplit(")", 1)[1].split()[1])
+                stats.append((int(d), ppid, data[data.find("(") + 1:data.rfind(")")]))
+    except OSError:
+        return out
+    grew = True
+    while grew:  # descendientes de cualquier nivel
+        grew = False
+        for pid, ppid, _name in stats:
+            if ppid in children and pid not in children:
+                children.add(pid)
+                grew = True
+    return [pid for pid, _ppid, name in stats if pid in children and pid != me and "QtWebEngine" in name]
 
 
 def clear_session() -> None:
@@ -171,6 +298,15 @@ if HAS_WEBENGINE:
             super().__init__(profile(), parent)
             _pages.add(self)
             self.popups: list[PopupDialog] = []
+            from .navigation import in_gamescope
+            if in_gamescope():
+                from .webpad import install_touch
+                install_touch(self)
+            self.loadStarted.connect(lambda: trace(f"cargando {self.requestedUrl().toString()}"))
+            self.loadFinished.connect(lambda ok: trace(f"cargada ({'bien' if ok else 'con error'}) "
+                                                       f"{self.url().toString()}"))
+            self.renderProcessTerminated.connect(
+                lambda status, code: trace(f"el proceso de la página terminó: {status} (código {code})"))
 
         def javaScriptConsoleMessage(self, *_args):
             pass
@@ -198,8 +334,10 @@ if HAS_WEBENGINE:
             lay.addWidget(self.view)
 
     def make_view(parent=None) -> "QWebEngineView":
+        trace("creando una vista web")
         view = QWebEngineView(parent)
         view.setPage(GogPage(view))
+        trace("vista web creada")
         return view
 
 
@@ -211,4 +349,4 @@ def store_url(path: str = "") -> QUrl:
 
 
 __all__ = ["HAS_WEBENGINE", "clear_session", "make_view", "prepare_environment", "profile", "shutdown",
-           "store_available", "store_url"]
+           "store_available", "store_url", "trace"]

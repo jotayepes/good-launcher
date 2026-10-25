@@ -6,6 +6,9 @@ Botones:
   LB/RB  secciones
   LT/RT                  página arriba/abajo    X, Y, Start: según la ventana
 
+Dentro de una página web (la tienda) el foco se mueve entre sus enlaces y botones,
+y sale a la interfaz por los bordes: ver webpad.py.
+
 Las ventanas pueden ofrecer, si les interesa:
   gamepad_back() -> bool          qué hacer con B cuando no hay diálogo ni menú
   gamepad_button(acción) -> bool  X, Y, LB, RB, Start, Select
@@ -27,7 +30,7 @@ from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QAbstractScro
                                QMessageBox, QPlainTextEdit, QPushButton, QScrollArea, QScrollBar,
                                QStackedWidget, QTextEdit, QWidget)
 
-from . import gamepad, overlay, theme
+from . import gamepad, overlay, theme, webpad
 
 REPEAT_DELAY, REPEAT_RATE = 380, 90  # ms
 SCROLL_SPEED = 28  # px por tick a fondo
@@ -80,6 +83,12 @@ def focusable(win: QWidget) -> list[QWidget]:
     scope = overlay.top(win) or win
     for w in scope.findChildren(QWidget):
         if not (w.isVisible() and w.isEnabled()):
+            continue
+        if webpad.is_view(w):
+            if w.window() is win:
+                out.append(w)  # una sola parada: dentro se mueve la página (webpad)
+            continue
+        if webpad.view_of(w.parentWidget()) is not None:
             continue
         policy = w.focusPolicy()
         # Qt quita el foco por tabulador a los botones no marcados de un grupo
@@ -162,10 +171,13 @@ def pick_in_window(w: QWidget, cur: QRect, cands: list[tuple[QWidget, QRect]], d
     return target
 
 
-def focus_widget(w: QWidget, origin: QRect | None = None) -> None:
+def focus_widget(w: QWidget, origin: QRect | None = None, direction: str | None = None) -> None:
     # Nunca activateWindow(): al abrir la tienda, la vista web rehace la ventana
     # nativa y pedírselo entonces a gamescope dejaba colgado el modo juego.
     w.setFocus(Qt.TabFocusReason)
+    if webpad.is_view(w):
+        webpad.enter(w, direction, origin)
+        return
     if isinstance(w, QAbstractItemView):
         _enter_view(w, origin)
     for p in _ancestors(w):
@@ -402,16 +414,33 @@ class Navigator(QObject):
             self._default_focus()
             return
         w = self._current()
+        view = webpad.view_of(w)
+        if view is not None:
+            # La página mueve el foco por dentro; si no queda nada hacia allí, sale.
+            webpad.move(view, d, lambda rect, view=view: self._leave_web(view, rect, d))
+            return
         if isinstance(w, QAbstractItemView) and w.model() is not None and w.model().rowCount():
             before = w.currentIndex()
             _send_key(w, KEYS[d])
             if w.currentIndex() != before:
                 return  # se movió dentro de la lista; si no, estamos en su borde: salimos
-        cur = global_rect(w)
+        self._move_from(w, global_rect(w), d)
+
+    def _move_from(self, w: QWidget, cur: QRect, d: str) -> bool:
+        win = self._window()
+        if win is None:
+            return False
         cands = [(c, global_rect(c)) for c in focusable(win) if c is not w and not w.isAncestorOf(c)]
         target = pick_in_window(w, cur, cands, d)
         if target is not None:
-            focus_widget(target, cur)
+            focus_widget(target, cur, d)
+        return target is not None
+
+    def _leave_web(self, view: QWidget, rect: QRect | None, d: str):
+        if webpad.view_of(self._current()) is not view:
+            return  # mientras respondía la página, el foco ya se fue a otra parte
+        if self._move_from(view, rect or global_rect(view), d):
+            webpad.clear(view)
 
     def _on_accept(self):
         popup = QApplication.activePopupWidget()
@@ -425,7 +454,10 @@ class Navigator(QObject):
         w = self._current()
         if w is None:
             return
-        if isinstance(w, QComboBox):
+        view = webpad.view_of(w)
+        if view is not None:
+            webpad.activate(view, open_keyboard)
+        elif isinstance(w, QComboBox):
             if not overlay.combo(w):
                 w.showPopup()
         elif isinstance(w, QPushButton) and w.menu() is not None:
@@ -466,6 +498,10 @@ class Navigator(QObject):
 
     def _page(self, key, sign: int):
         w = self._current()
+        view = webpad.view_of(w)
+        if view is not None:
+            webpad.page(view, sign)
+            return
         if isinstance(w, QAbstractItemView):
             _send_key(w, key)
             return
@@ -515,6 +551,10 @@ class Navigator(QObject):
         if not v or self._stick_moves_focus() or (self.require_active
                                                   and self.app.applicationState() != Qt.ApplicationActive):
             self.scroller.stop()
+            return
+        view = webpad.view_of(self._current())
+        if view is not None:
+            webpad.scroll(view, int(v * abs(v) * SCROLL_SPEED))
             return
         area = self._scroll_area()
         if area is not None:

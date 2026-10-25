@@ -12,11 +12,12 @@ import re
 
 from PySide6.QtCore import Qt, QUrl, Signal
 from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QLineEdit, QPushButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (QFrame, QHBoxLayout, QLabel, QLineEdit, QProgressBar, QPushButton, QVBoxLayout,
+                               QWidget)
 
 from gogl.i18n import _
 
-from . import theme
+from . import theme, webpad
 from .web import HAS_WEBENGINE, make_view, store_url
 
 GAME_PATH = re.compile(r"^(?:/[a-z]{2})?/game/([^/?#]+)")
@@ -57,6 +58,16 @@ class StorePage(QWidget):
                    lambda: QDesktopServices.openUrl(self.view.url()))
         lay.addWidget(bar)
 
+        # Mientras carga: la primera vez Qt WebEngine tarda en arrancar y la página
+        # se quedaba en blanco sin más.
+        self.progress = QProgressBar()
+        self.progress.setTextVisible(False)
+        self.progress.setFixedHeight(3)
+        self.progress.setStyleSheet(f"QProgressBar {{ border: none; background: {theme.SURFACE}; }}"
+                                    f"QProgressBar::chunk {{ background: {theme.ACCENT}; }}")
+        self.progress.hide()
+        lay.addWidget(self.progress)
+
         self.banner = QFrame()
         self.banner.setObjectName("StoreBanner")
         self.banner.setStyleSheet(f"#StoreBanner {{ background: {theme.SURFACE_2}; }}")
@@ -96,6 +107,9 @@ class StorePage(QWidget):
             return
         self.view = make_view(self)
         self.view.urlChanged.connect(self._on_url)
+        self.view.loadStarted.connect(lambda: (self.progress.setValue(0), self.progress.show()))
+        self.view.loadProgress.connect(self.progress.setValue)
+        self.view.loadFinished.connect(lambda _ok: self.progress.hide())
         self.body.addWidget(self.view, 1)
         self.go(HOME)
 
@@ -138,6 +152,8 @@ class StorePage(QWidget):
 
     def leaving(self):
         """La tienda deja de verse: si se quedó en mitad del checkout, refresca igualmente."""
+        if self.view is not None:
+            webpad.clear(self.view)
         if self.in_checkout:
             self.in_checkout = False
             self.purchase_finished.emit()
